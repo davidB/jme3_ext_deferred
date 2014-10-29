@@ -1,0 +1,32 @@
+MaterialDef sao {
+
+	MaterialParameters {
+		Boolean FullView
+		Texture2D NormalBuffer
+		Texture2D DepthBuffer
+		Vector3 SampleRadius
+		Float Intensity
+		Float Bias
+		Vector4 ProjInfo
+		Float ProjScale
+	}
+
+	Technique {
+		VertexShader GLSL150:   Shaders/deferred/quad.vert
+		//FragmentShader GLSL150: Shaders/deferred/sao_t0.frag
+		FragmentShader GLSL150: Shaders/deferred/sao.frag
+
+		WorldParameters {
+			Resolution
+			ViewMatrix
+			ProjectionMatrix
+			FrustumNearFar
+			Time
+		}
+
+		Defines {
+			FULLVIEW : FullView
+			normal_notNull : NormalBuffer
+		}
+	}
+}

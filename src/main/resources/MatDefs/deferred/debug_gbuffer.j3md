@@ -1,0 +1,88 @@
+MaterialDef debug_gbuffer {
+
+	MaterialParameters {
+		Boolean FullView
+		Texture2D DiffuseBuffer
+		Texture2D SpecularBuffer
+		Texture2D NormalBuffer
+		Texture2D DepthBuffer
+		Texture2D AOBuffer
+		Vector3 FrustumCorner
+		Matrix4 ViewProjectionMatrixInverse
+	}
+
+	Technique {
+		VertexShader GLSL150:   Shaders/deferred/quad.vert
+		FragmentShader GLSL150: Shaders/deferred/show_objgreen.frag
+		WorldParameters {
+		}
+		Defines {
+			FULLVIEW : FullView
+		}
+	}
+
+	Technique fullgreen {
+		VertexShader GLSL150:   Shaders/deferred/quad.vert
+		FragmentShader GLSL150: Shaders/deferred/show_fullgreen.frag
+		WorldParameters {
+		}
+		Defines {
+			FULLVIEW : FullView
+		}
+	}
+
+	Technique objgreen {
+		VertexShader GLSL150:   Shaders/deferred/quad.vert
+		FragmentShader GLSL150: Shaders/deferred/show_objgreen.frag
+		WorldParameters {
+		}
+		Defines {
+		}
+	}
+
+	Technique normals {
+		VertexShader GLSL150:   Shaders/deferred/quad.vert
+		FragmentShader GLSL150: Shaders/deferred/show_normals.frag
+		WorldParameters {
+			WorldViewProjectionMatrix
+		}
+		Defines {
+			FULLVIEW : FullView
+		}
+	}
+
+	Technique albedos {
+		VertexShader GLSL150:   Shaders/deferred/quad.vert
+		FragmentShader GLSL150: Shaders/deferred/show_albedos.frag
+		WorldParameters {
+			WorldViewProjectionMatrix
+		}
+		Defines {
+			FULLVIEW : FullView
+		}
+	}
+
+	Technique depths {
+		VertexShader GLSL150:   Shaders/deferred/quad.vert
+		FragmentShader GLSL150: Shaders/deferred/show_depths.frag
+		WorldParameters {
+			WorldViewProjectionMatrix
+			FrustumNearFar
+		}
+		Defines {
+			FULLVIEW : FullView
+		}
+	}
+
+	Technique ao {
+		VertexShader GLSL150:   Shaders/deferred/quad.vert
+		FragmentShader GLSL150: Shaders/deferred/show_ao.frag
+		WorldParameters {
+			WorldViewProjectionMatrix
+			FrustumNearFar
+		}
+		Defines {
+			FULLVIEW : FullView
+		}
+	}
+}

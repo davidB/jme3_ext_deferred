@@ -1,0 +1,95 @@
+apply plugin: 'java'
+apply plugin: 'eclipse'
+
+sourceCompatibility = '1.8'
+targetCompatibility = '1.8'
+[compileJava, compileTestJava]*.options*.encoding = 'UTF-8'
+
+// NetBeans will automatically add "run" and "debug" tasks relying on the
+// "mainClass" property. You may however define the property prior executing
+// tasks by passing a "-PmainClass=<QUALIFIED_CLASS_NAME>" argument.
+//
+// Note however, that you may define your own "run" and "debug" task if you
+// prefer. In this case NetBeans will not add these tasks but you may rely on
+// your own implementation.
+ext.mainClass = 'vdrones.Main'
+if (hasProperty('mainClass')) {
+	ext.mainClass = mainClass
+}
+version = '0.1.0'
+group = 'net.alchim31.jme3'
+
+repositories {
+	mavenCentral()
+	maven { url "http://updates.jmonkeyengine.org/maven/"}
+	maven { url "http://dl.bintray.com/davidb/jme3stuff" }
+	mavenLocal()
+}
+
+
+def v_jme = '3.0.10'
+//def v_jme = '3.1.0-snapshot-github'
+def v_slf4j = '1.7.7'
+
+configurations {
+	fmpp
+}
+
+
+dependencies {
+	//provided 'org.projectlombok:lombok:1.14.2'
+	compile 'org.projectlombok:lombok:1.14.2'
+	compile "com.jme3:jme3-core:${v_jme}"
+	compile "com.jme3:jme3-effects:${v_jme}"
+	compile "org.slf4j:slf4j-api:${v_slf4j}"
+	compile 'com.netflix.rxjava:rxjava-core:0.19.2'
+	testRuntime "com.jme3:jme3-lwjgl:${v_jme}"
+	testRuntime "com.jme3:jme3-desktop:${v_jme}"
+	testRuntime "org.slf4j:slf4j-jdk14:${v_slf4j}"
+	testCompile 'junit:junit:4.11'
+	testCompile 'org.mockito:mockito-core:1.8.5'
+	//testCompile "com.jme3:jme3-testdata:${v_jme}"
+	testCompile "com.jme3:jme3-testdata:3.1.0-snapshot-github"
+
+	fmpp 'net.sourceforge.fmpp:fmpp:0.9.14'
+}
+
+def generated_assets_dir = "$buildDir/generated-sources/assets"
+
+sourceSets {
+	main {
+		resources {
+			srcDirs = ["$projectDir/src/main/resources", generated_assets_dir]
+			exclude "**/*.blend*"
+			exclude "**/*.ftl"
+		}
+	}
+}
+
+task copyDeps(type: Copy) {
+	from (configurations.runtime + configurations.testCompile)
+	into 'lib'
+}
+
+task fmpp() << {
+	println "Generating sources...."
+	ant.taskdef(name:'fmpp', classname:'fmpp.tools.AntTask', classpath:configurations.fmpp.asPath);
+	ant.fmpp(
+		configuration:"fmpp.cfg"
+		, sourceRoot:"$projectDir/src/main/resources"
+		, includes: "**/*.frag.ftl,**/*.vert.ftl, **/*.glsllib.ftl"
+		, outputRoot: generated_assets_dir
+	)
+}
+
+// see https://cvs.khronos.org/svn/repos/ogl/trunk/ecosystem/public/sdk/tools/glslang/Install/
+task glslValidate(type:Exec) {
+  executable 'glslangValidator'
+  //args "-d"
+  args fileTree(dir: generated_assets_dir, includes: ['**/*.frag', '**/*.vert']).getFiles()
+  //args fileTree(dir: generated_assets_dir, includes: ['**/deferred.frag']).getFiles()
+  workingDir generated_assets_dir
+  errorOutput System.err
+  standardOutput System.out
+  //commandLine 'cmd', '/c', 'stop.bat'
+}

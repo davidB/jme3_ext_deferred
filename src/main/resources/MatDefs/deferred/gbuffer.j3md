@@ -1,0 +1,21 @@
+MaterialDef gbuffer {
+
+	MaterialParameters {
+	}
+	Technique {
+	}
+	Technique GBuf {
+
+		VertexShader GLSL150 : Shaders/deferred/gbuffer.vert
+		FragmentShader GLSL150 : Shaders/deferred/gbuffer.frag
+
+		WorldParameters {
+			WorldViewProjectionMatrix
+			WorldMatrix
+		}
+
+		Defines {
+		}
+	}
+
+}

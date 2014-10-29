@@ -1,0 +1,23 @@
+MaterialDef saoblur {
+	MaterialParameters {
+		Boolean FullView
+		Texture2D Texture
+		Texture2D NormalBuffer
+		Vector2 Axis
+		Vector4 ProjInfo
+	}
+
+	Technique {
+		VertexShader GLSL150:   Shaders/deferred/quad.vert
+		FragmentShader GLSL150: Shaders/deferred/saoblur.frag
+
+		WorldParameters {
+			ViewMatrix
+			Resolution
+		}
+		Defines {
+			normal_notNull : NormalBuffer
+			FULLVIEW : FullView
+		}
+	}
+}

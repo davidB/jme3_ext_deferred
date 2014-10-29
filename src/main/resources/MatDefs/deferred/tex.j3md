@@ -1,0 +1,21 @@
+MaterialDef tex {
+
+	MaterialParameters {
+		Boolean FullView
+		Texture2D Texture
+	}
+
+	Technique {
+		VertexShader GLSL150:   Shaders/deferred/quad.vert
+		FragmentShader GLSL150: Shaders/deferred/show_tex.frag
+
+
+		WorldParameters {
+			WorldViewProjectionMatrix
+		}
+
+		Defines {
+			FULLVIEW : FullView
+		}
+	}
+}
