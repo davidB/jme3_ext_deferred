@@ -60,8 +60,14 @@ sourceSets {
 	main {
 		resources {
 			srcDirs = ["$projectDir/src/main/resources", generated_assets_dir]
+			exclude "**/.keep"
 			exclude "**/*.blend*"
 			exclude "**/*.ftl"
+		}
+	}
+	test {
+		resources {
+			exclude "**/.keep"
 		}
 	}
 }
