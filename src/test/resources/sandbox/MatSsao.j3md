@@ -1,0 +1,37 @@
+MaterialDef SSAO {
+
+    MaterialParameters {
+        Int NumSamples
+        Int NumSamplesDepth
+        Texture2D Texture
+        Texture2D RandomMap
+        Texture2D NormalBuffer
+        Texture2D DepthBuffer
+        Vector3 FrustumCorner
+        Float SampleRadius
+        Float Intensity
+        Vector2 Scale
+        Float Bias
+        Vector2Array Samples
+        Matrix4 ViewProjectionMatrixInverse
+    }
+
+    Technique {
+        VertexShader GLSL150:   sandbox/quadfullview.vert
+        //FragmentShader GLSL150: sandbox/MatSsao.frag
+        //FragmentShader GLSL150: sandbox/sao.frag
+        FragmentShader GLSL150: sandbox/sao2.frag
+
+        WorldParameters {
+            WorldViewProjectionMatrix
+            WorldViewMatrix
+            Resolution
+            ViewMatrix
+            CameraPosition
+            ProjectionMatrix
+            ProjectionMatrixInverse
+            FrustumNearFar
+            Time
+        }
+    }
+}

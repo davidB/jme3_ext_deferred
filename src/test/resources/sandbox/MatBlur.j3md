@@ -1,0 +1,23 @@
+MaterialDef SSAO {
+
+    MaterialParameters {
+        Texture2D Texture
+        Texture2D NormalBuffer
+        Texture2D DepthBuffer
+        Vector3 FrustumCorner
+        Vector2 Scale
+        Matrix4 ViewProjectionMatrixInverse
+    }
+
+    Technique {
+        VertexShader GLSL150:   sandbox/quadfullview.vert
+        FragmentShader GLSL150: sandbox/MatBlur.frag
+
+        WorldParameters {
+            WorldViewProjectionMatrix
+            WorldViewMatrix
+            Resolution
+            FrustumNearFar
+        }
+    }
+}

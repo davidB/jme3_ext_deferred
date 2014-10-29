@@ -1,0 +1,10 @@
+Material Default dgbuffer : sandbox/dgbuffer.j3md {
+     MaterialParameters {
+             hasVertexColors : 0
+	numLightmapDirections : 0
+    useBones : 0
+        useDepthPeel : 0
+    hasAlpha : 0
+    useImageStore : 1
+     }
+}

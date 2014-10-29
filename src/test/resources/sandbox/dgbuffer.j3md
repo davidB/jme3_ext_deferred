@@ -1,0 +1,46 @@
+MaterialDef MatGBuf {
+
+    MaterialParameters {
+    Int hasVertexColors
+    //0 1 3
+    Int numLightmapDirections
+    //0 1
+    Int useBones
+    //0 1
+    Int useDepthPeel
+    //0 1
+    Int hasAlpha
+    //0 1
+    Int useImageStore
+    }
+
+	Technique {
+	}
+
+    Technique GBuf {
+
+        VertexShader GLSL100 : Shaders/gbuffer.vert
+        FragmentShader GLSL100 : Shaders/gbuffer.frag
+
+        WorldParameters {
+            WorldViewProjectionMatrix
+            NormalMatrix
+            WorldViewMatrix
+            WorldMatrix
+            ViewMatrix
+            WorldMatrixInverseTranspose
+            WorldViewProjectionMatrix
+            ViewMatrixInverse
+        }
+
+        Defines {
+        	HAS_VERTEX_COLORS : hasVertexColors
+        	NUM_LIGHTMAP_DIRECTIONS : numLightmapDirections
+        	USE_BONES : useBones
+        	USE_DEPTH_PEEL: useDepthPeel
+        	HAS_ALPHA : hasAlpha
+        	USE_IMAGE_STORE: useImageStore
+        }
+    }
+
+}
