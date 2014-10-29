@@ -1,6 +1,7 @@
 build
 target
 lib
+tmp
 *.class
 *.so
 *.dll
