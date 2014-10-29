@@ -53,7 +53,6 @@ public class SceneProcessor4Deferred implements SceneProcessor {
 	public final AssetManager assetManager;
 	private RenderManager rm;
 	public ViewPort vp;
-	private float tpf;
 	private Geometry finalQuad;
 	public final GeometryList lights = new GeometryList(new NullComparator());
 	private List<Material> mats = new LinkedList<>();
@@ -124,7 +123,6 @@ public class SceneProcessor4Deferred implements SceneProcessor {
 	}
 
 	public void preFrame(float tpf) {
-		this.tpf = tpf;
 		finalQuad.updateLogicalState(tpf);
 		finalQuad.updateGeometricState();
 		pass4lbuffer.update(tpf);

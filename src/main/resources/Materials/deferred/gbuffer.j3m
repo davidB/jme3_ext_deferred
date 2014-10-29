@@ -1,0 +1,6 @@
+Material My Material : MatDefs/deferred/gbuffer.j3md {
+	MaterialParameters {
+	}
+	AdditionalRenderState {
+	}
+}
