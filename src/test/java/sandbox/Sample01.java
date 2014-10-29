@@ -1,35 +1,3 @@
-/*
- * Copyright (c) 2009-2012 jMonkeyEngine
- * All rights reserved.
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions are
- * met:
- *
- * * Redistributions of source code must retain the above copyright
- *   notice, this list of conditions and the following disclaimer.
- *
- * * Redistributions in binary form must reproduce the above copyright
- *   notice, this list of conditions and the following disclaimer in the
- *   documentation and/or other materials provided with the distribution.
- *
- * * Neither the name of 'jMonkeyEngine' nor the names of its contributors
- *   may be used to endorse or promote products derived from this software
- *   without specific prior written permission.
- *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
- * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
- * TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
- * PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR
- * CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
- * EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
- * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
- * PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
- * LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
- * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
- * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- */
-
 package sandbox;
 
 import jme3_ext_deferred.DebugMaterialKey;
@@ -54,10 +22,10 @@ import com.jme3.scene.shape.Sphere;
 import com.jme3.ui.Picture;
 
 
-public class TestMultiRenderTarget3 extends SimpleApplication{
+public class Sample01 extends SimpleApplication{
 
 	public static void main(String[] args){
-		TestMultiRenderTarget3 app = new TestMultiRenderTarget3();
+		Sample01 app = new Sample01();
 		app.start();
 	}
 
@@ -227,64 +195,3 @@ public class TestMultiRenderTarget3 extends SimpleApplication{
 	}
 }
 
-//@RequiredArgsConstructor
-//class SceneProcessor4Quad implements SceneProcessor {
-//	public final AssetManager assetManager;
-//	private RenderManager rm;
-//	private ViewPort vp;
-//	private Geometry finalQuad;
-//
-//	public void initialize(RenderManager rm, ViewPort vp) {
-//		this.rm = rm;
-//		this.vp = vp;
-//		reshape(vp, vp.getCamera().getWidth(), vp.getCamera().getHeight());
-//
-//		finalQuad = new Geometry("finalQuad", new Quad(1, 1));
-//		finalQuad.setLocalTranslation(0, 0, 0);
-//		//finalQuad.setIgnoreTransform(true);
-//		final Material mat = new Material(assetManager, "sandbox/MatGBufDef.j3md");
-//		finalQuad.setMaterial(mat);
-//		finalQuad.setCullHint(Spatial.CullHint.Never);
-//		mat.getAdditionalRenderState().setDepthTest(false);
-//		mat.getAdditionalRenderState().setDepthWrite(false);
-//		mat.selectTechnique("fullgreen", rm);
-//		finalQuad.addControl(new AbstractControl() {
-//			@Override
-//			protected void controlUpdate(float tpf) {
-//				if (mat != null) {
-//					Matrix4f inverseViewProj = vp.getCamera().getViewProjectionMatrix().invert();
-//					mat.setMatrix4("ViewProjectionMatrixInverse", inverseViewProj);
-//				}
-//			}
-//			@Override
-//			protected void controlRender(RenderManager rm, ViewPort vp) {
-//			}
-//		});
-//
-//		finalQuad.setQueueBucket(Bucket.Opaque);
-//	}
-//
-//	public void reshape(ViewPort vp, int w, int h) {
-//	}
-//
-//	public boolean isInitialized() {
-//		return finalQuad != null;
-//	}
-//
-//	public void preFrame(float tpf) {
-//		finalQuad.updateLogicalState(tpf);
-//		finalQuad.updateGeometricState();
-//	}
-//
-//	public void postQueue(RenderQueue rq) {
-//		rm.renderGeometry(finalQuad);
-//	}
-//
-//	public void postFrame(FrameBuffer out) {
-//
-//	}
-//
-//	public void cleanup() {
-//	}
-//
-//}
