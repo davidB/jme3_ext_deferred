@@ -8,21 +8,22 @@ import com.jme3.texture.Texture2D;
 
 class GBuffer {
 	public final FrameBuffer fb;
-	public final Texture2D diffuse, normal, specular, depth;
+	public final Texture2D normal, depth;
+	public final Texture2D custom0, custom1;
 
 	public GBuffer(int w, int h) {
-		diffuse  = new Texture2D(w, h, Format.RGBA8);
+		depth    = new Texture2D(w, h, Format.Depth);
 		normal   = new Texture2D(w, h, Format.RGBA8);
 		normal.setMinFilter(MinFilter.NearestNoMipMaps);
 		normal.setMagFilter(MagFilter.Nearest);
-		specular = new Texture2D(w, h, Format.RGBA8);
-		depth    = new Texture2D(w, h, Format.Depth);
+		custom0 = new Texture2D(w, h, Format.RGBA8);
+		custom1  = new Texture2D(w, h, Format.RGBA8);
 
 		fb = new FrameBuffer(w, h, 1);
 		fb.setMultiTarget(true);
 		fb.setDepthTexture(depth);
-		fb.addColorTexture(diffuse);
 		fb.addColorTexture(normal);
-		fb.addColorTexture(specular);
+		fb.addColorTexture(custom0);
+		fb.addColorTexture(custom1);
 	}
 }

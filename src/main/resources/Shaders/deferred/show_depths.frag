@@ -9,6 +9,6 @@ out vec4 out_FragColor;
 
 void main(){
 	float depth = readDepth(m_DepthBuffer, texCoord, g_FrustumNearFar.x, g_FrustumNearFar.y);
-	out_FragColor = vec4(depth, depth, depth, 1.0);
+	out_FragColor = vec4(vec3(depth), 1.0);
 }
 

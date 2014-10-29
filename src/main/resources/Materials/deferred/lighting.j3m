@@ -1,0 +1,7 @@
+Material My Material : MatDefs/deferred/lbuffer.j3md {
+	MaterialParameters {
+		Color: 1.0 1.0 1.0 1.0
+	}
+	AdditionalRenderState {
+	}
+}

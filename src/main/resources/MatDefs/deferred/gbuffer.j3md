@@ -1,6 +1,7 @@
 MaterialDef gbuffer {
 
 	MaterialParameters {
+		Int MatId
 	}
 	Technique {
 	}

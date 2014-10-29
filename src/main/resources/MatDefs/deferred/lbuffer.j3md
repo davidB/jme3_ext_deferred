@@ -1,0 +1,37 @@
+MaterialDef lbuffer {
+
+	MaterialParameters {
+		Color Color
+		Vector3 Position
+
+		Texture2D NormalBuffer
+		Texture2D DepthBuffer
+		Texture2D AOBuffer
+		Texture2D MatBuffer
+		Vector3 ClipInfo
+		Vector4 ProjInfo
+	}
+	Technique {
+	}
+	Technique LBuf {
+
+		VertexShader GLSL150 : Shaders/deferred/lighting.vert
+		FragmentShader GLSL150 : Shaders/deferred/lighting.frag
+
+		WorldParameters {
+			WorldViewProjectionMatrix
+			Resolution
+			ViewMatrixInverse
+			CameraPosition
+		}
+
+		Defines {
+		}
+		RenderState {
+ 			Blend Additive
+ 			DepthTest false
+ 			DepthWrite false
+		}
+	}
+
+}

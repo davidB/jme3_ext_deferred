@@ -7,6 +7,7 @@ MaterialDef sao {
 		Vector3 SampleRadius
 		Float Intensity
 		Float Bias
+		Vector3 ClipInfo
 		Vector4 ProjInfo
 		Float ProjScale
 	}

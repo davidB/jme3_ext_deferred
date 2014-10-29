@@ -148,16 +148,15 @@ const float FAR_PLANE_Z = -250.0;
 /////////////////////////////////////////////////////////
 
 float reconstructCSZ(float d) {
-    float n = g_FrustumNearFar.x;
-    float f =  g_FrustumNearFar.y;
-	vec3 clipInfo = vec3(n * f, n - f, f);
-    return clipInfo[0] / (clipInfo[1] * d + clipInfo[2]);
-    //d = (2.0 * n) / (f + n - d * (f - n));
-    //return -1 * (near + (d * far - near));
-    //float zndc = d * 2.0 - 1.0;
-	// conversion into eye space
-	//return 2*f*n / (zndc*(f-n)-(f+n));
+    return reconstructCSZ(d, g_FrustumNearFar.x, g_FrustumNearFar.y);
 }
+
+vec3 reconstructCSPosition(vec2 S, float z) {
+	return reconstructCSPosition(S, z, m_ProjInfo);
+}
+
+//------------------------------------------------------
+
 
 /** Returns a unit vector and a screen-space radius for the tap on a unit disk
     (the caller should scale by the actual disk radius) */
@@ -174,45 +173,9 @@ vec2 tapLocation(int sampleNumber, float spinAngle, out float ssR){
 float CSZToKey(float z) {
     return clamp(z * (1.0 / FAR_PLANE_Z), 0.0, 1.0);
 }
-/** Reconstruct camera-space P.xyz from screen-space S = (x, y) in
-    pixels and camera-space z < 0.  Assumes that the upper-left pixel center
-    is at (0.5, 0.5) [but that need not be the location at which the sample tap
-    was placed!]
 
-    Costs 3 MADD.  Error is on the order of 10^3 at the far plane, partly due to z precision.
 
- projInfo = vec4(-2.0f / (width*P[0][0]),
-          -2.0f / (height*P[1][1]),
-          ( 1.0f - P[0][2]) / P[0][0],
-          ( 1.0f + P[1][2]) / P[1][1])
 
-    where P is the projection matrix that maps camera space points
-    to [-1, 1] x [-1, 1].  That is, Camera::getProjectUnit().
-
-    \sa G3D::Projection::reconstructFromDepthProjInfo
-*/
-vec3 reconstructCSPosition(vec2 S, float z, vec4 projInfo) {
-    return vec3((S.xy * projInfo.xy + projInfo.zw) * z, z);
-}
-
-vec3 reconstructCSPosition(vec2 S, float z) {
-	vec4 projInfo = vec4(
-		-2.0f / (g_Resolution.x * g_ProjectionMatrix[0][0]),
-		-2.0f / (g_Resolution.y * g_ProjectionMatrix[1][1]),
-		( 1.0f - g_ProjectionMatrix[0][2]) / g_ProjectionMatrix[0][0],
-		( 1.0f - g_ProjectionMatrix[1][2]) / g_ProjectionMatrix[1][1]
-	);
-    return reconstructCSPosition(S, z, projInfo);
-}
-
-/** Reconstructs screen-space unit normal from screen-space position */
-vec3 reconstructCSFaceNormal(vec3 C) {
-    return normalize(cross(dFdy(C), dFdx(C)));
-}
-
-vec3 reconstructNonUnitCSFaceNormal(vec3 C) {
-    return cross(dFdy(C), dFdx(C));
-}
 /** Read the camera-space position of the point at screen-space pixel ssP */
 vec3 getPosition(ivec2 ssP, sampler2D cszBuffer) {
     vec3 P;

@@ -3,7 +3,6 @@ package jme3_ext_deferred;
 import com.jme3.asset.AssetManager;
 import com.jme3.material.Material;
 import com.jme3.math.ColorRGBA;
-import com.jme3.math.Matrix4f;
 import com.jme3.math.Vector2f;
 import com.jme3.math.Vector3f;
 import com.jme3.math.Vector4f;
@@ -58,17 +57,10 @@ public class Pass4AO {
 
 	void initMaterials(boolean useNormalBuffer) {
 		Camera cam = vp.getCamera();
-		Matrix4f pm = cam.getProjectionMatrix();
-
-		float w = aobuffer.fb.getWidth();
-		float h = aobuffer.fb.getHeight();
-		Vector4f m_ProjInfo = new Vector4f(
-				-2.0f / (w * pm.m00),
-				-2.0f / (h * pm.m11),
-				( 1.0f - pm.m02) / pm.m00,
-				( 1.0f - pm.m12) / pm.m11
-				);
-		double m_ProjScale = -0.5 * h * pm.m11;
+		int w = aobuffer.fb.getWidth();
+		int h = aobuffer.fb.getHeight();
+		Vector4f m_ProjInfo = Helpers.projInfo(cam, w, h);
+		double m_ProjScale = Helpers.projScale(cam, w, h);
 
 		aoMat.getAdditionalRenderState().setDepthTest(false);
 		aoMat.getAdditionalRenderState().setDepthWrite(false);

@@ -1,12 +1,12 @@
 package sandbox;
 
-import jme3_ext_deferred.DebugMaterialKey;
+import jme3_ext_deferred.DebugTextureViewer;
+import jme3_ext_deferred.MatIdManager;
 import jme3_ext_deferred.SceneProcessor4Deferred;
 
 import com.jme3.app.SimpleApplication;
 import com.jme3.bounding.BoundingBox;
 import com.jme3.input.ChaseCamera;
-import com.jme3.light.PointLight;
 import com.jme3.material.Material;
 import com.jme3.math.ColorRGBA;
 import com.jme3.math.FastMath;
@@ -19,7 +19,6 @@ import com.jme3.scene.Spatial;
 import com.jme3.scene.control.AbstractControl;
 import com.jme3.scene.shape.Box;
 import com.jme3.scene.shape.Sphere;
-import com.jme3.ui.Picture;
 
 
 public class Sample01 extends SimpleApplication{
@@ -29,13 +28,26 @@ public class Sample01 extends SimpleApplication{
 		app.start();
 	}
 
+	private final MatIdManager matIdManager = new MatIdManager();
+	private final ColorRGBA[] colors = new ColorRGBA[]{
+			ColorRGBA.Red,
+			ColorRGBA.Green,
+			ColorRGBA.Blue,
+			ColorRGBA.White,
+			ColorRGBA.Cyan,
+			ColorRGBA.DarkGray,
+			ColorRGBA.Magenta,
+			ColorRGBA.Orange,
+			ColorRGBA.Pink,
+			ColorRGBA.Yellow
+	};
+
 	@Override
 	public void simpleInitApp() {
-		@SuppressWarnings("unused")
-		Picture display = (true)? useDeferred() : null;
+		SceneProcessor4Deferred sp4gbuf = useDeferred();
 		//		viewPort.addProcessor(new SceneProcessor4Quad(assetManager));
 		Spatial target = makeScene(rootNode, 2, 2, 2);
-		makeLigths((display != null)? display : rootNode);
+		makeLigths((sp4gbuf != null)? sp4gbuf.lightsRoot : rootNode);
 		setupCamera(target);
 
 		//		Geometry finalQuad = new Geometry("finalQuad", new Quad(1, 1));
@@ -49,14 +61,18 @@ public class Sample01 extends SimpleApplication{
 
 	Spatial makeScene(Node anchor0, int nbX, int nbY, int nbZ) {
 		Material matDef = new Material(assetManager, "MatDefs/deferred/gbuffer.j3md");
+		matDef.setInt("MatId", matIdManager.findMatId(ColorRGBA.Gray, ColorRGBA.White));
 
 		Node pattern = new Node();
 		pattern.attachChild((Geometry) assetManager.loadModel("Models/Teapot/Teapot.obj"));
 		pattern.attachChild(new Geometry("box", new Box(0.5f, 0.5f, 0.5f)));
 		pattern.attachChild(new Geometry("sphere", new Sphere(16, 16, 0.5f)));
 		float deltaX = 0;
+		int colorIdx = colors.length / 2;
 		for(Spatial child :pattern.getChildren()) {
-			child.setMaterial(matDef);
+			Material mat = matDef.clone();
+			mat.setInt("MatId", matIdManager.findMatId(colors[colorIdx++ % colors.length], ColorRGBA.White));
+			child.setMaterial(mat);
 			BoundingBox bb = (BoundingBox)child.getWorldBound();
 			child.setLocalTranslation(deltaX, 0, 0);
 			deltaX += 2 * bb.getXExtent();
@@ -95,37 +111,28 @@ public class Sample01 extends SimpleApplication{
 		//		anchor.addLight(dl);
 
 		anchor.addControl(new AbstractControl() {
-			ColorRGBA[] colors = new ColorRGBA[]{
-					ColorRGBA.White,
-					ColorRGBA.Blue,
-					ColorRGBA.Cyan,
-					ColorRGBA.DarkGray,
-					ColorRGBA.Green,
-					ColorRGBA.Magenta,
-					ColorRGBA.Orange,
-					ColorRGBA.Pink,
-					ColorRGBA.Red,
-					ColorRGBA.Yellow
-			};
-			private PointLight[] pls = new PointLight[3];
-			private Spatial anchor = null;
+
+			private Geometry[] pls = new Geometry[3];
+			private Node anchor = null;
 
 			@Override
 			public void setSpatial(Spatial spatial) {
 				super.setSpatial(spatial);
 				if (anchor != null && anchor != spatial) {
 					for (int i = 0; i < pls.length; i++){
-						anchor.removeLight(pls[i]);
+						anchor.detachChild(pls[i]);
 					}
 					anchor = null;
 				}
 				if (spatial != null && anchor != spatial) {
-					anchor = spatial;
+					anchor = (Node)spatial;
+					Material mat0 = assetManager.loadMaterial("Materials/deferred/lighting.j3m");
 					for (int i = 0; i < pls.length; i++){
-						PointLight pl = new PointLight();
-						pl.setColor(colors[i % colors.length]);
-						pl.setRadius(5);
-						anchor.addLight(pl);
+						Geometry pl = new Geometry("pl"+i, new Sphere(16, 16, 5f));
+						Material mat = mat0.clone();
+						pl.setMaterial(mat);
+						mat.setColor("Color", colors[i % colors.length]);
+						anchor.attachChild(pl);
 						pls[i] = pl;
 					}
 				}
@@ -137,9 +144,9 @@ public class Sample01 extends SimpleApplication{
 				float deltaTime = (float)Math.PI * (timer.getTimeInSeconds() % 6) / 3; // 3s for full loop
 				float radius = 3f;
 				for (int i = 0; i < pls.length; i++){
-					PointLight pl = pls[i];
+					Geometry pl = pls[i];
 					float angle = deltaItem * i + deltaTime;
-					pl.setPosition( new Vector3f(FastMath.cos(angle) * radius, 0, FastMath.sin(angle) * radius));
+					pl.setLocalTranslation(FastMath.cos(angle) * radius, 0, FastMath.sin(angle) * radius);
 				}
 			}
 
@@ -149,7 +156,7 @@ public class Sample01 extends SimpleApplication{
 		});
 	}
 
-	public void setupCamera(Spatial target) {
+	void setupCamera(Spatial target) {
 		flyCam.setEnabled(false);
 		ChaseCamera chaseCam = new ChaseCamera(cam, target, inputManager);
 		chaseCam.setDefaultDistance(6.0f);
@@ -160,38 +167,12 @@ public class Sample01 extends SimpleApplication{
 		cam.setFrustumFar(1000.0f);
 	}
 
-	Picture useDeferred() {
-		SceneProcessor4Deferred sp4gbuf = new SceneProcessor4Deferred(assetManager);
+	SceneProcessor4Deferred useDeferred() {
+		SceneProcessor4Deferred sp4gbuf = new SceneProcessor4Deferred(assetManager, matIdManager);
 		viewPort.addProcessor(sp4gbuf);
-		return makeDisplayVP(sp4gbuf);
-	}
-
-	Picture makeDisplayVP(SceneProcessor4Deferred sp4gbuf) {
-		Picture[] display = new Picture[DebugMaterialKey.values().length];
-		//display1.move(0, 0, -1); // make it appear behind stats view
-		for(int i = 0; i < display.length; i++) {
-			display[i] = new Picture("display" + i);
-		}
-		float scale = 0.25f;
-
-		sp4gbuf.onChange.subscribe((v) -> {
-			float w = v.vp.getCamera().getWidth();
-			float h = v.vp.getCamera().getHeight();
-
-			for(int i = 0; i < display.length; i++) {
-				display[i].setMaterial(v.getDebugMaterial(DebugMaterialKey.values()[i]));
-				display[i].setPosition(w * (i * scale), h * (1 - scale));
-				display[i].setWidth(w * scale);
-				display[i].setHeight(h * scale);
-				if (!guiNode.hasChild(display[i])) {
-					guiNode.attachChild(display[i]);
-				}
-			}
-			guiNode.updateGeometricState();
-			guiNode.updateGeometricState();
-
-		});
-		return null;
+		DebugTextureViewer dbg = new DebugTextureViewer(sp4gbuf);
+		dbg.makeView(guiNode, DebugTextureViewer.ViewKey.values());
+		return sp4gbuf;
 	}
 }
 
