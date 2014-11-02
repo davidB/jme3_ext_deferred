@@ -52,13 +52,14 @@ public class DebugTextureViewer {
 		float farX = farY * ((float) camera.getWidth() / (float) camera.getHeight());
 		m_FrustumCorner.set(farX, farY, sp.vp.getCamera().getFrustumFar());
 		for(Material m : mats) {
-			Set<String> params = m.getMaterialDef().getMaterialParams().stream().map((mp) -> mp.getName()).collect(Collectors.toSet());
-			if (params.contains("NormalBuffer")) m.setTexture("NormalBuffer", sp.pass4gbuffer.gbuffer.normal);
-			if (params.contains("DepthBuffer")) m.setTexture("DepthBuffer", sp.pass4gbuffer.gbuffer.depth);
-			if (params.contains("AOBuffer")) m.setTexture("AOBuffer", sp.pass4ao.aobuffer.tex);
-			if (params.contains("MatBuffer")) m.setTexture("MatBuffer", sp.matIdManager.tableTex);
+			//Set<String> params = m.getMaterialDef().getMaterialParams().stream().map((mp) -> mp.getName()).collect(Collectors.toSet());
+			m.setTexture("NormalBuffer", sp.pass4gbuffer.gbuffer.normal);
+			m.setTexture("DepthBuffer", sp.pass4gbuffer.gbuffer.depth);
+			m.setTexture("AOBuffer", sp.pass4ao.aobuffer.tex);
+			m.setTexture("MatBuffer", sp.matIdManager.tableTex);
 			m.setMatrix4("ViewProjectionMatrixInverse", m_ViewProjectionMatrixInverse);
 			m.setVector3("FrustumCorner", m_FrustumCorner);
+			m.setInt("NbMatId", sp4d.matIdManager.size());
 		}
 	}
 

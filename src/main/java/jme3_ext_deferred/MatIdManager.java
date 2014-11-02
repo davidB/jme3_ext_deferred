@@ -33,7 +33,7 @@ public class MatIdManager {
 	}
 
 	public MatIdManager() {
-		this(128, 2);
+		this(256, 2);
 	}
 
 	public int findMatId(ColorRGBA diffuse, ColorRGBA specular) {
@@ -44,6 +44,10 @@ public class MatIdManager {
 		tableData.put(diffuse.asBytesRGBA());
 		tableData.put(specular.asBytesRGBA());
 		return id;
+	}
+
+	public int size() {
+		return nextId;
 	}
 
 }
