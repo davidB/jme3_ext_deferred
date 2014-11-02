@@ -1,5 +1,8 @@
 An experimental deferred rendering pipeline for [jmonkeyengine 3](http://jmonkeyengine.org).
 
+https://www.youtube.com/watch?v=lDPRoRGYWnY
+
+
 # DONE (+/-)
 
 * store normal as Oct16, based on [A Survey of Efficient Representations for Independent Unit Vectors](http://jcgt.org/published/0003/02/01/) ~ 2014
