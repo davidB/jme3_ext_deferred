@@ -75,6 +75,7 @@ void main(){
 	//out_FragColor = max(intensity * diffuse + spec, 0.0);
 	out_FragColor = max(intensityColor * diffuse + spec, 0.0);
 	//out_FragColor.rgb = posWS;
+	//out_FragColor.rgb = m_Color.rgb;
 	//out_FragColor.rgb = vec3(float(matId) * 10.0 /256.0);
 	//out_FragColor.a = 1.0;
 }

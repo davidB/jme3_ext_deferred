@@ -10,28 +10,35 @@ MaterialDef lbuffer {
 		Texture2D MatBuffer
 		Vector3 ClipInfo
 		Vector4 ProjInfo
+
+		Boolean FullView
 	}
+
 	Technique {
 	}
-	Technique LBuf {
 
+	Technique LBuf {
+		//VertexShader GLSL150:   Shaders/deferred/quad.vert
 		VertexShader GLSL150 : Shaders/deferred/lighting.vert
 		FragmentShader GLSL150 : Shaders/deferred/lighting.frag
-
 		WorldParameters {
 			WorldViewProjectionMatrix
 			Resolution
 			ViewMatrixInverse
 			CameraPosition
 		}
-
 		Defines {
-		}
-		RenderState {
- 			Blend Additive
- 			DepthTest false
- 			DepthWrite false
+			FULLVIEW : FullView
 		}
 	}
 
+	Technique LBufMask {
+		VertexShader GLSL150 : Shaders/deferred/lighting.vert
+		//FragmentShader GLSL150 : Shaders/deferred/discard.frag
+		FragmentShader GLSL150 : Shaders/deferred/empty.frag
+		//FragmentShader GLSL150 : Shaders/deferred/black.frag
+		WorldParameters {
+			WorldViewProjectionMatrix
+		}
+	}
 }

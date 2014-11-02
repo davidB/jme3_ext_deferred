@@ -7,24 +7,38 @@ import jme3_ext_deferred.SceneProcessor4Deferred;
 import com.jme3.app.SimpleApplication;
 import com.jme3.bounding.BoundingBox;
 import com.jme3.input.ChaseCamera;
+import com.jme3.input.JoyInput;
+import com.jme3.input.KeyInput;
+import com.jme3.input.MouseInput;
+import com.jme3.input.TouchInput;
 import com.jme3.material.Material;
 import com.jme3.math.ColorRGBA;
 import com.jme3.math.FastMath;
 import com.jme3.math.Vector3f;
 import com.jme3.renderer.RenderManager;
 import com.jme3.renderer.ViewPort;
+import com.jme3.renderer.lwjgl.LwjglDisplayCustom;
+import com.jme3.renderer.lwjgl.LwjglRendererCustom;
 import com.jme3.scene.Geometry;
 import com.jme3.scene.Node;
 import com.jme3.scene.Spatial;
 import com.jme3.scene.control.AbstractControl;
 import com.jme3.scene.shape.Box;
 import com.jme3.scene.shape.Sphere;
+import com.jme3.system.AppSettings;
+import com.jme3.system.JmeContext.Type;
+import com.jme3.system.lwjgl.LwjglContext;
+import com.jme3.system.lwjgl.LwjglDisplay;
 
 
 public class Sample01 extends SimpleApplication{
 
 	public static void main(String[] args){
+		AppSettings settings = new AppSettings(false);
+		//settings.setStencilBits(8);
+		//settings.setCustomRenderer(LwjglDisplayCustom.class);
 		Sample01 app = new Sample01();
+		app.setSettings(settings);
 		app.start();
 	}
 
@@ -112,7 +126,7 @@ public class Sample01 extends SimpleApplication{
 
 		anchor.addControl(new AbstractControl() {
 
-			private Geometry[] pls = new Geometry[3];
+			private Geometry[] pls = new Geometry[2];
 			private Node anchor = null;
 
 			@Override

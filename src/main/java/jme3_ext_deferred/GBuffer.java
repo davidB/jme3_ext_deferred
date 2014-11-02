@@ -12,7 +12,7 @@ class GBuffer {
 	public final Texture2D custom0, custom1;
 
 	public GBuffer(int w, int h) {
-		depth    = new Texture2D(w, h, Format.Depth);
+		depth    = new Texture2D(w, h, Format.Depth24Stencil8);
 		normal   = new Texture2D(w, h, Format.RGBA8);
 		normal.setMinFilter(MinFilter.NearestNoMipMaps);
 		normal.setMagFilter(MagFilter.Nearest);
