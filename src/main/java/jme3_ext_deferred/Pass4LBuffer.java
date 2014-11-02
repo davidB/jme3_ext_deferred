@@ -80,7 +80,7 @@ class Pass4LBuffer {
 				);
 		rsLBuf.setDepthTest(false);
 		rsLBuf.setDepthWrite(false);
-		rsLBuf.setFaceCullMode(FaceCullMode.Front);
+		rsLBuf.setFaceCullMode(FaceCullMode.Back);
 		rsLBuf.setBlendMode(BlendMode.Additive);
 
 		finalQuad = new Geometry("finalQuad", new Quad(1, 1));
@@ -116,7 +116,7 @@ class Pass4LBuffer {
 		r.setBackgroundColor(new ColorRGBA(0,0,0,0));
 		//GL11.glClearStencil(0);
 		r.clearBuffers(true, false, true);
-		int nb = 2;//renderedLightGeometries.size();
+		int nb = renderedLightGeometries.size();
 		for (int i = 0; i < nb; i++) {
 			Geometry g = renderedLightGeometries.get(i);
 			rm.setWorldMatrix(g.getWorldMatrix());
@@ -127,11 +127,10 @@ class Pass4LBuffer {
 			mat.render(g, rm);
 
 			mat.selectTechnique("LBuf", rm);
-			//mat.setBoolean("FullView", true);
+			mat.setBoolean("FullView", true);
 			rm.setForcedRenderState(rsLBuf);
-			//rm.setWorldMatrix(finalQuad.getWorldMatrix());
-			//mat.render(finalQuad, rm);
-			mat.render(g, rm);
+			rm.setWorldMatrix(finalQuad.getWorldMatrix());
+			mat.render(finalQuad, rm);
 		}
 
 		rm.getRenderer().setFrameBuffer(vp.getOutputFrameBuffer());

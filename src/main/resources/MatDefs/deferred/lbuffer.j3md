@@ -18,8 +18,8 @@ MaterialDef lbuffer {
 	}
 
 	Technique LBuf {
-		//VertexShader GLSL150:   Shaders/deferred/quad.vert
-		VertexShader GLSL150 : Shaders/deferred/lighting.vert
+		VertexShader GLSL150:   Shaders/deferred/quad.vert
+		//VertexShader GLSL150 : Shaders/deferred/lighting.vert
 		FragmentShader GLSL150 : Shaders/deferred/lighting.frag
 		WorldParameters {
 			WorldViewProjectionMatrix
