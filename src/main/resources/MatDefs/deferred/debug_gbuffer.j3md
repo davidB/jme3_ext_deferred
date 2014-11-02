@@ -8,6 +8,7 @@ MaterialDef debug_gbuffer {
 		Texture2D AOBuffer
 		Vector3 FrustumCorner
 		Matrix4 ViewProjectionMatrixInverse
+		Int NbMatId
 	}
 
 	Technique {
