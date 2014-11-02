@@ -2,8 +2,6 @@ package jme3_ext_deferred;
 
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 import com.jme3.material.Material;
 import com.jme3.math.Matrix4f;

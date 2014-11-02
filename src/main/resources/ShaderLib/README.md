@@ -1,8 +1,7 @@
-CS : Camera Space
-S / SS :  Screen space
-CSZ : z in Camera Space
 WS : World Space
-SS : Screen space (2D)
+CS : Camera Space 
+CSZ : z in Camera Space
+S / SS :  Screen space (2D)
 
 later node definition :
 - name (display / symbolic + concrete)
