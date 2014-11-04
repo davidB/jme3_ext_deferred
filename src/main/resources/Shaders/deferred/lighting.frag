@@ -1,7 +1,8 @@
 #import "ShaderLib/DeferredUtils.glsllib"
 
 uniform vec4 m_Color;
-uniform vec3 m_Position;
+uniform vec3 m_LightPos;
+uniform vec3 m_LightDir;
 
 uniform sampler2D m_DepthBuffer;
 uniform sampler2D m_NormalBuffer;
@@ -51,31 +52,27 @@ void main(){
 	vec4 specular = texelFetch(m_MatBuffer, ivec2(1, matId), 0);
 	float shininess = 0.5;
 	//vec3 diffuse = readDiffuse(m_DiffuseBuffer, texCoord);
-	vec3 lightDirWS = normalize(posWS - m_Position);
+#ifdef WSLIGHTDIR
+	vec3 lightDirWS = normalize(m_LightDir);
+#else
+	vec3 lightDirWS = normalize(posWS - m_LightPos);
+#endif
 
-	//vec3 lPosition = (lightView * vVertex).xyz;
-	//vec3 lightPosNormal = normalize(lPosition);
-	//vec3 lightSurfaceNormal = lightRot * normal;
-//	float lighting = (
-//		lambert(norWS, normalize(posWS - m_Position)) *
-//		//influence(lightPosNormal, lightConeAngle) *
-//		//attenuation(lPosition) *
-//		//shadowOf(lPosition)
-//		1.0
-//	);
-	float intensity = max(dot(norWS,lightDirWS), 0.0);
+	float intensity = lambert(norWS, -lightDirWS);
 	vec4 spec = vec4(0.0);
     if (intensity > 0.0) {
         vec3 h = normalize(lightDirWS + g_CameraPosition);
         float intSpec = max(dot(h,norWS), 0.0);
         spec = specular * pow(intSpec, shininess);
     }
-
 	vec4 intensityColor = m_Color * intensity;
+
+	//out_FragColor = max(intensityColor * diffuse + spec, 0.0);
+	// to debug
 	//out_FragColor = max(intensity * diffuse + spec, 0.0);
-	out_FragColor = max(intensityColor * diffuse + spec, 0.0);
 	//out_FragColor.rgb = posWS;
 	//out_FragColor.rgb = m_Color.rgb;
+	out_FragColor = diffuse;
 	//out_FragColor.rgb = vec3(float(matId) * 10.0 /256.0);
 	//out_FragColor.a = 1.0;
 }

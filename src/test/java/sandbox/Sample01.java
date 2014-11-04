@@ -1,34 +1,31 @@
 package sandbox;
 
 import jme3_ext_deferred.DebugTextureViewer;
+import jme3_ext_deferred.Helpers4Lights;
+import jme3_ext_deferred.Helpers4Mesh;
 import jme3_ext_deferred.MatIdManager;
 import jme3_ext_deferred.SceneProcessor4Deferred;
+import rx_ext.Observable4AddRemove;
 
 import com.jme3.app.SimpleApplication;
 import com.jme3.bounding.BoundingBox;
 import com.jme3.input.ChaseCamera;
-import com.jme3.input.JoyInput;
-import com.jme3.input.KeyInput;
-import com.jme3.input.MouseInput;
-import com.jme3.input.TouchInput;
 import com.jme3.material.Material;
 import com.jme3.math.ColorRGBA;
 import com.jme3.math.FastMath;
+import com.jme3.math.Quaternion;
 import com.jme3.math.Vector3f;
 import com.jme3.renderer.RenderManager;
 import com.jme3.renderer.ViewPort;
-import com.jme3.renderer.lwjgl.LwjglDisplayCustom;
-import com.jme3.renderer.lwjgl.LwjglRendererCustom;
 import com.jme3.scene.Geometry;
+import com.jme3.scene.Mesh;
 import com.jme3.scene.Node;
 import com.jme3.scene.Spatial;
 import com.jme3.scene.control.AbstractControl;
 import com.jme3.scene.shape.Box;
+import com.jme3.scene.shape.Cylinder;
 import com.jme3.scene.shape.Sphere;
 import com.jme3.system.AppSettings;
-import com.jme3.system.JmeContext.Type;
-import com.jme3.system.lwjgl.LwjglContext;
-import com.jme3.system.lwjgl.LwjglDisplay;
 
 
 public class Sample01 extends SimpleApplication{
@@ -61,7 +58,7 @@ public class Sample01 extends SimpleApplication{
 		SceneProcessor4Deferred sp4gbuf = useDeferred();
 		//		viewPort.addProcessor(new SceneProcessor4Quad(assetManager));
 		Spatial target = makeScene(rootNode, 2, 2, 2);
-		makeLigths((sp4gbuf != null)? sp4gbuf.lightsRoot : rootNode);
+		makeLigths(sp4gbuf.lights.ar, rootNode);
 		setupCamera(target);
 
 		//		Geometry finalQuad = new Geometry("finalQuad", new Quad(1, 1));
@@ -109,6 +106,10 @@ public class Sample01 extends SimpleApplication{
 				}
 			}
 		}
+
+		//assetManager.registerLoader(OBJLoader.class, "obj");
+		//assetManager.registerLocator(System.getProperty("user.home"), FileLocator.class);
+		//Spatial sponza = assetManager.loadModel("Téléchargements/t/crytek/sponza.obj");
 		Spatial sponza = assetManager.loadModel("Models/Sponza/Sponza.j3o");
 		sponza.setLocalTranslation(new Vector3f(-8.f, -0.25f, 0.f).multLocal(sponza.getWorldBound().getCenter()));
 		sponza.setMaterial(matDef);
@@ -117,17 +118,23 @@ public class Sample01 extends SimpleApplication{
 		return group;
 	}
 
-	void makeLigths(Spatial anchor) {
+	void makeLigths(Observable4AddRemove<Geometry> lights, Node anchor) {
 		//		DirectionalLight dl = new DirectionalLight();
 		//		dl.setColor(ColorRGBA.White);
 		//		dl.setDirection(Vector3f.UNIT_XYZ.negate());
 		//
 		//		anchor.addLight(dl);
 
+		//Directionnal Light
+		Geometry light0 = Helpers4Lights.newDirectionnalLight("ldir", new Vector3f(-0.5f, -0.5f, 0.5f), ColorRGBA.LightGray, assetManager);
+		//anchor.attachChild(light0);
+		//lights.add.onNext(light0);
+
 		anchor.addControl(new AbstractControl() {
 
-			private Geometry[] pls = new Geometry[2];
+			private Geometry[] pls = new Geometry[10];
 			private Node anchor = null;
+			float radius = 10f;
 
 			@Override
 			public void setSpatial(Spatial spatial) {
@@ -140,13 +147,18 @@ public class Sample01 extends SimpleApplication{
 				}
 				if (spatial != null && anchor != spatial) {
 					anchor = (Node)spatial;
-					Material mat0 = assetManager.loadMaterial("Materials/deferred/lighting.j3m");
+					//Mesh mesh = new Cylinder(16, 16, radius, 50f);
+					//Mesh mesh = new Sphere(16, 16, radius);
+					//Quaternion rot = new Quaternion(new float[]{(float)(0.5f * Math.PI), 0f, 0f}); // to have vertical cylinder
+					Mesh mesh = Helpers4Mesh.newCone(16, 50, radius);
+					Quaternion rot = new Quaternion();
+
 					for (int i = 0; i < pls.length; i++){
-						Geometry pl = new Geometry("pl"+i, new Sphere(16, 16, 5f));
-						Material mat = mat0.clone();
-						pl.setMaterial(mat);
-						mat.setColor("Color", colors[i % colors.length]);
+						//Geometry pl = new Geometry("pl"+i, new Sphere(16, 16, radius));
+						Geometry pl = Helpers4Lights.asPointLight(new Geometry("pl"+i, mesh), colors[i % colors.length], assetManager);
+						pl.setLocalRotation(rot);
 						anchor.attachChild(pl);
+						lights.add.onNext(pl);
 						pls[i] = pl;
 					}
 				}
@@ -154,14 +166,28 @@ public class Sample01 extends SimpleApplication{
 
 			@Override
 			protected void controlUpdate(float tpf) {
+				// helix x spiral ?
 				float deltaItem = (float)(2f * Math.PI / pls.length);
-				float deltaTime = (float)Math.PI * (timer.getTimeInSeconds() % 6) / 3; // 3s for full loop
-				float radius = 3f;
+				float deltaTime = 0;//(float)Math.PI * (timer.getTimeInSeconds() % 6) / 3; // 3s for full loop
 				for (int i = 0; i < pls.length; i++){
 					Geometry pl = pls[i];
 					float angle = deltaItem * i + deltaTime;
-					pl.setLocalTranslation(FastMath.cos(angle) * radius, 0, FastMath.sin(angle) * radius);
+					float d = radius * (1f + ((float)i) / 3.0f);
+					pl.setLocalTranslation(FastMath.cos(angle) * d, 30 + i * 0.5f, FastMath.sin(angle) * d);
 				}
+//
+////				// grid ?
+////				int nbSize = (int) Math.ceil(Math.sqrt((double)pls.length));
+////				System.out.println("nbSize " + nbSize + " .. " + pls.length);
+////				for (int x = 0; x < nbSize; x++){
+////					for (int z = 0; z < nbSize; z++){
+////						int i = x + z * nbSize;
+////						if (i < pls.length) {
+////							Geometry pl = pls[i];
+////							pl.setLocalTranslation((x - nbSize/2) * 2f * radius, -15, (z - nbSize/2) * 2f * radius);
+////						}
+////					}
+////				}
 			}
 
 			@Override

@@ -3,6 +3,8 @@ package jme3_ext_deferred;
 import lombok.RequiredArgsConstructor;
 import rx.Observable;
 import rx.subjects.BehaviorSubject;
+import rx_ext.Iterable4AddRemove;
+import rx_ext.Observable4AddRemove;
 
 import com.jme3.asset.AssetManager;
 import com.jme3.post.SceneProcessor;
@@ -11,7 +13,6 @@ import com.jme3.renderer.ViewPort;
 import com.jme3.renderer.queue.RenderQueue;
 import com.jme3.renderer.queue.RenderQueue.Bucket;
 import com.jme3.scene.Geometry;
-import com.jme3.scene.Node;
 import com.jme3.scene.Spatial;
 import com.jme3.scene.shape.Quad;
 import com.jme3.texture.FrameBuffer;
@@ -44,7 +45,7 @@ public class SceneProcessor4Deferred implements SceneProcessor {
 	RenderManager rm;
 	ViewPort vp;
 	private Geometry finalQuad;
-	public final Node lightsRoot = new Node("lightsRoot");
+	public final Iterable4AddRemove<Geometry> lights = new Iterable4AddRemove<>(new Observable4AddRemove<Geometry>());
 
 	public void initialize(RenderManager rm, ViewPort vp) {
 		this.rm = rm;
@@ -61,7 +62,7 @@ public class SceneProcessor4Deferred implements SceneProcessor {
 		cleanup();
 		pass4gbuffer = new Pass4GBuffer(w, h, vp, rm);
 		pass4ao = new Pass4AO(w, h, vp, rm, assetManager, pass4gbuffer.gbuffer, finalQuad, false);
-		pass4lbuffer = new Pass4LBuffer(w, h, vp, rm, assetManager, lightsRoot, pass4gbuffer.gbuffer, matIdManager.tableTex, pass4ao.finalTex);
+		pass4lbuffer = new Pass4LBuffer(w, h, vp, rm, assetManager, lights, pass4gbuffer.gbuffer, matIdManager.tableTex, pass4ao.finalTex);
 		//pass4tex = new Pass4Tex(finalQuad, vp, rm, assetManager, pass4ao.finalTex);
 		pass4tex = new Pass4Tex(finalQuad, vp, rm, assetManager, pass4lbuffer.lbuffer.tex);
 		onChange0.onNext(this);
@@ -74,8 +75,6 @@ public class SceneProcessor4Deferred implements SceneProcessor {
 	public void preFrame(float tpf) {
 		finalQuad.updateLogicalState(tpf);
 		finalQuad.updateGeometricState();
-		lightsRoot.updateLogicalState(tpf);
-		lightsRoot.updateGeometricState();
 	}
 
 	public void postQueue(RenderQueue rq) {
