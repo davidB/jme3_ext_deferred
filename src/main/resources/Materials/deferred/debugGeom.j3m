@@ -1,0 +1,5 @@
+Material My Material : MatDefs/debug/debug_geom.j3md {
+     MaterialParameters {
+        Color : 1.0 0.8 0.0 1.0
+     }
+}

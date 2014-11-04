@@ -17,7 +17,7 @@ public class Pass4Tex {
 		this.finalQuad = finalQuad;
 		this.vp = vp;
 		this.rm = rm;
-		this.texMat = new Material(assetManager, "MatDefs/deferred/tex.j3md");
+		this.texMat = new Material(assetManager, "MatDefs/debug/tex.j3md");
 		texMat.setBoolean("FullView", true);
 		texMat.setTexture("Texture", texture);
 	}

@@ -31,7 +31,7 @@ public class DebugTextureViewer {
 	}
 
 	public Material getDebugMaterial(ViewKey key) {
-		Material m = new Material(sp4d.assetManager, "MatDefs/deferred/debug_gbuffer.j3md");
+		Material m = new Material(sp4d.assetManager, "MatDefs/debug/debug_gbuffer.j3md");
 		m.getAdditionalRenderState().setDepthTest(false);
 		m.getAdditionalRenderState().setDepthWrite(false);
 		m.setBoolean("FullView", false);

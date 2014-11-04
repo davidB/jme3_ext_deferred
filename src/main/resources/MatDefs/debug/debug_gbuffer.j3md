@@ -16,7 +16,7 @@ MaterialDef debug_gbuffer {
 
 	Technique fullgreen {
 		VertexShader GLSL150:   Shaders/deferred/quad.vert
-		FragmentShader GLSL150: Shaders/deferred/show_fullgreen.frag
+		FragmentShader GLSL150: Shaders/debug/show_fullgreen.frag
 		WorldParameters {
 			WorldViewProjectionMatrix
 		}
@@ -27,7 +27,7 @@ MaterialDef debug_gbuffer {
 
 	Technique objgreen {
 		VertexShader GLSL150:   Shaders/deferred/quad.vert
-		FragmentShader GLSL150: Shaders/deferred/show_objgreen.frag
+		FragmentShader GLSL150: Shaders/debug/show_objgreen.frag
 		WorldParameters {
 			WorldViewProjectionMatrix
 		}
@@ -38,7 +38,7 @@ MaterialDef debug_gbuffer {
 
 	Technique normals {
 		VertexShader GLSL150:   Shaders/deferred/quad.vert
-		FragmentShader GLSL150: Shaders/deferred/show_normals.frag
+		FragmentShader GLSL150: Shaders/debug/show_normals.frag
 		WorldParameters {
 			WorldViewProjectionMatrix
 			Resolution
@@ -50,7 +50,7 @@ MaterialDef debug_gbuffer {
 
 	Technique albedos {
 		VertexShader GLSL150:   Shaders/deferred/quad.vert
-		FragmentShader GLSL150: Shaders/deferred/show_albedos.frag
+		FragmentShader GLSL150: Shaders/debug/show_albedos.frag
 		WorldParameters {
 			WorldViewProjectionMatrix
 		}
@@ -61,7 +61,7 @@ MaterialDef debug_gbuffer {
 
 	Technique depths {
 		VertexShader GLSL150:   Shaders/deferred/quad.vert
-		FragmentShader GLSL150: Shaders/deferred/show_depths.frag
+		FragmentShader GLSL150: Shaders/debug/show_depths.frag
 		WorldParameters {
 			WorldViewProjectionMatrix
 			FrustumNearFar
@@ -73,7 +73,7 @@ MaterialDef debug_gbuffer {
 
 	Technique ao {
 		VertexShader GLSL150:   Shaders/deferred/quad.vert
-		FragmentShader GLSL150: Shaders/deferred/show_ao.frag
+		FragmentShader GLSL150: Shaders/debug/show_ao.frag
 		WorldParameters {
 			WorldViewProjectionMatrix
 			FrustumNearFar
@@ -85,7 +85,7 @@ MaterialDef debug_gbuffer {
 
 	Technique matIds {
 		VertexShader GLSL150:   Shaders/deferred/quad.vert
-		FragmentShader GLSL150: Shaders/deferred/show_matIds.frag
+		FragmentShader GLSL150: Shaders/debug/show_matIds.frag
 		WorldParameters {
 			WorldViewProjectionMatrix
 			FrustumNearFar
@@ -97,7 +97,7 @@ MaterialDef debug_gbuffer {
 
 	Technique mats {
 		VertexShader GLSL150:   Shaders/deferred/quad.vert
-		FragmentShader GLSL150: Shaders/deferred/show_mats.frag
+		FragmentShader GLSL150: Shaders/debug/show_mats.frag
 		WorldParameters {
 			WorldViewProjectionMatrix
 			FrustumNearFar

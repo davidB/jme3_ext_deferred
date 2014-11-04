@@ -7,7 +7,7 @@ MaterialDef tex {
 
 	Technique {
 		VertexShader GLSL150:   Shaders/deferred/quad.vert
-		FragmentShader GLSL150: Shaders/deferred/show_tex.frag
+		FragmentShader GLSL150: Shaders/debug/show_tex.frag
 
 
 		WorldParameters {

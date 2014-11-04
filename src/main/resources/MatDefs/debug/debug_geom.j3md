@@ -1,0 +1,34 @@
+MaterialDef debug_gbuffer {
+
+	MaterialParameters {
+		Color Color
+	}
+
+	Technique {
+		VertexShader GLSL150:   Shaders/deferred/quad.vert
+		FragmentShader GLSL150: Shaders/debug/color.frag
+		WorldParameters {
+			WorldViewProjectionMatrix
+		}
+		RenderState {
+			Wireframe On
+			DepthWrite Off
+			DepthTest Off
+			FaceCull Off
+		}
+	}
+
+	Technique redbackface {
+		VertexShader GLSL150:   Shaders/deferred/quad.vert
+		FragmentShader GLSL150: Shaders/debug/redbackface.frag
+		WorldParameters {
+			WorldViewProjectionMatrix
+		}
+		RenderState {
+			Wireframe Off
+			DepthWrite On
+			DepthTest On
+			FaceCull Off
+		}
+	}
+}
