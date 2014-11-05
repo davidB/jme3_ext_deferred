@@ -17,6 +17,7 @@ import com.jme3.math.Quaternion;
 import com.jme3.math.Vector3f;
 import com.jme3.renderer.RenderManager;
 import com.jme3.renderer.ViewPort;
+import com.jme3.renderer.lwjgl.LwjglDisplayCustom;
 import com.jme3.scene.Geometry;
 import com.jme3.scene.Mesh;
 import com.jme3.scene.Node;
@@ -33,7 +34,7 @@ public class Sample01 extends SimpleApplication{
 	public static void main(String[] args){
 		AppSettings settings = new AppSettings(false);
 		//settings.setStencilBits(8);
-		//settings.setCustomRenderer(LwjglDisplayCustom.class);
+		settings.setCustomRenderer(LwjglDisplayCustom.class);
 		Sample01 app = new Sample01();
 		app.setSettings(settings);
 		app.start();
@@ -127,14 +128,15 @@ public class Sample01 extends SimpleApplication{
 
 		//Directionnal Light
 		Geometry light0 = Helpers4Lights.newDirectionnalLight("ldir", new Vector3f(-0.5f, -0.5f, 0.5f), ColorRGBA.LightGray, assetManager);
-		//anchor.attachChild(light0);
-		//lights.add.onNext(light0);
+		anchor.attachChild(light0);
+		lights.add.onNext(light0);
 
 		anchor.addControl(new AbstractControl() {
 
-			private Geometry[] pls = new Geometry[10];
+			private Geometry[] pls = new Geometry[8];
 			private Node anchor = null;
 			float radius = 10f;
+			float rangeY = -50;
 
 			@Override
 			public void setSpatial(Spatial spatial) {
@@ -150,7 +152,7 @@ public class Sample01 extends SimpleApplication{
 					//Mesh mesh = new Cylinder(16, 16, radius, 50f);
 					//Mesh mesh = new Sphere(16, 16, radius);
 					//Quaternion rot = new Quaternion(new float[]{(float)(0.5f * Math.PI), 0f, 0f}); // to have vertical cylinder
-					Mesh mesh = Helpers4Mesh.newCone(16, 50, radius);
+					Mesh mesh = Helpers4Mesh.newCone(4, rangeY, radius);
 					Quaternion rot = new Quaternion();
 
 					for (int i = 0; i < pls.length; i++){
@@ -167,27 +169,26 @@ public class Sample01 extends SimpleApplication{
 			@Override
 			protected void controlUpdate(float tpf) {
 				// helix x spiral ?
-				float deltaItem = (float)(2f * Math.PI / pls.length);
-				float deltaTime = 0;//(float)Math.PI * (timer.getTimeInSeconds() % 6) / 3; // 3s for full loop
-				for (int i = 0; i < pls.length; i++){
-					Geometry pl = pls[i];
-					float angle = deltaItem * i + deltaTime;
-					float d = radius * (1f + ((float)i) / 3.0f);
-					pl.setLocalTranslation(FastMath.cos(angle) * d, 30 + i * 0.5f, FastMath.sin(angle) * d);
-				}
+//				float deltaItem = (float)(2f * Math.PI / pls.length);
+//				float deltaTime = 0;//(float)Math.PI * (timer.getTimeInSeconds() % 6) / 3; // 3s for full loop
+//				for (int i = 0; i < pls.length; i++){
+//					Geometry pl = pls[i];
+//					float angle = deltaItem * i + deltaTime;
+//					float d = radius*1.5f;
+//					pl.setLocalTranslation(FastMath.cos(angle) * d, -rangeY, FastMath.sin(angle) * d);
+//				}
 //
-////				// grid ?
-////				int nbSize = (int) Math.ceil(Math.sqrt((double)pls.length));
-////				System.out.println("nbSize " + nbSize + " .. " + pls.length);
-////				for (int x = 0; x < nbSize; x++){
-////					for (int z = 0; z < nbSize; z++){
-////						int i = x + z * nbSize;
-////						if (i < pls.length) {
-////							Geometry pl = pls[i];
-////							pl.setLocalTranslation((x - nbSize/2) * 2f * radius, -15, (z - nbSize/2) * 2f * radius);
-////						}
-////					}
-////				}
+				// grid ?
+				int nbSize = (int) Math.ceil(Math.sqrt((double)pls.length));
+				for (int x = 0; x < nbSize; x++){
+					for (int z = 0; z < nbSize; z++){
+						int i = x + z * nbSize;
+						if (i < pls.length) {
+							Geometry pl = pls[i];
+							pl.setLocalTranslation((x - nbSize/2) * 2f * radius, -rangeY * 0.5f, (z - nbSize/2) * 2f * radius);
+						}
+					}
+				}
 			}
 
 			@Override

@@ -65,33 +65,29 @@ class Pass4LBuffer {
 		this.debugGeomMat = assetManager.loadMaterial("Materials/deferred/debugGeom.j3m");
 
 		rsLBufMask.setStencil(true,
-				//_frontStencilStencilFailOperation, _frontStencilDepthFailOperation, _frontStencilDepthPassOperation,
-				StencilOperation.Keep, StencilOperation.DecrementWrap, StencilOperation.Keep,
-				//StencilOperation.Zero, StencilOperation.DecrementWrap, StencilOperation.Zero,
-				//_backStencilStencilFailOperation, _backStencilDepthFailOperation, _backStencilDepthPassOperation,
-				StencilOperation.Keep, StencilOperation.IncrementWrap, StencilOperation.Keep,
-				//StencilOperation.Zero, StencilOperation.IncrementWrap, StencilOperation.Zero,
-				//_frontStencilFunction, _backStencilFunction
-				TestFunction.Always, TestFunction.Always
-				);
+			//_frontStencilStencilFailOperation, _frontStencilDepthFailOperation, _frontStencilDepthPassOperation,
+			StencilOperation.Keep, StencilOperation.DecrementWrap, StencilOperation.Keep,
+			//_backStencilStencilFailOperation, _backStencilDepthFailOperation, _backStencilDepthPassOperation,
+			StencilOperation.Keep, StencilOperation.IncrementWrap, StencilOperation.Keep,
+			//_frontStencilFunction, _backStencilFunction
+			TestFunction.Always, TestFunction.Always
+		);
 		rsLBufMask.setDepthTest(true);
 		rsLBufMask.setDepthWrite(false);
 		rsLBufMask.setFaceCullMode(FaceCullMode.Off);
 		rsLBufMask.setBlendMode(BlendMode.Color);
 
 		rsLBuf.setStencil(true,
-				//_frontStencilStencilFailOperation, _frontStencilDepthFailOperation, _frontStencilDepthPassOperation,
-				StencilOperation.Keep, StencilOperation.Keep, StencilOperation.Keep,
-				//StencilOperation.Zero, StencilOperation.Zero, StencilOperation.Zero,
-				//_backStencilStencilFailOperation, _backStencilDepthFailOperation, _backStencilDepthPassOperation,
-				StencilOperation.Keep, StencilOperation.Keep, StencilOperation.Keep,
-				//StencilOperation.Zero, StencilOperation.Zero, StencilOperation.Zero,
-				//_frontStencilFunction, _backStencilFunction
-				TestFunction.NotEqual, TestFunction.NotEqual
-				);
+			//_frontStencilStencilFailOperation, _frontStencilDepthFailOperation, _frontStencilDepthPassOperation,
+			StencilOperation.Keep, StencilOperation.Keep, StencilOperation.Keep,
+			//_backStencilStencilFailOperation, _backStencilDepthFailOperation, _backStencilDepthPassOperation,
+			StencilOperation.Keep, StencilOperation.Keep, StencilOperation.Keep,
+			//_frontStencilFunction, _backStencilFunction
+			TestFunction.NotEqual, TestFunction.NotEqual
+		);
 		rsLBuf.setDepthTest(false);
 		rsLBuf.setDepthWrite(false);
-		rsLBuf.setFaceCullMode(FaceCullMode.Back);
+		rsLBuf.setFaceCullMode(FaceCullMode.Front);
 		rsLBuf.setBlendMode(BlendMode.Additive);
 
 		rs0.setDepthTest(false);
@@ -141,7 +137,7 @@ class Pass4LBuffer {
 				rm.setWorldMatrix(g.getWorldMatrix());
 
 				mat.selectTechnique("LBufMask", rm);
-				//r.clearBuffers(false, false, true);
+				r.clearBuffers(false, false, true);
 				rm.setForcedRenderState(rsLBufMask);
 				mat.render(g, rm);
 

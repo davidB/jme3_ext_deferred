@@ -49,7 +49,7 @@ public class Helpers4Mesh {
 		int bottomOffset = 1;
 		float stepSize = FastMath.TWO_PI / samples;
 		for (int i = 0; i < samples; i++) {
-			positions[bottomOffset + i] = new Vector3f(FastMath.cos(stepSize * i) * bottomRadius, -rangeY, FastMath.sin(stepSize * i) * bottomRadius);
+			positions[bottomOffset + i] = new Vector3f(FastMath.cos(stepSize * i) * bottomRadius, rangeY, FastMath.sin(stepSize * i) * bottomRadius);
 		}
 		// side faces
 		tessellation0(index, false, true, 0, bottomOffset + samples - 1);
