@@ -71,6 +71,17 @@ MaterialDef debug_gbuffer {
 		}
 	}
 
+	Technique stencil {
+		VertexShader GLSL150:   Shaders/deferred/quad.vert
+		FragmentShader GLSL150: Shaders/debug/show_stencil.frag
+		WorldParameters {
+			WorldViewProjectionMatrix
+		}
+		Defines {
+			FULLVIEW : FullView
+		}
+	}
+
 	Technique ao {
 		VertexShader GLSL150:   Shaders/deferred/quad.vert
 		FragmentShader GLSL150: Shaders/debug/show_ao.frag

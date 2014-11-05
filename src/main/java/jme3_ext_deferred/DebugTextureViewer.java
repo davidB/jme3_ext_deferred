@@ -17,7 +17,7 @@ public class DebugTextureViewer {
 		,matIds
 		,mats
 		,ao
-		//,matTable
+		//,stencil // doesn't work may require investigation / extension like https://www.opengl.org/registry/specs/ARB/stencil_texturing.txt
 		;
 	}
 
