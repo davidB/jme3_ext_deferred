@@ -85,6 +85,8 @@ public class Sample01 extends SimpleApplication{
 		for(Spatial child :pattern.getChildren()) {
 			Material mat = matDef.clone();
 			mat.setInt("MatId", matIdManager.findMatId(colors[colorIdx++ % colors.length], ColorRGBA.White));
+			mat.setColor("Albedo", colors[colorIdx++ % colors.length]);
+			mat.setColor("Specular", ColorRGBA.White);
 			child.setMaterial(mat);
 			BoundingBox bb = (BoundingBox)child.getWorldBound();
 			child.setLocalTranslation(deltaX, 0, 0);
@@ -114,7 +116,7 @@ public class Sample01 extends SimpleApplication{
 		assetManager.registerLoader(OBJLoader.class, "obj");
 		assetManager.registerLocator(System.getProperty("user.home"), FileLocator.class);
 		Spatial sponza = assetManager.loadModel("Téléchargements/t/crytek/sponza.obj");
-		sponza.scale(0.3f);
+		sponza.scale(0.1f);
 //		Spatial sponza = assetManager.loadModel("Models/Sponza/Sponza.j3o");
 		sponza.setLocalTranslation(new Vector3f(-8.f, -0.25f, 0.f).multLocal(sponza.getWorldBound().getCenter()));
 		sponza.breadthFirstTraversal(mc);
@@ -131,8 +133,8 @@ public class Sample01 extends SimpleApplication{
 		//		anchor.addLight(dl);
 
 		//Directionnal Light
-		//Geometry light0 = Helpers4Lights.newDirectionnalLight("ldir", new Vector3f(-0.5f, -0.5f, 0.5f), ColorRGBA.LightGray, assetManager);
-		Geometry light0 = Helpers4Lights.newAmbiantLight("lambiant", new ColorRGBA(0.2f,0.2f,0.2f,1.0f), assetManager);
+		Geometry light0 = Helpers4Lights.newDirectionnalLight("ldir", new Vector3f(-0.5f, -0.5f, -0.5f), new ColorRGBA(0.2f,0.2f,0.2f,1.0f), assetManager);
+		//Geometry light0 = Helpers4Lights.newAmbiantLight("lambiant", new ColorRGBA(0.2f,0.2f,0.2f,1.0f), assetManager);
 		anchor.attachChild(light0);
 		lights.add.onNext(light0);
 

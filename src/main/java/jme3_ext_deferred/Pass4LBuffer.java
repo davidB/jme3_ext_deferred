@@ -115,6 +115,8 @@ class Pass4LBuffer {
 		mat.setTexture("MatBuffer", m_MatBuffer);
 		mat.setTexture("DepthBuffer", gbuffer.depth);
 		mat.setTexture("NormalBuffer", gbuffer.normal);
+		mat.setTexture("AlbedoBuffer", gbuffer.albedo);
+		mat.setTexture("SpecularBuffer", gbuffer.specular);
 		mat.setTexture("AOBuffer", m_AmbientBuffer);
 		mat.setVector3("ClipInfo", m_ClipInfo);
 		mat.setVector4("ProjInfo", m_ProjInfo);

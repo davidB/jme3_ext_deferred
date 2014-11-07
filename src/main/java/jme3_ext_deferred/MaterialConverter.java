@@ -24,18 +24,21 @@ public class MaterialConverter extends SceneGraphVisitorAdapter {
 	public void visit(Geometry g) {
 		Material m0 = g.getMaterial();
 		if ("Common/MatDefs/Light/Lighting.j3md".equals(m0.getMaterialDef().getAssetName())) {
-    		Material m = new Material(assetManager, "MatDefs/deferred/gbuffer.j3md");
-            //material.setBoolean("UseMaterialColors", true);
-            //material.setColor("Ambient",  ambient.clone());
-    		m.setInt("MatId", matIdManager.findMatId(read(m, "Diffuse"), read(m, "Specular")));
-            //material.setFloat("Shininess", shininess); // prevents "premature culling" bug
-    		m.setFloat("AlphaDiscardThreshold", 0.5f);
+			Material m = new Material(assetManager, "MatDefs/deferred/gbuffer.j3md");
+			//material.setBoolean("UseMaterialColors", true);
+			//material.setColor("Ambient",  ambient.clone());
+			//m.setInt("MatId", matIdManager.findMatId(read(m0, "Diffuse"), read(m0, "Specular")));
+			m.setInt("MatId", matIdManager.defId);
+			m.setColor("Albedo", read(m0, "Diffuse"));
+			m.setTexture("AlbedoMap", read(m0, "DiffuseMap"));
+			m.setColor("Specular", read(m0, "Specular"));
+			m.setTexture("SpecularMap", read(m0, "SpecularMap"));
+			//material.setFloat("Shininess", shininess); // prevents "premature culling" bug
+			m.setFloat("AlphaDiscardThreshold", 0.5f);
 
-            //if (diffuseMap != null)  material.setTexture("DiffuseMap", diffuseMap);
-            //if (specularMap != null) material.setTexture("SpecularMap", specularMap);
-            m.setTexture("NormalMap", read(m, "NormalMap"));
-            m.setTexture("AlphaMap", read(m, "AlphaMap"));
-            g.setMaterial(m);
+			m.setTexture("NormalMap", read(m0, "NormalMap"));
+			m.setTexture("AlphaMap", read(m0, "AlphaMap"));
+			g.setMaterial(m);
 		} else if (defaultMaterial != null){
 			g.setMaterial(defaultMaterial);
 		}

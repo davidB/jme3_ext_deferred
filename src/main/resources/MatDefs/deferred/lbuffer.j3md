@@ -9,6 +9,8 @@ MaterialDef lbuffer {
 		Texture2D DepthBuffer
 		Texture2D AOBuffer
 		Texture2D MatBuffer
+		Texture2D AlbedoBuffer
+		Texture2D SpecularBuffer
 		Vector3 ClipInfo
 		Vector4 ProjInfo
 

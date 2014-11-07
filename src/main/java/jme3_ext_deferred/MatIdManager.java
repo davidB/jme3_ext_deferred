@@ -20,7 +20,7 @@ public class MatIdManager {
 	private ByteBuffer tableData;
 	private int nextId = 0;
 	private int entriesSize;
-	private int defId;
+	public final int defId;
 
 	private MatIdManager(int entriesNb, int entriesSize) {
 		this.entriesSize = entriesSize;

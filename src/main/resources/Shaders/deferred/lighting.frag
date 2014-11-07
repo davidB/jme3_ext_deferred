@@ -1,4 +1,5 @@
 #import "ShaderLib/DeferredUtils.glsllib"
+#import "ShaderLib/PhysicallyBasedLighting.glsllib"
 
 uniform vec4 m_Color;
 uniform vec3 m_LightPos;
@@ -7,6 +8,7 @@ uniform vec3 m_LightDir;
 uniform sampler2D m_DepthBuffer;
 uniform sampler2D m_NormalBuffer;
 uniform sampler2D m_MatBuffer;
+uniform sampler2D m_AlbedoBuffer;
 uniform vec4 m_ProjInfo;
 uniform vec3 m_ClipInfo;
 //ViewProjectionMatrixInverse
@@ -17,7 +19,7 @@ uniform vec3 g_CameraPosition;
 
 out vec4 out_FragColor;
 
-const float PI = 3.14159265358979323846264;
+//const float PI = 3.14159265358979323846264;
 
 vec3 getWSPosition(vec2 posSS) {
 	float depth = readRawDepth(m_DepthBuffer, posSS / g_Resolution);
@@ -48,17 +50,26 @@ void main(){
 	vec3 posWS = getWSPosition(posSS);
 	vec3 norWS = readNormal(m_NormalBuffer, texCoord);
 	int matId = int(texelFetch(m_NormalBuffer, ivec2(posSS), 0).a * 256.0);
-	vec4 diffuse = texelFetch(m_MatBuffer, ivec2(0, matId), 0);
-	vec4 specular = texelFetch(m_MatBuffer, ivec2(1, matId), 0);
+	//vec4 diffuse = texelFetch(m_MatBuffer, ivec2(0, matId), 0);
+	vec4 diffuse = texture2D(m_AlbedoBuffer, texCoord);
+	//vec4 specular = texelFetch(m_MatBuffer, ivec2(1, matId), 0);
 	float shininess = 0.5;
 	//vec3 diffuse = readDiffuse(m_DiffuseBuffer, texCoord);
 #ifdef WSLIGHTDIR
-	vec3 lightDirWS = normalize(m_LightDir);
+	vec3 lightDirWS = normalize(-m_LightDir);
 #else
-	vec3 lightDirWS = normalize(posWS - m_LightPos);
+	vec3 lightDirWS = normalize(m_LightPos - posWS);
 #endif
 
-	float intensity = lambert(norWS, -lightDirWS);
+	vec3 viewDir = normalize(g_CameraPosition - posWS);
+	vec3 lightColor = m_Color.rgb;
+	float spec = 0.03;
+	float gloss = 512;
+	vec3 outDiffuse = vec3(0);
+	vec3 outSpecular = vec3(0);
+	PBR_ComputeDirectLight(norWS, lightDirWS, viewDir, lightColor, spec, gloss, QUALITY_HIGH, outDiffuse, outSpecular);
+/*
+	float intensity = lambert(norWS, lightDirWS);
 	vec4 spec = vec4(0.0);
     if (intensity > 0.0) {
         vec3 h = normalize(lightDirWS + g_CameraPosition);
@@ -66,13 +77,14 @@ void main(){
         spec = specular * pow(intSpec, shininess);
     }
 	vec4 intensityColor = m_Color * intensity;
+*/
 
-	out_FragColor = max(intensityColor * diffuse + spec, 0.0);
+	out_FragColor.rgb = max(outDiffuse * diffuse.rgb + spec, 0.0);
 	// to debug
 	//out_FragColor = max(intensity * diffuse + spec, 0.0);
 	//out_FragColor.rgb = posWS;
 	//out_FragColor.rgb = m_Color.rgb;
 	//out_FragColor = diffuse;
 	//out_FragColor.rgb = vec3(float(matId) * 10.0 /256.0);
-	//out_FragColor.a = 1.0;
+	out_FragColor.a = 1.0;
 }
