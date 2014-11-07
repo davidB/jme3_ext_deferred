@@ -4,15 +4,16 @@ import jme3_ext_deferred.DebugTextureViewer;
 import jme3_ext_deferred.Helpers4Lights;
 import jme3_ext_deferred.Helpers4Mesh;
 import jme3_ext_deferred.MatIdManager;
+import jme3_ext_deferred.MaterialConverter;
 import jme3_ext_deferred.SceneProcessor4Deferred;
 import rx_ext.Observable4AddRemove;
 
 import com.jme3.app.SimpleApplication;
+import com.jme3.asset.plugins.FileLocator;
 import com.jme3.bounding.BoundingBox;
 import com.jme3.input.ChaseCamera;
 import com.jme3.material.Material;
 import com.jme3.math.ColorRGBA;
-import com.jme3.math.FastMath;
 import com.jme3.math.Quaternion;
 import com.jme3.math.Vector3f;
 import com.jme3.renderer.RenderManager;
@@ -23,8 +24,8 @@ import com.jme3.scene.Mesh;
 import com.jme3.scene.Node;
 import com.jme3.scene.Spatial;
 import com.jme3.scene.control.AbstractControl;
+import com.jme3.scene.plugins.OBJLoader;
 import com.jme3.scene.shape.Box;
-import com.jme3.scene.shape.Cylinder;
 import com.jme3.scene.shape.Sphere;
 import com.jme3.system.AppSettings;
 
@@ -108,12 +109,15 @@ public class Sample01 extends SimpleApplication{
 			}
 		}
 
-		//assetManager.registerLoader(OBJLoader.class, "obj");
-		//assetManager.registerLocator(System.getProperty("user.home"), FileLocator.class);
-		//Spatial sponza = assetManager.loadModel("Téléchargements/t/crytek/sponza.obj");
-		Spatial sponza = assetManager.loadModel("Models/Sponza/Sponza.j3o");
+		MaterialConverter mc = new MaterialConverter(assetManager, matIdManager);
+//		mc.defaultMaterial = matDef;
+		assetManager.registerLoader(OBJLoader.class, "obj");
+		assetManager.registerLocator(System.getProperty("user.home"), FileLocator.class);
+		Spatial sponza = assetManager.loadModel("Téléchargements/t/crytek/sponza.obj");
+		sponza.scale(0.3f);
+//		Spatial sponza = assetManager.loadModel("Models/Sponza/Sponza.j3o");
 		sponza.setLocalTranslation(new Vector3f(-8.f, -0.25f, 0.f).multLocal(sponza.getWorldBound().getCenter()));
-		sponza.setMaterial(matDef);
+		sponza.breadthFirstTraversal(mc);
 		group.attachChild(sponza);
 		anchor0.attachChild(group);
 		return group;

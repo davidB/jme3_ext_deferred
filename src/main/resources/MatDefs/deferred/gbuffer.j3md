@@ -2,6 +2,9 @@ MaterialDef gbuffer {
 
 	MaterialParameters {
 		Int MatId
+		Float AlphaDiscardThreshold
+		Texture2D AlphaMap
+		Texture2D NormalMap
 	}
 	Technique {
 	}
@@ -16,6 +19,7 @@ MaterialDef gbuffer {
 		}
 
 		Defines {
+			ALPHAMAP: AlphaMap
 		}
 	}
 

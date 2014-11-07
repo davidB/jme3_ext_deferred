@@ -20,6 +20,7 @@ public class MatIdManager {
 	private ByteBuffer tableData;
 	private int nextId = 0;
 	private int entriesSize;
+	private int defId;
 
 	private MatIdManager(int entriesNb, int entriesSize) {
 		this.entriesSize = entriesSize;
@@ -30,6 +31,7 @@ public class MatIdManager {
 		tableTex.setWrap(WrapMode.Clamp);
 		tableTex.setMinFilter(MinFilter.NearestNoMipMaps);
 		tableTex.setMagFilter(MagFilter.Nearest);
+		defId = findMatId(ColorRGBA.BlackNoAlpha, ColorRGBA.BlackNoAlpha);
 	}
 
 	public MatIdManager() {
@@ -37,6 +39,7 @@ public class MatIdManager {
 	}
 
 	public int findMatId(ColorRGBA diffuse, ColorRGBA specular) {
+		if (diffuse == null || specular == null) return defId;
 		//TODO search for already existing MatId
 		int id = nextId;
 		nextId++;
