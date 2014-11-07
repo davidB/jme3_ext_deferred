@@ -131,7 +131,8 @@ public class Sample01 extends SimpleApplication{
 		//		anchor.addLight(dl);
 
 		//Directionnal Light
-		Geometry light0 = Helpers4Lights.newDirectionnalLight("ldir", new Vector3f(-0.5f, -0.5f, 0.5f), ColorRGBA.LightGray, assetManager);
+		//Geometry light0 = Helpers4Lights.newDirectionnalLight("ldir", new Vector3f(-0.5f, -0.5f, 0.5f), ColorRGBA.LightGray, assetManager);
+		Geometry light0 = Helpers4Lights.newAmbiantLight("lambiant", new ColorRGBA(0.2f,0.2f,0.2f,1.0f), assetManager);
 		anchor.attachChild(light0);
 		lights.add.onNext(light0);
 

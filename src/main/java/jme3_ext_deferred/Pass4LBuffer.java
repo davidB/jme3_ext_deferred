@@ -26,11 +26,12 @@ import com.jme3.texture.Image.Format;
 import com.jme3.texture.Texture;
 import com.jme3.texture.Texture2D;
 
+// @see http://ogldev.atspace.co.uk/www/tutorial37/tutorial37.html
 class Pass4LBuffer {
 	public final TBuffer lbuffer;
 
 	/** for debug : display light geometry in wireframe */
-	public boolean showLightGeom = true;
+	public boolean showLightGeom = false;
 	final Material debugGeomMat;
 
 
@@ -47,6 +48,7 @@ class Pass4LBuffer {
 	final RenderState rsLBufMask = new RenderState();
 	final RenderState rsLBuf = new RenderState();
 	final RenderState rs0 = new RenderState();
+	final RenderState rsAmbiant = new RenderState();
 	final Geometry finalQuad;
 
 	public Pass4LBuffer(int width, int height, ViewPort vp, RenderManager rm, AssetManager assetManager, Iterable4AddRemove<Geometry> lights, GBuffer gbuffer, Texture2D matBuffer, Texture ambientBuffer) {
@@ -95,6 +97,11 @@ class Pass4LBuffer {
 		rs0.setFaceCullMode(FaceCullMode.Back);
 		rs0.setBlendMode(BlendMode.Additive);
 
+		rsAmbiant.setDepthTest(false);
+		rsAmbiant.setDepthWrite(false);
+		rsAmbiant.setFaceCullMode(FaceCullMode.Back);
+		rsAmbiant.setBlendMode(BlendMode.Additive);
+
 		finalQuad = new Geometry("finalQuad", new Quad(1, 1));
 		finalQuad.setCullHint(Spatial.CullHint.Never);
 
@@ -108,6 +115,7 @@ class Pass4LBuffer {
 		mat.setTexture("MatBuffer", m_MatBuffer);
 		mat.setTexture("DepthBuffer", gbuffer.depth);
 		mat.setTexture("NormalBuffer", gbuffer.normal);
+		mat.setTexture("AOBuffer", m_AmbientBuffer);
 		mat.setVector3("ClipInfo", m_ClipInfo);
 		mat.setVector4("ProjInfo", m_ProjInfo);
 	}
@@ -116,9 +124,13 @@ class Pass4LBuffer {
 	public void render() {
 		renderedLightGeometries.clear();
 		vp.getCamera().setPlaneState(0);
-		for(Geometry lightGeom : lights.data) {
-			if(lightGeom.checkCulling(vp.getCamera())){
-				renderedLightGeometries.add(lightGeom);
+		Geometry ambiant = null;
+		for(Geometry g : lights.data) {
+			Boolean v = g.getUserData(Helpers4Lights.UD_Ambiant);
+			if (v != null && v) {
+				ambiant = g;
+			}else if(g.checkCulling(vp.getCamera())){
+				renderedLightGeometries.add(g);
 			}
 		}
 
@@ -153,6 +165,14 @@ class Pass4LBuffer {
 				rm.setWorldMatrix(finalQuad.getWorldMatrix());
 				mat.render(finalQuad, rm);
 			}
+		}
+		if (ambiant != null) {
+			Material mat = ambiant.getMaterial();
+			mat.selectTechnique("LBuf", rm);
+			mat.setBoolean("FullView", true);
+			rm.setForcedRenderState(rsAmbiant);
+			rm.setWorldMatrix(finalQuad.getWorldMatrix());
+			mat.render(finalQuad, rm);
 		}
 		if (showLightGeom) {
 			rm.setForcedMaterial(null);

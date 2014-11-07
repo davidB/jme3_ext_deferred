@@ -10,6 +10,7 @@ import com.jme3.scene.shape.Sphere;
 
 public class Helpers4Lights {
 	public static String UD_Global = "LightGlobal";
+	public static String UD_Ambiant = "LightAmbiant";
 
 	/**
 	 *
@@ -74,4 +75,19 @@ public class Helpers4Lights {
 		return asDirectionnalLight(geo, direction, color, assetManager);
 	}
 
+	/**
+	 * @param color
+	 * @param assetManager
+	 * @return
+	 */
+	public static Geometry newAmbiantLight(String name, ColorRGBA color, AssetManager assetManager) {
+		Material mat = assetManager.loadMaterial("Materials/deferred/lightingAmbiant.j3m");
+		mat.setColor("Color", color);
+		Geometry geo = new Geometry(name, new Quad(0.5f, 0.5f));
+		geo.setUserData(UD_Ambiant, true);
+		geo.setMaterial(mat);
+		geo.updateGeometricState();
+		geo.updateModelBound();
+		return geo;
+	}
 }
