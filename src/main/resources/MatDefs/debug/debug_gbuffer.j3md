@@ -6,9 +6,20 @@ MaterialDef debug_gbuffer {
 		Texture2D NormalBuffer
 		Texture2D DepthBuffer
 		Texture2D AOBuffer
+		Texture2D AlbedoBuffer
+		Texture2D SpecularBuffer
 		Vector3 FrustumCorner
-		Matrix4 ViewProjectionMatrixInverse
 		Int NbMatId
+		Vector3 ClipInfo
+		Vector4 ProjInfo
+
+		// WorldParameters can't be used because the WorldParameters used when gbuffer are, make can be different
+		// (eg gbuffer in 3D viewport, debug into 2D Gui viewport)
+		Matrix4 ViewMatrixInverse
+		Matrix4 ViewProjectionMatrixInverse
+		Matrix4 ViewProjectionMatrix
+		Vector2 Resolution
+		Vector2 FrustumNearFar
 	}
 
 	Technique {
@@ -41,7 +52,6 @@ MaterialDef debug_gbuffer {
 		FragmentShader GLSL150: Shaders/debug/show_normals.frag
 		WorldParameters {
 			WorldViewProjectionMatrix
-			Resolution
 		}
 		Defines {
 			FULLVIEW : FullView
@@ -64,7 +74,6 @@ MaterialDef debug_gbuffer {
 		FragmentShader GLSL150: Shaders/debug/show_depths.frag
 		WorldParameters {
 			WorldViewProjectionMatrix
-			FrustumNearFar
 		}
 		Defines {
 			FULLVIEW : FullView
@@ -87,7 +96,6 @@ MaterialDef debug_gbuffer {
 		FragmentShader GLSL150: Shaders/debug/show_ao.frag
 		WorldParameters {
 			WorldViewProjectionMatrix
-			FrustumNearFar
 		}
 		Defines {
 			FULLVIEW : FullView
@@ -99,7 +107,6 @@ MaterialDef debug_gbuffer {
 		FragmentShader GLSL150: Shaders/debug/show_matIds.frag
 		WorldParameters {
 			WorldViewProjectionMatrix
-			FrustumNearFar
 		}
 		Defines {
 			FULLVIEW : FullView
@@ -111,7 +118,26 @@ MaterialDef debug_gbuffer {
 		FragmentShader GLSL150: Shaders/debug/show_mats.frag
 		WorldParameters {
 			WorldViewProjectionMatrix
-			FrustumNearFar
+		}
+		Defines {
+			FULLVIEW : FullView
+		}
+	}
+	Technique speculars {
+		VertexShader GLSL150:   Shaders/deferred/quad.vert
+		FragmentShader GLSL150: Shaders/debug/show_speculars.frag
+		WorldParameters {
+			WorldViewProjectionMatrix
+		}
+		Defines {
+			FULLVIEW : FullView
+		}
+	}
+	Technique positions {
+		VertexShader GLSL150:   Shaders/deferred/quad.vert
+		FragmentShader GLSL150: Shaders/debug/show_positions.frag
+		WorldParameters {
+			WorldViewProjectionMatrix
 		}
 		Defines {
 			FULLVIEW : FullView

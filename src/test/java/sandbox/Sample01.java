@@ -1,6 +1,6 @@
 package sandbox;
 
-import jme3_ext_deferred.DebugTextureViewer;
+import jme3_ext_deferred.AppState4ViewDeferredTexture;
 import jme3_ext_deferred.Helpers4Lights;
 import jme3_ext_deferred.Helpers4Mesh;
 import jme3_ext_deferred.MatIdManager;
@@ -218,9 +218,9 @@ public class Sample01 extends SimpleApplication{
 	SceneProcessor4Deferred useDeferred() {
 		SceneProcessor4Deferred sp4gbuf = new SceneProcessor4Deferred(assetManager, matIdManager);
 		viewPort.addProcessor(sp4gbuf);
-		DebugTextureViewer dbg = new DebugTextureViewer(sp4gbuf);
-		dbg.makeView(guiNode, DebugTextureViewer.ViewKey.values());
+		stateManager.attach(new AppState4ViewDeferredTexture(sp4gbuf, AppState4ViewDeferredTexture.ViewKey.values()));
 		return sp4gbuf;
 	}
+
 }
 
