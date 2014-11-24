@@ -49,7 +49,7 @@ public class Pass4AO {
 		this.aobuffer.tex.setMagFilter(MagFilter.Bilinear);
 		this.aoBlurHbuffer = new TBuffer(width, height, Format.RGB8);
 		this.aoBlurVbuffer = new TBuffer(width, height, Format.RGB8);
-		this.finalTex = aoBlurHbuffer.tex;
+		this.finalTex = aoBlurVbuffer.tex;
 		this.aoMat = new Material(assetManager, "MatDefs/deferred/sao.j3md");
 		this.aoBlurMat = new Material(assetManager, "MatDefs/deferred/saoblur.j3md");
 		initMaterials(useNormalBuffer);
