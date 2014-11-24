@@ -14,6 +14,7 @@ uniform vec3 m_ClipInfo;
 //ViewProjectionMatrixInverse
 uniform vec2 g_FrustumNearFar;
 uniform mat4 g_ViewMatrixInverse;
+uniform mat4 g_ViewProjectionMatrixInverse;
 uniform vec2 g_Resolution;
 uniform vec3 g_CameraPosition;
 
@@ -23,13 +24,17 @@ out vec4 out_FragColor;
 
 vec3 getWSPosition(vec2 posSS) {
 	float depth = readRawDepth(m_DepthBuffer, posSS / g_Resolution);
-	return reconstructWSPositionFromDepth(posSS + vec2(0.5), depth, m_ProjInfo, m_ClipInfo, g_ViewMatrixInverse);
+	//return reconstructWSPositionFromDepth(posSS + vec2(0.5), depth, m_ProjInfo, m_ClipInfo, g_ViewMatrixInverse);
 	//return vec3(0.0);
+	vec4 pos = vec4(posSS / g_Resolution, depth, 1.0) * 2.0 - 1.0;
+	pos = g_ViewProjectionMatrixInverse * pos;
+	return pos.xyz / pos.w;
+
 }
 
 
-float attenuation(vec3 dir){
-  float dist = length(dir);
+float attenuation(float dist, float distmax){
+  //float dist = length(dir);
   float radiance = 1.0/(1.0+pow(dist/10.0, 2.0));
   return clamp(radiance*10.0, 0.0, 1.0);
 }

@@ -29,6 +29,7 @@ MaterialDef lbuffer {
 			Resolution
 			ViewMatrixInverse
 			CameraPosition
+			ViewProjectionMatrixInverse
 		}
 		Defines {
 			FULLVIEW : FullView

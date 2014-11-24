@@ -14,10 +14,10 @@ out vec4 out_FragColor;
 vec3 getWSPosition(vec2 posSS) {
 	float depth = readRawDepth(m_DepthBuffer, texCoord);
 	//return reconstructWSPositionFromDepth(posSS + vec2(0.5), depth, m_ProjInfo, m_ClipInfo, m_ViewMatrixInverse);
-	return reconstructCSPositionFromDepth(posSS + vec2(0.5), depth, m_ProjInfo, m_ClipInfo);
-	//vec4 pos = vec4(texCoord, depth, 1.0) * 2.0 - 1.0;
-	//pos = m_ViewProjectionMatrixInverse * pos;
-	//return pos.xyz / pos.w;
+	//return reconstructCSPositionFromDepth(posSS + vec2(0.5), depth, m_ProjInfo, m_ClipInfo);
+	vec4 pos = vec4(texCoord, depth, 1.0) * 2.0 - 1.0;
+	pos = m_ViewProjectionMatrixInverse * pos;
+	return pos.xyz / pos.w;
 }
 void main(){
 	//vec2 posSS = gl_FragCoord.xy;
