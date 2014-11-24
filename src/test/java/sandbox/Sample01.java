@@ -34,7 +34,6 @@ public class Sample01 extends SimpleApplication{
 
 	public static void main(String[] args){
 		AppSettings settings = new AppSettings(false);
-		//settings.setStencilBits(8);
 		settings.setCustomRenderer(LwjglDisplayCustom.class);
 		Sample01 app = new Sample01();
 		app.setSettings(settings);
@@ -58,66 +57,54 @@ public class Sample01 extends SimpleApplication{
 	@Override
 	public void simpleInitApp() {
 		SceneProcessor4Deferred sp4gbuf = useDeferred();
-		//		viewPort.addProcessor(new SceneProcessor4Quad(assetManager));
-		Spatial target = makeScene(rootNode, 2, 2, 2);
+		Spatial target = makeScene(rootNode, 5, 7, 4);
 		makeLigths(sp4gbuf.lights.ar, rootNode);
 		setupCamera(target);
-
-		//		Geometry finalQuad = new Geometry("finalQuad", new Quad(1, 1));
-		//		finalQuad.setLocalTranslation(0, 0, 0);
-		//		//finalQuad.setIgnoreTransform(true);
-		//		final Material mat = new Material(assetManager, "sandbox/MatGBufDef.j3md");
-		//		finalQuad.setMaterial(mat);
-		//		rootNode.attachChild(finalQuad);
-		//stateManager.attach(new vdrones.AppStatePostProcessing());
 	}
 
 	Spatial makeScene(Node anchor0, int nbX, int nbY, int nbZ) {
 		Material matDef = new Material(assetManager, "MatDefs/deferred/gbuffer.j3md");
 		matDef.setInt("MatId", matIdManager.findMatId(ColorRGBA.Gray, ColorRGBA.White));
 
-		Node pattern = new Node();
-		pattern.attachChild((Geometry) assetManager.loadModel("Models/Teapot/Teapot.obj"));
-		pattern.attachChild(new Geometry("box", new Box(0.5f, 0.5f, 0.5f)));
-		pattern.attachChild(new Geometry("sphere", new Sphere(16, 16, 0.5f)));
-		float deltaX = 0;
-		int colorIdx = colors.length / 2;
-		for(Spatial child :pattern.getChildren()) {
-			Material mat = matDef.clone();
-			mat.setInt("MatId", matIdManager.findMatId(colors[colorIdx++ % colors.length], ColorRGBA.White));
-			mat.setColor("Albedo", colors[colorIdx++ % colors.length]);
-			mat.setColor("Specular", ColorRGBA.White);
-			child.setMaterial(mat);
+		Geometry[] geotmpl = new Geometry[]{
+			(Geometry) assetManager.loadModel("Models/teapot.j3o")
+			,new Geometry("box", new Box(0.5f, 0.5f, 0.5f))
+			,new Geometry("sphere", new Sphere(16, 16, 0.5f))
+		};
+		Vector3f margin = new Vector3f(0.1f, 0.1f, 0.1f);
+		Vector3f cellSizeMax = new Vector3f();
+		for(Spatial child :geotmpl) {
 			BoundingBox bb = (BoundingBox)child.getWorldBound();
-			child.setLocalTranslation(deltaX, 0, 0);
-			deltaX += 2 * bb.getXExtent();
+			cellSizeMax.maxLocal(bb.getExtent(null).multLocal(2.0f));
 		}
-
+		cellSizeMax.addLocal(margin);
 		Node group = new Node("group");
-		BoundingBox bb = (BoundingBox)pattern.getWorldBound();
-		Vector3f size = new Vector3f(bb.getXExtent() + 0.2f, bb.getYExtent() + 0.2f, bb.getZExtent() + 0.2f);
-		size.multLocal(2.0f);
-		int halfX = nbX / 2;
-		int halfY = nbY / 2;
-		int halfZ = nbZ / 2;
-		for (int x = -halfX; x <= (nbX - halfX); x++) {
-			for (int y = -halfY; y <= (nbY - halfY); y++) {
-				for (int z = -halfZ; z <= (nbZ - halfZ); z++) {
-					Spatial child = pattern.clone(false);
-					Vector3f pos = new Vector3f(x, y, z);
-					child.setLocalTranslation(pos.mult(size));
+		for (int x = 0; x < nbX; x++) {
+			for (int y = 0; y < nbY; y++) {
+				for (int z = 0; z < nbZ; z++) {
+					int i = z + y * nbZ + x * nbZ * nbY;
+					Spatial child = geotmpl[i % geotmpl.length].clone();
+					Vector3f pos = new Vector3f(cellSizeMax).multLocal(x,y,z);
+					child.center();
+					pos.addLocal(child.getLocalTranslation());
+					child.setLocalTranslation(pos);
+					Material mat = matDef.clone();
+					mat.setInt("MatId", matIdManager.findMatId(colors[i % colors.length], ColorRGBA.White));
+					mat.setColor("Albedo", colors[i % colors.length]);
+					mat.setColor("Specular", ColorRGBA.White);
+					child.setMaterial(mat);
 					group.attachChild(child);
 				}
 			}
 		}
+		group.center();
 
 		MaterialConverter mc = new MaterialConverter(assetManager, matIdManager);
 //		mc.defaultMaterial = matDef;
 		assetManager.registerLoader(OBJLoader.class, "obj");
 		assetManager.registerLocator(System.getProperty("user.home"), FileLocator.class);
-		Spatial sponza = assetManager.loadModel("Téléchargements/t/crytek/sponza.obj");
-		sponza.scale(0.1f);
-//		Spatial sponza = assetManager.loadModel("Models/Sponza/Sponza.j3o");
+		Spatial sponza = assetManager.loadModel("Models/crytek_sponza2.j3o");
+		sponza.scale(10.0f);
 		sponza.setLocalTranslation(new Vector3f(-8.f, -0.25f, 0.f).multLocal(sponza.getWorldBound().getCenter()));
 		sponza.breadthFirstTraversal(mc);
 		group.attachChild(sponza);
@@ -133,10 +120,13 @@ public class Sample01 extends SimpleApplication{
 		//		anchor.addLight(dl);
 
 		//Directionnal Light
-		Geometry light0 = Helpers4Lights.newDirectionnalLight("ldir", new Vector3f(-0.5f, -0.5f, -0.5f), new ColorRGBA(0.2f,0.2f,0.2f,1.0f), assetManager);
-		//Geometry light0 = Helpers4Lights.newAmbiantLight("lambiant", new ColorRGBA(0.2f,0.2f,0.2f,1.0f), assetManager);
+		Geometry light0 = Helpers4Lights.newAmbiantLight("lambiant", new ColorRGBA(0.2f,0.2f,0.2f,1.0f), assetManager);
 		anchor.attachChild(light0);
 		lights.add.onNext(light0);
+
+		Geometry light1 = Helpers4Lights.newDirectionnalLight("ldir", new Vector3f(-0.5f, -0.5f, -0.5f), new ColorRGBA(0.2f,0.2f,0.2f,1.0f), assetManager);
+		anchor.attachChild(light1);
+		lights.add.onNext(light1);
 
 		anchor.addControl(new AbstractControl() {
 

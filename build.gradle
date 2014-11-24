@@ -23,7 +23,6 @@ repositories {
 	mavenCentral()
 	maven { url "http://updates.jmonkeyengine.org/maven/"}
 	maven { url "http://dl.bintray.com/davidb/jme3stuff" }
-	mavenLocal()
 }
 
 
@@ -48,8 +47,8 @@ dependencies {
 	testRuntime "org.slf4j:slf4j-jdk14:${v_slf4j}"
 	testCompile 'junit:junit:4.11'
 	testCompile 'org.mockito:mockito-core:1.8.5'
-	//testCompile "com.jme3:jme3-testdata:${v_jme}"
-	testCompile "com.jme3:jme3-testdata:3.1.0-snapshot-github"
+	testCompile "net.alchim31.assets:crytek_sponza2:0.1.0"
+	testCompile "net.alchim31.assets:teapot:0.2.0"
 
 	fmpp 'net.sourceforge.fmpp:fmpp:0.9.14'
 }
