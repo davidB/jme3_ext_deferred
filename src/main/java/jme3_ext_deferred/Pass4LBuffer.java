@@ -53,7 +53,8 @@ class Pass4LBuffer {
 
 	public Pass4LBuffer(int width, int height, ViewPort vp, RenderManager rm, AssetManager assetManager, Iterable4AddRemove<Geometry> lights, GBuffer gbuffer, Texture2D matBuffer, Texture ambientBuffer) {
 		this.gbuffer = gbuffer;
-		this.lbuffer = new TBuffer(width, height, Format.RGBA8);
+		//this.lbuffer = new TBuffer(width, height, Format.RGB16F);
+		this.lbuffer = new TBuffer(width, height, Format.RGB8);
 		lbuffer.fb.setDepthTexture(gbuffer.depth);
 		FrameBufferHack.setDepthStencilAttachment(lbuffer.fb);
 
