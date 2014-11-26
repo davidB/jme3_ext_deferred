@@ -5,8 +5,10 @@ import lombok.RequiredArgsConstructor;
 import com.jme3.asset.AssetManager;
 import com.jme3.material.MatParam;
 import com.jme3.material.Material;
+import com.jme3.math.ColorRGBA;
 import com.jme3.scene.Geometry;
 import com.jme3.scene.SceneGraphVisitorAdapter;
+import com.jme3.texture.Texture;
 
 @RequiredArgsConstructor
 public class MaterialConverter extends SceneGraphVisitorAdapter {
@@ -15,9 +17,27 @@ public class MaterialConverter extends SceneGraphVisitorAdapter {
 	public Material defaultMaterial;
 
 	@SuppressWarnings("unchecked")
-	public <T> T read(Material m, String name) {
+	public static <T> T read(Material m, String name) {
 		MatParam p = m.getParam(name);
 		return (T) ((p != null)? p.getValue():null);
+	}
+	public static void copyColor(Material dest, String destName, Material src, String srcName) {
+		ColorRGBA v = read(src, srcName);
+		if (v != null) {
+			dest.setColor(destName, v);
+		}
+	}
+	public static void copyTexture(Material dest, String destName, Material src, String srcName) {
+		Texture v = read(src, srcName);
+		if (v != null) {
+			dest.setTexture(destName, v);
+		}
+	}
+	public static void copyBoolean(Material dest, String destName, Material src, String srcName) {
+		Boolean v = read(src, srcName);
+		if (v != null) {
+			dest.setBoolean(destName, v);
+		}
 	}
 
 	@Override
@@ -29,15 +49,15 @@ public class MaterialConverter extends SceneGraphVisitorAdapter {
 			//material.setColor("Ambient",  ambient.clone());
 			//m.setInt("MatId", matIdManager.findMatId(read(m0, "Diffuse"), read(m0, "Specular")));
 			m.setInt("MatId", matIdManager.defId);
-			m.setColor("Albedo", read(m0, "Diffuse"));
-			m.setTexture("AlbedoMap", read(m0, "DiffuseMap"));
-			m.setColor("Specular", read(m0, "Specular"));
-			m.setTexture("SpecularMap", read(m0, "SpecularMap"));
+			copyColor(m, "Albedo", m0, "Diffuse");
+			copyTexture(m, "AlbedoMap", m0, "DiffuseMap");
+			copyColor(m, "Specular", m0, "Specular");
+			copyTexture(m, "SpecularMap", m0, "SpecularMap");
 			//material.setFloat("Shininess", shininess); // prevents "premature culling" bug
 			m.setFloat("AlphaDiscardThreshold", 0.5f);
 
-			m.setTexture("NormalMap", read(m0, "NormalMap"));
-			m.setTexture("AlphaMap", read(m0, "AlphaMap"));
+			copyTexture(m, "NormalMap", m0, "NormalMap");
+			copyTexture(m, "AlphaMap", m0, "AlphaMap");
 			g.setMaterial(m);
 		} else if (defaultMaterial != null){
 			g.setMaterial(defaultMaterial);
