@@ -4,6 +4,7 @@
 uniform vec4 m_Color;
 uniform vec3 m_LightPos;
 uniform vec3 m_LightDir;
+uniform float m_LightFallOffDist;
 
 uniform sampler2D m_DepthBuffer;
 uniform sampler2D m_NormalBuffer;
@@ -32,11 +33,33 @@ vec3 getWSPosition(vec2 posSS) {
 
 }
 
-
-float attenuation(float dist, float distmax){
+// * http://imdoingitwrong.wordpress.com/2011/01/31/light-attenuation/
+// * http://wiki.blender.org/index.php/Doc:FR/2.6/Manual/Lighting/Lights/Light_Attenuation
+// * http://blog.selfshadow.com/publications/s2013-shading-course/karis/s2013_pbs_epic_notes_v2.pdf p12
+// * http://gamedev.stackexchange.com/questions/51291/deferred-rendering-and-point-light-radius
+// * http://gamedev.stackexchange.com/questions/56897/glsl-light-attenuation-color-and-intensity-formula
+// * http://gamedev.stackexchange.com/questions/64149/what-light-attenuation-function-does-udk-use
+float attenuation(float dist, float falloffDist){
   //float dist = length(dir);
-  float radiance = 1.0/(1.0+pow(dist/10.0, 2.0));
-  return clamp(radiance*10.0, 0.0, 1.0);
+  //float radiance = 1.0 - ((dist * dist) / (falloffDist * falloffDist));
+  //float radiance = 1.0 - (dist  / falloffDist);
+  //radiance *= 1 / (dist * dist);
+  // I = E × (D2 / (D2 + Q × r2)) from http://wiki.blender.org/index.php/Doc:FR/2.6/Manual/Lighting/Lights/Light_Attenuation
+  //float D2 = (falloffDist * 0.25) * (falloffDist * 0.25);
+  //float Q = 1.0;
+  //float radiance = D2 / (D2 + r2);
+  // from http://blog.selfshadow.com/publications/s2013-shading-course/karis/s2013_pbs_epic_notes_v2.pdf p12
+  //float d2 = dist * dist;
+  //float dr = pow(dist / falloffDist, 4) ;
+  //float n = clamp(1-dr, 0.0, 1.0);
+  //return (n*n) / (d2 + 1);
+  //return n;
+  //return clamp(radiance, 0.0, 1.0);
+  //float radiance = 1.0/(1.0+pow(dist/falloffDist, 2.0));
+  //float radiance = 1.0/(1.0+pow(dist/falloffDist, 2.0));
+  float radiance = 1.0/(pow(1.0+ dist*4/falloffDist, 2.0));
+  //return clamp(radiance*falloffDist, 0.0, 1.0);
+  return clamp(radiance, 0.0, 1.0);
 }
 
 float influence(vec3 normal, float coneAngle){
@@ -67,29 +90,34 @@ void main(){
 #endif
 
 	vec3 viewDir = normalize(g_CameraPosition - posWS);
-	vec3 lightColor = m_Color.rgb;
+	//vec3 lightColor = m_Color.rgb;
+	vec3 lightColor = m_Color.rgb;//vec3(1.0);
 	float spec = 0.03;
 	float gloss = 512;
 	vec3 outDiffuse = vec3(0);
 	vec3 outSpecular = vec3(0);
 	PBR_ComputeDirectLight(norWS, lightDirWS, viewDir, lightColor, spec, gloss, QUALITY_HIGH, outDiffuse, outSpecular);
-/*
-	float intensity = lambert(norWS, lightDirWS);
-	vec4 spec = vec4(0.0);
-    if (intensity > 0.0) {
-        vec3 h = normalize(lightDirWS + g_CameraPosition);
-        float intSpec = max(dot(h,norWS), 0.0);
-        spec = specular * pow(intSpec, shininess);
-    }
-	vec4 intensityColor = m_Color * intensity;
-*/
+
+#ifdef FALLOFF
+	outDiffuse *= attenuation(distance(m_LightPos, posWS), m_LightFallOffDist);
+	//outDiffuse *= influence(normalize(m_LightPos), 20);
+#endif
 
 	out_FragColor.rgb = max(outDiffuse * diffuse.rgb + spec, 0.0);
+	out_FragColor.rgb = outDiffuse;
+	out_FragColor.a = outSpecular.r;
 	// to debug
+#ifdef FALLOFF
+	//out_FragColor.rgb = vec3(attenuation(distance(m_LightPos, posWS), m_LightFallOffDist));
+	//out_FragColor.rgb = vec3(m_LightFallOffDist);
+	//out_FragColor.rgb = vec3(0.0,1.0,0.0);
+#else
+	out_FragColor.rgb = vec3(1.0,0.0,0.0);
+#endif
 	//out_FragColor = max(intensity * diffuse + spec, 0.0);
 	//out_FragColor.rgb = posWS;
 	//out_FragColor.rgb = m_Color.rgb;
 	//out_FragColor = diffuse;
 	//out_FragColor.rgb = vec3(float(matId) * 10.0 /256.0);
-	out_FragColor.a = 1.0;
+	//out_FragColor.a = 1.0;
 }

@@ -29,6 +29,7 @@ public class AppState4ViewDeferredTexture extends AbstractAppState {
 		,mats
 		,ao
 		,positions
+		,lights
 		//,stencil // doesn't work may require investigation / extension like https://www.opengl.org/registry/specs/ARB/stencil_texturing.txt
 		;
 	}
@@ -68,6 +69,7 @@ public class AppState4ViewDeferredTexture extends AbstractAppState {
 			m.setTexture("MatBuffer", sp.matIdManager.tableTex);
 			m.setTexture("AlbedoBuffer", sp.pass4gbuffer.gbuffer.albedo);
 			m.setTexture("SpecularBuffer", sp.pass4gbuffer.gbuffer.specular);
+			m.setTexture("LBuffer", sp.pass4lbuffer.lbuffer.tex);
 			m.setInt("NbMatId", sp4d.matIdManager.size());
 		}
 	}

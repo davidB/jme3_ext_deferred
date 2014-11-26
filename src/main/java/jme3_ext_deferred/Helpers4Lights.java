@@ -9,6 +9,7 @@ import com.jme3.scene.shape.Quad;
 import com.jme3.scene.shape.Sphere;
 
 public class Helpers4Lights {
+	public static String UD_Enable = "LightEnable";
 	public static String UD_Global = "LightGlobal";
 	public static String UD_Ambiant = "LightAmbiant";
 
@@ -19,12 +20,17 @@ public class Helpers4Lights {
 	 * @param assetManager
 	 * @return
 	 */
-	public static Geometry asPointLight(Geometry geo, ColorRGBA color, AssetManager assetManager) {
+	public static Geometry asPointLight(Geometry geo, ColorRGBA color, AssetManager assetManager, Float lightFallOffDist) {
 		Material mat = assetManager.loadMaterial("Materials/deferred/lighting.j3m");
 		mat.setColor("Color", color);
+		if (lightFallOffDist != null){
+			mat.setFloat("LightFallOffDist", Math.abs(lightFallOffDist));
+			System.err.println("LightFallOffDist : " + lightFallOffDist);
+		}
 		if (geo.getUserData(UD_Global) == null) {
 			geo.setUserData(UD_Global, false);
 		}
+		geo.setUserData(UD_Enable, true);
 		geo.setMaterial(mat);
 		geo.updateGeometricState();
 		geo.updateModelBound();
@@ -54,19 +60,19 @@ public class Helpers4Lights {
 	public static Geometry newPointLight(String name, float radius, ColorRGBA color, AssetManager assetManager) {
 		Geometry geo = new Geometry(name, new Sphere(16, 16, radius));
 		geo.setUserData(UD_Global, false); // should use volume+stencil or full screen quad
-		return asPointLight(geo, color, assetManager);
+		return asPointLight(geo, color, assetManager, radius);
 	}
 
 	public static Geometry newSpotLight(String name, float radiusX, float rangeY, ColorRGBA color, AssetManager assetManager) {
 		Geometry geo = new Geometry(name, Helpers4Mesh.newCone(16, rangeY, radiusX));
 		geo.setUserData(UD_Global, false); // should use volume+stencil or full screen quad
-		return asPointLight(geo, color, assetManager);
+		return asPointLight(geo, color, assetManager, rangeY);
 	}
 
 	public static Geometry newPointLightGlobal(String name, ColorRGBA color, AssetManager assetManager) {
 		Geometry geo = new Geometry(name, new Quad(0.5f, 0.5f));
 		geo.setUserData(UD_Global, true);
-		return asPointLight(geo, color, assetManager);
+		return asPointLight(geo, color, assetManager, null);
 	}
 
 	public static Geometry newDirectionnalLight(String name, Vector3f direction, ColorRGBA color, AssetManager assetManager) {
@@ -89,5 +95,15 @@ public class Helpers4Lights {
 		geo.updateGeometricState();
 		geo.updateModelBound();
 		return geo;
+	}
+
+	public static boolean isEnabled(Geometry l) {
+		Object v = l.getUserData(UD_Enable);
+		return (v != null)?(boolean)v : false;
+	}
+
+	public static Geometry setEnabled(Geometry l, boolean v) {
+		l.setUserData(UD_Enable, v);
+		return l;
 	}
 }

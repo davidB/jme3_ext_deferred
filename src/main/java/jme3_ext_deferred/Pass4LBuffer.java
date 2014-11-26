@@ -23,6 +23,7 @@ import com.jme3.scene.Spatial;
 import com.jme3.scene.shape.Quad;
 import com.jme3.texture.FrameBufferHack;
 import com.jme3.texture.Image.Format;
+import com.jme3.texture.FrameBuffer;
 import com.jme3.texture.Texture;
 import com.jme3.texture.Texture2D;
 
@@ -53,8 +54,8 @@ class Pass4LBuffer {
 
 	public Pass4LBuffer(int width, int height, ViewPort vp, RenderManager rm, AssetManager assetManager, Iterable4AddRemove<Geometry> lights, GBuffer gbuffer, Texture2D matBuffer, Texture ambientBuffer) {
 		this.gbuffer = gbuffer;
-		//this.lbuffer = new TBuffer(width, height, Format.RGB16F);
-		this.lbuffer = new TBuffer(width, height, Format.RGB8);
+		this.lbuffer = new TBuffer(width, height, Format.RGB16F);
+		//this.lbuffer = new TBuffer(width, height, Format.RGB8);
 		lbuffer.fb.setDepthTexture(gbuffer.depth);
 		FrameBufferHack.setDepthStencilAttachment(lbuffer.fb);
 
@@ -125,10 +126,12 @@ class Pass4LBuffer {
 
 	//TODO optimize
 	public void render() {
+		FrameBuffer fbOrig = vp.getOutputFrameBuffer();
 		renderedLightGeometries.clear();
 		vp.getCamera().setPlaneState(0);
 		Geometry ambiant = null;
 		for(Geometry g : lights.data) {
+			if (!Helpers4Lights.isEnabled(g)) continue;
 			Boolean v = g.getUserData(Helpers4Lights.UD_Ambiant);
 			if (v != null && v) {
 				ambiant = g;
@@ -192,9 +195,11 @@ class Pass4LBuffer {
 				debugGeomMat.render(g, rm);
 			}
 		}
-		rm.getRenderer().setFrameBuffer(vp.getOutputFrameBuffer());
 		rm.setForcedTechnique(null);
 		rm.setForcedRenderState(null);
+		//rm.getRenderer().setFrameBuffer(vp.getOutputFrameBuffer());
+		vp.setOutputFrameBuffer(fbOrig);
+		rm.getRenderer().setFrameBuffer(fbOrig);
 	}
 
 	public void dispose(){

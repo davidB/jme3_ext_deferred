@@ -8,6 +8,7 @@ MaterialDef debug_gbuffer {
 		Texture2D AOBuffer
 		Texture2D AlbedoBuffer
 		Texture2D SpecularBuffer
+		Texture2D LBuffer
 		Vector3 FrustumCorner
 		Int NbMatId
 		Vector3 ClipInfo
@@ -143,4 +144,13 @@ MaterialDef debug_gbuffer {
 			FULLVIEW : FullView
 		}
 	}
-}
+	Technique lights {
+		VertexShader GLSL150:   Shaders/deferred/quad.vert
+		FragmentShader GLSL150: Shaders/debug/show_lights.frag
+		WorldParameters {
+			WorldViewProjectionMatrix
+		}
+		Defines {
+			FULLVIEW : FullView
+		}
+	}}

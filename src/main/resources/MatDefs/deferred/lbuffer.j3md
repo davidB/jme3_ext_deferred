@@ -4,6 +4,7 @@ MaterialDef lbuffer {
 		Color Color
 		Vector3 LightPos
 		Vector3 LightDir
+		Float LightFallOffDist;
 
 		Texture2D NormalBuffer
 		Texture2D DepthBuffer
@@ -34,6 +35,7 @@ MaterialDef lbuffer {
 		Defines {
 			FULLVIEW : FullView
 			WSLIGHTDIR : LightDir
+			FALLOFF : LightFallOffDist
 		}
 	}
 

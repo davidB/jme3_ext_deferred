@@ -37,6 +37,7 @@ public class SceneProcessor4Deferred implements SceneProcessor {
 	Pass4AO pass4ao;
 	Pass4Tex pass4tex;
 	Pass4LBuffer pass4lbuffer;
+	Pass4Shade pass4shade;
 
 	private BehaviorSubject<SceneProcessor4Deferred> onChange0 = BehaviorSubject.create();
 	public Observable<SceneProcessor4Deferred> onChange = onChange0;
@@ -64,6 +65,7 @@ public class SceneProcessor4Deferred implements SceneProcessor {
 		pass4ao = new Pass4AO(w, h, vp, rm, assetManager, pass4gbuffer.gbuffer, finalQuad, false);
 		pass4lbuffer = new Pass4LBuffer(w, h, vp, rm, assetManager, lights, pass4gbuffer.gbuffer, matIdManager.tableTex, pass4ao.finalTex);
 		//pass4tex = new Pass4Tex(finalQuad, vp, rm, assetManager, pass4ao.finalTex);
+		pass4shade = new Pass4Shade(finalQuad, vp, rm, assetManager, pass4gbuffer.gbuffer, matIdManager.tableTex, pass4ao.finalTex,pass4lbuffer.lbuffer.tex);
 		pass4tex = new Pass4Tex(finalQuad, vp, rm, assetManager, pass4lbuffer.lbuffer.tex);
 		onChange0.onNext(this);
 	}
@@ -82,7 +84,8 @@ public class SceneProcessor4Deferred implements SceneProcessor {
 		pass4gbuffer.render();
 		pass4ao.render();
 		pass4lbuffer.render();
-		pass4tex.render();
+		//pass4tex.render();
+		pass4shade.render();
 		rm.setForcedTechnique(techOrig);
 	}
 

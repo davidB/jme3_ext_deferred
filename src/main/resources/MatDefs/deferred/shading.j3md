@@ -1,0 +1,26 @@
+MaterialDef lbuffer {
+
+	MaterialParameters {
+		Texture2D NormalBuffer
+		Texture2D DepthBuffer
+		Texture2D AOBuffer
+		Texture2D MatBuffer
+		Texture2D AlbedoBuffer
+		Texture2D LBuffer
+
+		Boolean FullView
+	}
+
+	Technique {
+		VertexShader GLSL150:   Shaders/deferred/quad.vert
+		FragmentShader GLSL150 : Shaders/deferred/shading.frag
+		WorldParameters {
+			WorldViewProjectionMatrix
+			Resolution
+		}
+		Defines {
+			FULLVIEW : FullView
+		}
+	}
+
+}
