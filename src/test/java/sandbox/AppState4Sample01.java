@@ -1,24 +1,25 @@
 package sandbox;
 
-import jme3_ext_deferred.AppState4ViewDeferredTexture;
 import jme3_ext_deferred.Helpers4Lights;
 import jme3_ext_deferred.Helpers4Mesh;
 import jme3_ext_deferred.MatIdManager;
 import jme3_ext_deferred.MaterialConverter;
-import jme3_ext_deferred.SceneProcessor4Deferred;
+import lombok.RequiredArgsConstructor;
 import rx_ext.Observable4AddRemove;
 
+import com.jme3.app.Application;
 import com.jme3.app.SimpleApplication;
+import com.jme3.app.state.AbstractAppState;
+import com.jme3.app.state.AppStateManager;
+import com.jme3.asset.AssetManager;
 import com.jme3.asset.plugins.FileLocator;
 import com.jme3.bounding.BoundingBox;
-import com.jme3.input.ChaseCamera;
 import com.jme3.material.Material;
 import com.jme3.math.ColorRGBA;
 import com.jme3.math.Quaternion;
 import com.jme3.math.Vector3f;
 import com.jme3.renderer.RenderManager;
 import com.jme3.renderer.ViewPort;
-import com.jme3.renderer.lwjgl.LwjglDisplayCustom;
 import com.jme3.scene.Geometry;
 import com.jme3.scene.Mesh;
 import com.jme3.scene.Node;
@@ -27,20 +28,9 @@ import com.jme3.scene.control.AbstractControl;
 import com.jme3.scene.plugins.OBJLoader;
 import com.jme3.scene.shape.Box;
 import com.jme3.scene.shape.Sphere;
-import com.jme3.system.AppSettings;
 
-
-public class Sample01 extends SimpleApplication{
-
-	public static void main(String[] args){
-		AppSettings settings = new AppSettings(false);
-		settings.setCustomRenderer(LwjglDisplayCustom.class);
-		Sample01 app = new Sample01();
-		app.setSettings(settings);
-		app.start();
-	}
-
-	private final MatIdManager matIdManager = new MatIdManager();
+@RequiredArgsConstructor
+public class AppState4Sample01 extends AbstractAppState {
 	private final ColorRGBA[] colors = new ColorRGBA[]{
 			ColorRGBA.Red,
 			ColorRGBA.Green,
@@ -54,12 +44,16 @@ public class Sample01 extends SimpleApplication{
 			ColorRGBA.Yellow
 	};
 
+	final public MatIdManager matIdManager;
+	final public Observable4AddRemove<Geometry> lights;
+	AssetManager assetManager;
+
 	@Override
-	public void simpleInitApp() {
-		SceneProcessor4Deferred sp4gbuf = useDeferred();
-		Spatial target = makeScene(rootNode, 5, 7, 4);
-		makeLigths(sp4gbuf.lights.ar, rootNode);
-		setupCamera(target);
+	public void initialize(AppStateManager stateManager, Application app) {
+		assetManager = app.getAssetManager();
+		Node rootNode = ((SimpleApplication) app).getRootNode();
+		makeScene(rootNode, 5, 7, 4);
+		makeLigths(lights, rootNode);
 	}
 
 	Spatial makeScene(Node anchor0, int nbX, int nbY, int nbZ) {
@@ -105,7 +99,8 @@ public class Sample01 extends SimpleApplication{
 		assetManager.registerLocator(System.getProperty("user.home"), FileLocator.class);
 		Spatial sponza = assetManager.loadModel("Models/crytek_sponza2.j3o");
 		sponza.scale(10.0f);
-		sponza.setLocalTranslation(new Vector3f(-8.f, -0.25f, 0.f).multLocal(sponza.getWorldBound().getCenter()));
+		//sponza.setLocalTranslation(new Vector3f(-8.f, -0.25f, 0.f).multLocal(sponza.getWorldBound().getCenter()));
+		sponza.setLocalTranslation(new Vector3f(0f, -6.5f, 0.f));
 		sponza.breadthFirstTraversal(mc);
 		group.attachChild(sponza);
 		anchor0.attachChild(group);
@@ -122,11 +117,11 @@ public class Sample01 extends SimpleApplication{
 		//Directionnal Light
 		Geometry light0 = Helpers4Lights.newAmbiantLight("lambiant", new ColorRGBA(0.2f,0.2f,0.2f,1.0f), assetManager);
 		anchor.attachChild(light0);
-		lights.add.onNext(light0);
+		//lights.add.onNext(light0);
 
 		Geometry light1 = Helpers4Lights.newDirectionnalLight("ldir", new Vector3f(-0.5f, -0.5f, -0.5f), new ColorRGBA(0.2f,0.2f,0.2f,1.0f), assetManager);
 		anchor.attachChild(light1);
-		lights.add.onNext(light1);
+		//lights.add.onNext(light1);
 
 		anchor.addControl(new AbstractControl() {
 
@@ -154,7 +149,7 @@ public class Sample01 extends SimpleApplication{
 
 					for (int i = 0; i < pls.length; i++){
 						//Geometry pl = new Geometry("pl"+i, new Sphere(16, 16, radius));
-						Geometry pl = Helpers4Lights.asPointLight(new Geometry("pl"+i, mesh), colors[i % colors.length], assetManager);
+						Geometry pl = Helpers4Lights.asPointLight(new Geometry("pl"+i, mesh), colors[i % colors.length], assetManager, rangeY);
 						pl.setLocalRotation(rot);
 						anchor.attachChild(pl);
 						lights.add.onNext(pl);
@@ -193,24 +188,5 @@ public class Sample01 extends SimpleApplication{
 			}
 		});
 	}
-
-	void setupCamera(Spatial target) {
-		flyCam.setEnabled(false);
-		ChaseCamera chaseCam = new ChaseCamera(cam, target, inputManager);
-		chaseCam.setDefaultDistance(6.0f);
-		chaseCam.setMaxDistance(100f);
-		//chaseCam.setDragToRotate(false);
-		chaseCam.setMinVerticalRotation((float)Math.PI / -2f + 0.001f);
-		chaseCam.setInvertVerticalAxis(true);
-		cam.setFrustumFar(1000.0f);
-	}
-
-	SceneProcessor4Deferred useDeferred() {
-		SceneProcessor4Deferred sp4gbuf = new SceneProcessor4Deferred(assetManager, matIdManager);
-		viewPort.addProcessor(sp4gbuf);
-		stateManager.attach(new AppState4ViewDeferredTexture(sp4gbuf, AppState4ViewDeferredTexture.ViewKey.values()));
-		return sp4gbuf;
-	}
-
 }
 

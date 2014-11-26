@@ -14,7 +14,7 @@ https://www.youtube.com/watch?v=lDPRoRGYWnY
 # TODO
 
 * generate final result
-* add more kind of lights (points, spotlight, directionnals, ambiants)
+* add more kind of lights (points, spotlight, directionnals, ambiants) (WIP)
 * add "brdf" lighting
 * try accumulated light buffer (ignoring material/surface)
 * add NPR samples
