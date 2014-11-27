@@ -11,7 +11,6 @@ import com.jme3.post.SceneProcessor;
 import com.jme3.renderer.RenderManager;
 import com.jme3.renderer.ViewPort;
 import com.jme3.renderer.queue.RenderQueue;
-import com.jme3.renderer.queue.RenderQueue.Bucket;
 import com.jme3.scene.Geometry;
 import com.jme3.scene.Spatial;
 import com.jme3.scene.shape.Quad;
@@ -54,7 +53,8 @@ public class SceneProcessor4Deferred implements SceneProcessor {
 
 		finalQuad = new Geometry("finalQuad", new Quad(1, 1));
 		finalQuad.setCullHint(Spatial.CullHint.Never);
-		finalQuad.setQueueBucket(Bucket.Opaque);
+		//finalQuad.setQueueBucket(Bucket.Opaque);
+		finalQuad.setMaterial(null);
 
 		reshape(vp, vp.getCamera().getWidth(), vp.getCamera().getHeight());
 	}

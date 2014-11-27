@@ -1,16 +1,18 @@
 package sandbox;
 
+import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import jme3_ext_deferred.AppState4ViewDeferredTexture;
 import jme3_ext_deferred.MatIdManager;
 import jme3_ext_deferred.SceneProcessor4Deferred;
+import rx_ext.Observable4AddRemove;
 
 import com.jme3.app.SimpleApplication;
-import com.jme3.input.ChaseCamera;
 import com.jme3.post.FilterPostProcessor;
 import com.jme3.renderer.lwjgl.LwjglDisplayCustom;
+import com.jme3.scene.Geometry;
 import com.jme3.system.AppSettings;
 
 public class Main {
@@ -37,31 +39,37 @@ public class Main {
 		final MatIdManager matIdManager = new MatIdManager();
 		//Setup Camera
 		app.enqueue(() -> {
-			app.getFlyByCamera().setEnabled(false);
-			app.getCamera().setFrustumFar(1000.0f);
-			ChaseCamera chaseCam = new ChaseCamera(app.getCamera(), app.getRootNode(), app.getInputManager());
-			chaseCam.setDefaultDistance(6.0f);
-			chaseCam.setMaxDistance(100f);
-			//chaseCam.setDragToRotate(false);
-			chaseCam.setMinVerticalRotation((float)Math.PI / -2f + 0.001f);
-			chaseCam.setInvertVerticalAxis(true);
+			app.getFlyByCamera().setMoveSpeed(10);
+//			app.getFlyByCamera().setEnabled(false);
+//			app.getCamera().setFrustumFar(1000.0f);
+//			ChaseCamera chaseCam = new ChaseCamera(app.getCamera(), app.getRootNode(), app.getInputManager());
+//			chaseCam.setDefaultDistance(6.0f);
+//			chaseCam.setMaxDistance(100f);
+//			//chaseCam.setDragToRotate(false);
+//			chaseCam.setMinVerticalRotation((float)Math.PI / -2f + 0.001f);
+//			chaseCam.setInvertVerticalAxis(true);
 			return null;
 		});
-
+		app.enqueue(() -> {
+			app.getInputManager().setCursorVisible(true);
+			return null;
+		});
 		// blocking until ready
-		SceneProcessor4Deferred sp4gbuf = app.enqueue(() -> {
+		Future<SceneProcessor4Deferred> fsp4gbuf = app.enqueue(() -> {
 			SceneProcessor4Deferred out = new SceneProcessor4Deferred(app.getAssetManager(), matIdManager);
 			app.getViewPort().addProcessor(out);
 			app.getStateManager().attach(new AppState4ViewDeferredTexture(out, AppState4ViewDeferredTexture.ViewKey.values()));
 			return out;
-		}).get();
+		});
 
+		Observable4AddRemove<Geometry> olights = fsp4gbuf.get().lights.ar;
+		//Observable4AddRemove<Geometry> olights = new Observable4AddRemove<>();
 		app.enqueue(() -> {
-			app.getStateManager().attach(new AppState4Sample01(matIdManager, sp4gbuf.lights.ar));
+			app.getStateManager().attach(new AppState4Sample01(matIdManager, olights));
 			return null;
 		});
 		app.enqueue(() -> {
-			app.getStateManager().attach(new AppState4Sample02_BrokenCube(matIdManager, sp4gbuf.lights.ar));
+			app.getStateManager().attach(new AppState4Sample02_BrokenCube(matIdManager, olights));
 			return null;
 		});
 //		app.enqueue(() -> {

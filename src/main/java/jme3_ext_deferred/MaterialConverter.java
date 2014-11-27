@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 import com.jme3.asset.AssetManager;
 import com.jme3.material.MatParam;
 import com.jme3.material.Material;
+import com.jme3.material.MaterialCustom;
 import com.jme3.math.ColorRGBA;
 import com.jme3.scene.Geometry;
 import com.jme3.scene.SceneGraphVisitorAdapter;
@@ -44,7 +45,7 @@ public class MaterialConverter extends SceneGraphVisitorAdapter {
 	public void visit(Geometry g) {
 		Material m0 = g.getMaterial();
 		if ("Common/MatDefs/Light/Lighting.j3md".equals(m0.getMaterialDef().getAssetName())) {
-			Material m = new Material(assetManager, "MatDefs/deferred/gbuffer.j3md");
+			Material m = new MaterialCustom(assetManager, "MatDefs/deferred/gbuffer.j3md");
 			//material.setBoolean("UseMaterialColors", true);
 			//material.setColor("Ambient",  ambient.clone());
 			//m.setInt("MatId", matIdManager.findMatId(read(m0, "Diffuse"), read(m0, "Specular")));

@@ -25,9 +25,9 @@ class Pass4GBuffer {
 		rm.getRenderer().clearBuffers(true, true, true);
 		//vp.getQueue().isQueueEmpty(Bucket.Opaque);
 		rm.setForcedTechnique("GBuf");
-		rm.renderViewPortQueues(vp, true);
-		//vp.getQueue().renderQueue(Bucket.Opaque, rm, vp.getCamera(), true);
-		//vp.getQueue().renderQueue(Bucket.Transparent, rm, vp.getCamera(), true);
+		rm.renderViewPortQueues(vp, false);
+		//vp.getQueue().renderQueue(Bucket.Opaque, rm, vp.getCamera(), false);
+		//vp.getQueue().renderQueue(Bucket.Transparent, rm, vp.getCamera(), false);
 
 		vp.setOutputFrameBuffer(fbOrig);
 		rm.getRenderer().setFrameBuffer(fbOrig);

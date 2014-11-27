@@ -76,7 +76,7 @@ void main(){
 	vec2 texCoord = posSS / g_Resolution;
 	vec3 posWS = getWSPosition(posSS);
 	vec3 norWS = readNormal(m_NormalBuffer, texCoord);
-	int matId = int(texelFetch(m_NormalBuffer, ivec2(posSS), 0).a * 256.0);
+	//int matId = int(texelFetch(m_NormalBuffer, ivec2(posSS), 0).a * 256.0);
 	//vec4 diffuse = texelFetch(m_MatBuffer, ivec2(0, matId), 0);
 	//vec4 specular = texelFetch(m_MatBuffer, ivec2(1, matId), 0);
 	float shininess = 0.5;
@@ -99,6 +99,7 @@ void main(){
 	outDiffuse *= attenuation(distance(m_LightPos, posWS), m_LightFallOffDist);
 	//outDiffuse *= influence(normalize(m_LightPos), 20);
 #endif
+
 	out_FragColor.rgb = outDiffuse;
 	out_FragColor.a = outSpecular;
 }

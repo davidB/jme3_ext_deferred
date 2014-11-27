@@ -127,10 +127,9 @@ class Pass4LBuffer {
 		Geometry ambiant = null;
 		for(Geometry g : lights.data) {
 			if (!Helpers4Lights.isEnabled(g)) continue;
-			Boolean v = g.getUserData(Helpers4Lights.UD_Ambiant);
-			if (v != null && v) {
+			if (Helpers4Lights.isAmbiant(g)) {
 				ambiant = g;
-			}else if(g.checkCulling(vp.getCamera())){
+			}else if(Helpers4Lights.isGlobal(g) || g.checkCulling(vp.getCamera())){
 				renderedLightGeometries.add(g);
 			}
 		}
@@ -144,7 +143,7 @@ class Pass4LBuffer {
 		for (int i = 0; i < nb; i++) {
 			Geometry g = renderedLightGeometries.get(i);
 			Material mat = g.getMaterial();
-			boolean global = (boolean) g.getUserData(Helpers4Lights.UD_Global);
+			boolean global = Helpers4Lights.isGlobal(g);
 			if (!global) {
 				mat.setVector3("LightPos", g.getWorldTranslation());
 				rm.setWorldMatrix(g.getWorldMatrix());
@@ -166,6 +165,7 @@ class Pass4LBuffer {
 				rm.setWorldMatrix(finalQuad.getWorldMatrix());
 				mat.render(finalQuad, rm);
 			}
+			mat.selectTechnique("Default", rm);
 		}
 		//TODO apply ambient in final shade/compisition ?
 		if (ambiant != null) {
@@ -175,6 +175,7 @@ class Pass4LBuffer {
 			rm.setForcedRenderState(rsAmbiant);
 			rm.setWorldMatrix(finalQuad.getWorldMatrix());
 			mat.render(finalQuad, rm);
+			mat.selectTechnique("Default", rm);
 		}
 		if (showLightGeom) {
 			rm.setForcedMaterial(null);

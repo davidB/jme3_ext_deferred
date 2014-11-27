@@ -12,9 +12,9 @@ import com.jme3.app.SimpleApplication;
 import com.jme3.app.state.AbstractAppState;
 import com.jme3.app.state.AppStateManager;
 import com.jme3.asset.AssetManager;
-import com.jme3.asset.plugins.FileLocator;
 import com.jme3.bounding.BoundingBox;
 import com.jme3.material.Material;
+import com.jme3.material.MaterialCustom;
 import com.jme3.math.ColorRGBA;
 import com.jme3.math.Quaternion;
 import com.jme3.math.Vector3f;
@@ -25,7 +25,6 @@ import com.jme3.scene.Mesh;
 import com.jme3.scene.Node;
 import com.jme3.scene.Spatial;
 import com.jme3.scene.control.AbstractControl;
-import com.jme3.scene.plugins.OBJLoader;
 import com.jme3.scene.shape.Box;
 import com.jme3.scene.shape.Sphere;
 
@@ -51,13 +50,14 @@ public class AppState4Sample01 extends AbstractAppState {
 	@Override
 	public void initialize(AppStateManager stateManager, Application app) {
 		assetManager = app.getAssetManager();
-		Node rootNode = ((SimpleApplication) app).getRootNode();
-		makeScene(rootNode, 5, 7, 4);
-		makeLigths(lights, rootNode);
+		Node anchor = new Node("Sample01");
+		makeScene(anchor, 5, 7, 4);
+		makeLigths(lights, anchor);
+		((SimpleApplication) app).getRootNode().attachChild(anchor);
 	}
 
 	Spatial makeScene(Node anchor0, int nbX, int nbY, int nbZ) {
-		Material matDef = new Material(assetManager, "MatDefs/deferred/gbuffer.j3md");
+		Material matDef = new MaterialCustom(assetManager, "MatDefs/deferred/gbuffer.j3md");
 		matDef.setInt("MatId", matIdManager.findMatId(ColorRGBA.Gray, ColorRGBA.White));
 
 		Geometry[] geotmpl = new Geometry[]{
@@ -93,36 +93,29 @@ public class AppState4Sample01 extends AbstractAppState {
 		}
 		group.center();
 
-		MaterialConverter mc = new MaterialConverter(assetManager, matIdManager);
-//		mc.defaultMaterial = matDef;
-		assetManager.registerLoader(OBJLoader.class, "obj");
-		assetManager.registerLocator(System.getProperty("user.home"), FileLocator.class);
 		Spatial sponza = assetManager.loadModel("Models/crytek_sponza2.j3o");
 		sponza.scale(10.0f);
 		//sponza.setLocalTranslation(new Vector3f(-8.f, -0.25f, 0.f).multLocal(sponza.getWorldBound().getCenter()));
-		sponza.setLocalTranslation(new Vector3f(0f, -6.5f, 0.f));
-		sponza.breadthFirstTraversal(mc);
+		sponza.setLocalTranslation(new Vector3f(0f, -8f + 1.5f, 0.f)); //-8 if the location of physical floor in Sample02 :-P
 		group.attachChild(sponza);
+
+		MaterialConverter mc = new MaterialConverter(assetManager, matIdManager);
+//		mc.defaultMaterial = matDef;
+		group.breadthFirstTraversal(mc);
+
 		anchor0.attachChild(group);
 		return group;
 	}
 
 	void makeLigths(Observable4AddRemove<Geometry> lights, Node anchor) {
-		//		DirectionalLight dl = new DirectionalLight();
-		//		dl.setColor(ColorRGBA.White);
-		//		dl.setDirection(Vector3f.UNIT_XYZ.negate());
-		//
-		//		anchor.addLight(dl);
-
-		//Directionnal Light
-		Geometry light0 = Helpers4Lights.newAmbiantLight("lambiant", new ColorRGBA(0.2f,0.2f,0.2f,1.0f), assetManager);
-		//Geometry light0 = Helpers4Lights.newAmbiantLight("lambiant", new ColorRGBA(0.9f,0.9f,0.9f,1.0f), assetManager);
+		Geometry light0 = Helpers4Lights.newAmbiantLight("lambiant", new ColorRGBA(0.05f,0.05f,0.02f,1.0f), assetManager);
 		anchor.attachChild(light0);
 		lights.add.onNext(light0);
 
-		Geometry light1 = Helpers4Lights.newDirectionnalLight("ldir", new Vector3f(-0.5f, -0.5f, -0.5f), new ColorRGBA(0.2f,0.2f,0.2f,1.0f), assetManager);
+
+		Geometry light1 = Helpers4Lights.newDirectionnalLight("ldir", new Vector3f(-0.5f, -0.5f, -0.5f), new ColorRGBA(241f/255f*0.2f,215f/255f*0.2f,106f/255f*0.2f,1.0f), assetManager);
 		anchor.attachChild(light1);
-		//lights.add.onNext(light1);
+		lights.add.onNext(light1);
 
 		anchor.addControl(new AbstractControl() {
 

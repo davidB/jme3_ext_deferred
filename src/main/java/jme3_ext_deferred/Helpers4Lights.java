@@ -2,6 +2,7 @@ package jme3_ext_deferred;
 
 import com.jme3.asset.AssetManager;
 import com.jme3.material.Material;
+import com.jme3.material.MaterialCustom;
 import com.jme3.math.ColorRGBA;
 import com.jme3.math.Vector3f;
 import com.jme3.scene.Geometry;
@@ -21,7 +22,8 @@ public class Helpers4Lights {
 	 * @return
 	 */
 	public static Geometry asPointLight(Geometry geo, ColorRGBA color, AssetManager assetManager, Float lightFallOffDist) {
-		Material mat = assetManager.loadMaterial("Materials/deferred/lighting.j3m");
+		//Material mat = assetManager.loadMaterial("Materials/deferred/lighting.j3m");
+		Material mat = new MaterialCustom(assetManager, "MatDefs/deferred/lbuffer.j3md");
 		mat.setColor("Color", color);
 		if (lightFallOffDist != null){
 			mat.setFloat("LightFallOffDist", Math.abs(lightFallOffDist));
@@ -45,7 +47,8 @@ public class Helpers4Lights {
 	 * @return
 	 */
 	public static Geometry asDirectionnalLight(Geometry geo, Vector3f direction, ColorRGBA color, AssetManager assetManager) {
-		Material mat = assetManager.loadMaterial("Materials/deferred/lighting.j3m");
+		//Material mat = assetManager.loadMaterial("Materials/deferred/lighting.j3m");
+		Material mat = new MaterialCustom(assetManager, "MatDefs/deferred/lbuffer.j3md");
 		mat.setColor("Color", color);
 		mat.setVector3("LightDir", direction);
 		if (geo.getUserData(UD_Global) == null) {
@@ -78,7 +81,6 @@ public class Helpers4Lights {
 
 	public static Geometry newDirectionnalLight(String name, Vector3f direction, ColorRGBA color, AssetManager assetManager) {
 		Geometry geo = new Geometry(name, new Quad(0.5f, 0.5f));
-		geo.setUserData(UD_Global, true); // should use volume+stencil or full screen quad
 		return asDirectionnalLight(geo, direction, color, assetManager);
 	}
 
@@ -88,7 +90,8 @@ public class Helpers4Lights {
 	 * @return
 	 */
 	public static Geometry newAmbiantLight(String name, ColorRGBA color, AssetManager assetManager) {
-		Material mat = assetManager.loadMaterial("Materials/deferred/lighting.j3m");
+		//Material mat = assetManager.loadMaterial("Materials/deferred/lighting.j3m");
+		Material mat = new MaterialCustom(assetManager, "MatDefs/deferred/lbuffer.j3md");
 		mat.setColor("Color", color);
 		Geometry geo = new Geometry(name, new Quad(0.5f, 0.5f));
 		geo.setUserData(UD_Ambiant, true);
@@ -107,5 +110,15 @@ public class Helpers4Lights {
 	public static Geometry setEnabled(Geometry l, boolean v) {
 		l.setUserData(UD_Enable, v);
 		return l;
+	}
+
+	public static boolean isGlobal(Geometry l) {
+		Object v = l.getUserData(UD_Global);
+		return (v != null)?(boolean)v : false;
+	}
+
+	public static boolean isAmbiant(Geometry l) {
+		Object v = l.getUserData(UD_Ambiant);
+		return (v != null)?(boolean)v : false;
 	}
 }

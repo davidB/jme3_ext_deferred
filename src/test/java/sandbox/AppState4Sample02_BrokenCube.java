@@ -3,7 +3,6 @@ package sandbox;
 import java.util.LinkedList;
 import java.util.Queue;
 import java.util.Random;
-import java.util.concurrent.atomic.AtomicLong;
 
 import jme3_ext_deferred.Helpers4Lights;
 import jme3_ext_deferred.MatIdManager;
@@ -17,8 +16,6 @@ import com.jme3.app.state.AbstractAppState;
 import com.jme3.app.state.AppStateManager;
 import com.jme3.asset.AssetManager;
 import com.jme3.bullet.BulletAppState;
-import com.jme3.bullet.collision.PhysicsCollisionEvent;
-import com.jme3.bullet.collision.PhysicsCollisionListener;
 import com.jme3.bullet.collision.shapes.BoxCollisionShape;
 import com.jme3.bullet.collision.shapes.CollisionShape;
 import com.jme3.bullet.collision.shapes.PlaneCollisionShape;
@@ -26,8 +23,10 @@ import com.jme3.bullet.collision.shapes.SphereCollisionShape;
 import com.jme3.bullet.control.RigidBodyControl;
 import com.jme3.bullet.objects.PhysicsRigidBody;
 import com.jme3.input.InputManager;
+import com.jme3.input.KeyInput;
 import com.jme3.input.MouseInput;
 import com.jme3.input.controls.ActionListener;
+import com.jme3.input.controls.KeyTrigger;
 import com.jme3.input.controls.MouseButtonTrigger;
 import com.jme3.material.Material;
 import com.jme3.material.RenderState;
@@ -54,7 +53,6 @@ import com.jme3.scene.shape.Quad;
 public class AppState4Sample02_BrokenCube extends AbstractAppState {
 
 	private BatchNode cubesNode;
-	private AtomicLong collisionCount = new AtomicLong();
 	private float BACKGROUND_INTENSITY = 1.5f;
 	public float LIGHT_SIZE = 1.5f;
 
@@ -71,23 +69,23 @@ public class AppState4Sample02_BrokenCube extends AbstractAppState {
 	public void initialize(AppStateManager stateManager, Application app) {
 		this.app = app;
 		assetManager = app.getAssetManager();
-		rootNode = ((SimpleApplication)app).getRootNode();
+		rootNode = new Node("Sample02");
+		((SimpleApplication)app).getRootNode().attachChild(rootNode);
 		this.stateManager = stateManager;
 		BulletAppState bullet = new BulletAppState();
 		bullet.setThreadingType(BulletAppState.ThreadingType.PARALLEL);
 
 		stateManager.attach(bullet);
-		bullet.getPhysicsSpace().addCollisionListener(new PhysicsCollisionListener() {
-			@Override
-			public void collision(PhysicsCollisionEvent event) {
-				long collisions = collisionCount.incrementAndGet();
-				if (collisions % 1000 == 0) {
-					System.out.printf("%dK collisions\n", collisions / 1000);
-				}
-			}
-		});
-
-		//bullet.setDebugEnabled(true);
+//		bullet.getPhysicsSpace().addCollisionListener(new PhysicsCollisionListener() {
+//			private AtomicLong collisionCount = new AtomicLong();
+//			@Override
+//			public void collision(PhysicsCollisionEvent event) {
+//				long collisions = collisionCount.incrementAndGet();
+//				if (collisions % 1000 == 0) {
+//					System.out.printf("%dK collisions\n", collisions / 1000);
+//				}
+//			}
+//		});
 
 		PlaneCollisionShape plane = new PlaneCollisionShape(new Plane(Vector3f.UNIT_Y, -10));
 		PhysicsRigidBody body = new PhysicsRigidBody(plane);
@@ -97,7 +95,6 @@ public class AppState4Sample02_BrokenCube extends AbstractAppState {
 
 		ColorRGBA c = new ColorRGBA(0.19136488f, 0.5587857f, 0.60471356f, 1f);
 		c.multLocal(BACKGROUND_INTENSITY);
-		System.out.println(c);
 		addPointLight(20f, c, new Vector3f(0, -3, 0));
 		addPointLight(20f, c, new Vector3f(3, -15, 3));
 		addPointLight(5f, ColorRGBA.Cyan.clone(), new Vector3f(0, 3, 0));
@@ -194,7 +191,8 @@ public class AppState4Sample02_BrokenCube extends AbstractAppState {
 	private CollisionShape shape = new SphereCollisionShape(0.075f);
 
 	private void addCanonBall() {
-		Camera cam = app.getCamera();
+		//Camera cam = app.getCamera();
+		Camera cam = app.getViewPort().getCamera();
 		if (lastFire < 1f / ballsPerSec || activeBalls >= maxBalls) {
 			return;
 		}
@@ -209,30 +207,30 @@ public class AppState4Sample02_BrokenCube extends AbstractAppState {
 			Node n = new Node("projectile");
 
 			Geometry geom = new Geometry("particle", new Quad(size, size));
-			geom.center();
+			geom.setLocalTranslation(-0.5f * size, 0.5f * -size, 0.0f);
 			Material lightMaterial = new Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md");
-			geom.setMaterial(lightMaterial);
 			lightMaterial.setColor("Color", color);
 			lightMaterial.setTexture("LightMap", assetManager.loadTexture("Textures/particletexture.jpg"));
 			lightMaterial.getAdditionalRenderState().setBlendMode(RenderState.BlendMode.Additive);
 			lightMaterial.getAdditionalRenderState().setDepthWrite(false);
+			geom.setMaterial(lightMaterial);
 			geom.setQueueBucket(Bucket.Transparent);
-//			Material m = new Material(assetManager, "MatDefs/deferred/gbuffer.j3md");
-//			geom.setMaterial(m);
-//			m.setColor("Color", color);
-			//m.setTexture("AlphaMap", assetManager.loadTexture("Textures/particletexture.jpg"));
-			//m.getAdditionalRenderState().setBlendMode(RenderState.BlendMode.Additive);
-			//m.getAdditionalRenderState().setDepthWrite(false);
 			BillboardControl billboarder = new BillboardControl();
-			billboarder.setAlignment(BillboardControl.Alignment.Camera);
-			n.addControl(billboarder);
-			n.attachChild(geom);
+			//billboarder.setAlignment(BillboardControl.Alignment.Camera);
+//			geom.addControl(billboarder);
+//			n.attachChild(geom);
+			Node anchor0 = new Node();
+			anchor0.addControl(billboarder);
+			anchor0.attachChild(geom);
+			n.attachChild(anchor0);
 
 			//pointLight.setColor(ColorRGBA.randomColor().multLocal(0.1f));
 			Geometry pointLight = Helpers4Lights.newPointLight("light", LIGHT_SIZE, color, assetManager);
+			pointLight.center();
 			n.attachChild(pointLight);
 			//dsp.addLight(pointLight, true);
 			lights.add.onNext(pointLight);
+			n.center();
 			ball = n;
 		}
 		ball.addControl(new AbstractControl() {
@@ -296,8 +294,18 @@ public class AppState4Sample02_BrokenCube extends AbstractAppState {
 			}
 		}, "SHOOT");
 
+		inputManager.addMapping("DEBUG_PHYSICS", new KeyTrigger(KeyInput.KEY_F2));
+		inputManager.addListener(new ActionListener() {
 
+			@Override
+			public void onAction(String name, boolean isPressed, float tpf) {
+				if (isPressed) {
+					BulletAppState bullet = app.getStateManager().getState(BulletAppState.class);
+					bullet.setDebugEnabled(!bullet.isDebugEnabled());
+				}
+			}
 
+		}, "DEBUG_PHYSICS");
 //		inputManager.addMapping("BATCH_CUBES", new MouseButtonTrigger(MouseInput.BUTTON_RIGHT));
 //		inputManager.addListener(new ActionListener() {
 //			@Override
