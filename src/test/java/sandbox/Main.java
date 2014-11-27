@@ -7,11 +7,9 @@ import jme3_ext_deferred.AppState4ViewDeferredTexture;
 import jme3_ext_deferred.MatIdManager;
 import jme3_ext_deferred.SceneProcessor4Deferred;
 
-import com.jme3.app.Application;
 import com.jme3.app.SimpleApplication;
 import com.jme3.input.ChaseCamera;
 import com.jme3.post.FilterPostProcessor;
-import com.jme3.post.filters.BloomFilter;
 import com.jme3.renderer.lwjgl.LwjglDisplayCustom;
 import com.jme3.system.AppSettings;
 
@@ -73,7 +71,7 @@ public class Main {
 
 		app.enqueue(() -> {
 			FilterPostProcessor fpp = new FilterPostProcessor(app.getAssetManager());
-			BloomFilter bf = new BloomFilter(BloomFilter.GlowMode.Scene);
+			//BloomFilter bf = new BloomFilter(BloomFilter.GlowMode.Scene);
 			//fpp.addFilter(bf);
 			//fpp.addFilter(new FXAAFilter());
 			//fpp.addFilter(new FXAAFilter());
