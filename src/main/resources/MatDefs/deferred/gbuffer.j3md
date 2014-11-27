@@ -25,7 +25,7 @@ MaterialDef gbuffer {
 		Defines {
 			ALPHAMAP: AlphaMap
 			NORMALMAP: NormalMap
-			COLORMAP: COLORMap
+			COLORMAP: ColorMap
 			SPECULARMAP: SpecularMap
 		}
 	}
