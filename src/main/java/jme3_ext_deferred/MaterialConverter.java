@@ -49,8 +49,8 @@ public class MaterialConverter extends SceneGraphVisitorAdapter {
 			//material.setColor("Ambient",  ambient.clone());
 			//m.setInt("MatId", matIdManager.findMatId(read(m0, "Diffuse"), read(m0, "Specular")));
 			m.setInt("MatId", matIdManager.defId);
-			copyColor(m, "Albedo", m0, "Diffuse");
-			copyTexture(m, "AlbedoMap", m0, "DiffuseMap");
+			copyColor(m, "Color", m0, "Diffuse");
+			copyTexture(m, "ColorMap", m0, "DiffuseMap");
 			copyColor(m, "Specular", m0, "Specular");
 			copyTexture(m, "SpecularMap", m0, "SpecularMap");
 			//material.setFloat("Shininess", shininess); // prevents "premature culling" bug

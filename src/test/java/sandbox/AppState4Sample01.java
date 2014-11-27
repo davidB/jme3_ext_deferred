@@ -84,7 +84,7 @@ public class AppState4Sample01 extends AbstractAppState {
 					child.setLocalTranslation(pos);
 					Material mat = matDef.clone();
 					mat.setInt("MatId", matIdManager.findMatId(colors[i % colors.length], ColorRGBA.White));
-					mat.setColor("Albedo", colors[i % colors.length]);
+					mat.setColor("Color", colors[i % colors.length]);
 					mat.setColor("Specular", ColorRGBA.White);
 					child.setMaterial(mat);
 					group.attachChild(child);

@@ -5,8 +5,8 @@ MaterialDef gbuffer {
 		Float AlphaDiscardThreshold
 		Texture2D AlphaMap
 		Texture2D NormalMap
-		Color Albedo
-		Texture2D AlbedoMap
+		Color Color
+		Texture2D ColorMap
 		Color Specular
 		Texture2D SpecularMap
 	}
@@ -25,7 +25,7 @@ MaterialDef gbuffer {
 		Defines {
 			ALPHAMAP: AlphaMap
 			NORMALMAP: NormalMap
-			ALBEDOMAP: AlbedoMap
+			COLORMAP: COLORMap
 			SPECULARMAP: SpecularMap
 		}
 	}

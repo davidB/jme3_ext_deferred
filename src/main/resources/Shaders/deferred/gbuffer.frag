@@ -7,8 +7,8 @@ uniform float m_AlphaDiscardThreshold;
 uniform sampler2D m_AlphaMap;
 uniform sampler2D m_NormalMap;
 
-uniform vec4 m_Albedo;
-uniform sampler2D m_AlbedoMap;
+uniform vec4 m_Color;
+uniform sampler2D m_ColorMap;
 
 uniform vec4 m_Specular;
 uniform sampler2D m_SpecularMap;
@@ -46,10 +46,10 @@ void main(){
     vec3 n = normalize(normal);
     out_FragData[0] = vec4(encodeNormal(normal), float(m_MatId) / 256.0);
 
-    #ifdef ALBEDOMAP
-      vec4 albedo = texture2D(m_AlbedoMap, texCoord);
+    #ifdef COLORMAP
+      vec4 albedo = texture2D(m_ColorMap, texCoord);
     #else
-      vec4 albedo = m_Albedo;
+      vec4 albedo = m_Color;
     #endif
     out_FragData[1] = albedo;
 

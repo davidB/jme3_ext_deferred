@@ -219,7 +219,7 @@ public class AppState4Sample02_BrokenCube extends AbstractAppState {
 			geom.setQueueBucket(Bucket.Transparent);
 //			Material m = new Material(assetManager, "MatDefs/deferred/gbuffer.j3md");
 //			geom.setMaterial(m);
-//			m.setColor("Albedo", color);
+//			m.setColor("Color", color);
 			//m.setTexture("AlphaMap", assetManager.loadTexture("Textures/particletexture.jpg"));
 			//m.getAdditionalRenderState().setBlendMode(RenderState.BlendMode.Additive);
 			//m.getAdditionalRenderState().setDepthWrite(false);
