@@ -21,10 +21,9 @@ import com.jme3.renderer.queue.NullComparator;
 import com.jme3.scene.Geometry;
 import com.jme3.scene.Spatial;
 import com.jme3.scene.shape.Quad;
+import com.jme3.texture.FrameBuffer;
 import com.jme3.texture.FrameBufferHack;
 import com.jme3.texture.Image.Format;
-import com.jme3.texture.FrameBuffer;
-import com.jme3.texture.Texture;
 import com.jme3.texture.Texture2D;
 
 // @see http://ogldev.atspace.co.uk/www/tutorial37/tutorial37.html
@@ -44,7 +43,6 @@ class Pass4LBuffer {
 	final Vector4f m_ProjInfo;
 	final Vector3f m_ClipInfo;
 	final Texture2D m_MatBuffer;
-	final Texture m_AmbientBuffer;
 
 	final RenderState rsLBufMask = new RenderState();
 	final RenderState rsLBuf = new RenderState();
@@ -52,7 +50,7 @@ class Pass4LBuffer {
 	final RenderState rsAmbiant = new RenderState();
 	final Geometry finalQuad;
 
-	public Pass4LBuffer(int width, int height, ViewPort vp, RenderManager rm, AssetManager assetManager, Iterable4AddRemove<Geometry> lights, GBuffer gbuffer, Texture2D matBuffer, Texture ambientBuffer) {
+	public Pass4LBuffer(int width, int height, ViewPort vp, RenderManager rm, AssetManager assetManager, Iterable4AddRemove<Geometry> lights, GBuffer gbuffer, Texture2D matBuffer) {
 		this.gbuffer = gbuffer;
 		this.lbuffer = new TBuffer(width, height, Format.RGB16F);
 		//this.lbuffer = new TBuffer(width, height, Format.RGB8);
@@ -62,7 +60,6 @@ class Pass4LBuffer {
 		this.vp = vp;
 		this.rm = rm;
 		this.m_MatBuffer = matBuffer;
-		this.m_AmbientBuffer = ambientBuffer;
 		Camera cam = vp.getCamera();
 		this.m_ProjInfo = Helpers.projInfo(cam, width, height);
 		this.m_ClipInfo = Helpers.clipInfo(cam);
@@ -117,9 +114,7 @@ class Pass4LBuffer {
 		mat.setTexture("MatBuffer", m_MatBuffer);
 		mat.setTexture("DepthBuffer", gbuffer.depth);
 		mat.setTexture("NormalBuffer", gbuffer.normal);
-		mat.setTexture("AlbedoBuffer", gbuffer.albedo);
 		mat.setTexture("SpecularBuffer", gbuffer.specular);
-		mat.setTexture("AOBuffer", m_AmbientBuffer);
 		mat.setVector3("ClipInfo", m_ClipInfo);
 		mat.setVector4("ProjInfo", m_ProjInfo);
 	}
@@ -172,9 +167,10 @@ class Pass4LBuffer {
 				mat.render(finalQuad, rm);
 			}
 		}
+		//TODO apply ambient in final shade/compisition ?
 		if (ambiant != null) {
 			Material mat = ambiant.getMaterial();
-			mat.selectTechnique("LBuf", rm);
+			mat.selectTechnique("LBufAmbiant", rm);
 			mat.setBoolean("FullView", true);
 			rm.setForcedRenderState(rsAmbiant);
 			rm.setWorldMatrix(finalQuad.getWorldMatrix());

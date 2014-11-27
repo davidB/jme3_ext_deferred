@@ -24,7 +24,7 @@ float OrenNayar(vec3 normal, vec3 lightDir, vec3 viewDir, float roughness)
     return (ndotl * ONE_OVER_PI) * (A + B * vdotl * sin(alpha) * tan(beta));
 }
 
-// Approximation of the above from Tri-Ace. 
+// Approximation of the above from Tri-Ace.
 // Doesn't use any trigonometric functions.
 // Also uses gloss parameter instead of roughness.
 float OrenNayarFast(vec3 normal, vec3 lightDir, vec3 viewDir, float gloss)
@@ -45,7 +45,7 @@ float OrenNayarFast(vec3 normal, vec3 lightDir, vec3 viewDir, float gloss)
 float GGX(vec3 normal, vec3 halfVec, float roughness)
 {
     float alpha = roughness * roughness;
-    float ndoth = max(0.0, dot(normal, halfVec));  
+    float ndoth = max(0.0, dot(normal, halfVec));
     float alpha2 = alpha * alpha;
     float sum   = ((ndoth * ndoth) * (alpha2 - 1.0) + 1.0);
     float denom = PI * sum * sum;
@@ -54,11 +54,11 @@ float GGX(vec3 normal, vec3 halfVec, float roughness)
 
 /**
  * Image-based lighting via irradiance environment map. Unfinished.
- * 
- * @param tex An HDR specular irradiance environment map. Each mipmap level should have 
+ *
+ * @param tex An HDR specular irradiance environment map. Each mipmap level should have
  *            a linearly decreasing gloss value (according to algorithm you selected
  *            for the direct light function). Use trilinear filtering for this texture.
- *            Recommended to use either a 256x256x6 or 128x128x6 cubemap. 
+ *            Recommended to use either a 256x256x6 or 128x128x6 cubemap.
  *            The last mipmap must be 4x4x6 and nMips should reflect that.
  *            Use phong lobe and include the phong reduction factor of (gloss + 2) / 2pi.
  * @param nMips number of mipmaps in the cubemap. E.g. for 128x128x6 map there should be 6 (until 4x4x6).
@@ -68,7 +68,7 @@ float GGX(vec3 normal, vec3 halfVec, float roughness)
  * @param gloss See PBR_ComputeDirectLight for explanation - this should be the direct from texture (e.g. undecoded) value.
  */
  /*
-vec3 PBR_ComputeLightProbe(textureCube specMap, float nMips, vec3 normal, 
+vec3 PBR_ComputeLightProbe(textureCube specMap, float nMips, vec3 normal,
                            vec3 viewDir, float spec, float gloss,
                            out vec3 outDiffuse, out vec3 outSpecular)
 {
@@ -86,8 +86,8 @@ vec3 PBR_ComputeLightProbe(textureCube specMap, float nMips, vec3 normal,
     float mipLevel  = nMips - gloss * nMips;
 
     #ifdef __VERSION__ >= 400
-        // If GLSL 4.0 is available, we take the max level between the one 
-        // GPU was going to use and the one we selected. 
+        // If GLSL 4.0 is available, we take the max level between the one
+        // GPU was going to use and the one we selected.
         // This can reduce shimmering for far away glossy objects.
         float hwMipLevel = textureQueryLod(specMap, reflectVec).y;
         mipLevel = max(hwMipLevel, mipLevel);
@@ -96,26 +96,26 @@ vec3 PBR_ComputeLightProbe(textureCube specMap, float nMips, vec3 normal,
         vec3 distribution = textureCubeLod(specMap, reflectVec, mipLevel).rgb;
     #endif
 
-    
+
 
     outSpecular = distribution * fresnel;
 }
 */
 
 /**
- * Computes physically-based lighting for the given light, 
+ * Computes physically-based lighting for the given light,
  * based on Lambert for diffuse and Torrance-Sparrow microfacet BRDF for specular,
  * uses Blinn-Phong for the distribution function.
- * 
+ *
  * All vectors must be normalized and be in the same coordinate space.
  *
  * @param normal     Normal vector from normalmap or vertex normal. MUST BE NORMALIZED.
  * @param lightDir   Direction from surface to light. MUST BE NORMALIZED.
  * @param viewDir    Direction from surface to eye / camera. MUST BE NORMALIZED.
- * @param spec       Specularity / spectral reflectance / "metalness" / F-zero factor. 
+ * @param spec       Specularity / spectral reflectance / "metalness" / F-zero factor.
  *                   Use the equation spec = ((1 - n) / (1 + n))^2, where n is the refractive index of the material.
- *                   Should be around 0.02 - 0.05 for dieeletric (non-metal) materials, use 0.5 and higher for metals. 
- *                   You can use blended values for metal covered with dirt for example. 
+ *                   Should be around 0.02 - 0.05 for dieeletric (non-metal) materials, use 0.5 and higher for metals.
+ *                   You can use blended values for metal covered with dirt for example.
  *                   Recommend to retrieve this from metalness map if your material has both metallic and non-metallic parts,
  *                   but make sure to use more percision at lower values (obviously) so you can represent them.
  * @param gloss      Also known as "shininess", use values 2 - 2048.
@@ -124,16 +124,16 @@ vec3 PBR_ComputeLightProbe(textureCube specMap, float nMips, vec3 normal,
  *                   Make sure to choose one and stick with it.
  *                      2 ^ (x * 10 + 1)    - Sébastien's
  *                      2 ^ (13 * x)        - Far Cry 3 & Black Ops II
- * @param lightColor The color of the light, or the energy emission 
+ * @param lightColor The color of the light, or the energy emission
  *                   of the light at red, green, blue frequencies.
  *                   Can be (and should) be higher than 1.0 for HDR.
- * @param quality    One of QUALITY_*** values. QUALITY_LOW is just normalized blinn-phong, 
- *                   QUALITY_MED includes fresnel term, 
+ * @param quality    One of QUALITY_*** values. QUALITY_LOW is just normalized blinn-phong,
+ *                   QUALITY_MED includes fresnel term,
  *                   HIGH includes visibility term.
  */
 void PBR_ComputeDirectLight(vec3 normal, vec3 lightDir, vec3 viewDir,
-                            vec3 lightColor, float spec, float gloss, 
-                            int quality, out vec3 outDiffuse, out vec3 outSpecular)
+                            vec3 lightColor, float spec, float gloss,
+                            int quality, out vec3 outDiffuse, out float outSpecular)
 {
     // Compute halfway vector.
     vec3 halfVec = normalize(lightDir + viewDir);
@@ -146,19 +146,19 @@ void PBR_ComputeDirectLight(vec3 normal, vec3 lightDir, vec3 viewDir,
     float vdoth = max( dot(viewDir,  halfVec),  0.0);
 
     // Compute diffuse using energy-conserving Lambert.
-    // Alternatively, use Oren-Nayar for really rough 
+    // Alternatively, use Oren-Nayar for really rough
     // materials or if you have lots of processing power ...
     outDiffuse = vec3(ndotl) * lightColor;
-    
-    // Compute reduction function to have 
+
+    // Compute reduction function to have
     // energy-conserving blinn-phong specular.
-    // NOTE: This includes the division by 4 as well 
+    // NOTE: This includes the division by 4 as well
     // as the multiplication by PI from the lighting equation.
     // The reduction factor for Phong is        (g + 2) / 2pi
     // The reduction factor for Blinn-Phong     (g + 8) / 8pi
     // The reduction factor for Blinn-Phong IBL (g + 2) / 8pi
     float reduction = (gloss + 2.0) / 8.0;
-    
+
     float visibility, fresnel;
     if (quality == QUALITY_HIGH)
     {
@@ -168,7 +168,7 @@ void PBR_ComputeDirectLight(vec3 normal, vec3 lightDir, vec3 viewDir,
         // Compute visibility function via Schlick-Smith
         // (combination of geometry function and microfacet denominator).
         float alpha = 1.0 / sqrt( PI_OVER_FOUR * gloss + PI_OVER_TWO );
-        visibility = (ndotl * (1.0 - alpha) + alpha) * (ndotv * (1.0 - alpha) + alpha); 
+        visibility = (ndotl * (1.0 - alpha) + alpha) * (ndotv * (1.0 - alpha) + alpha);
         visibility = 1.0 / visibility;
     }
     else if (quality == QUALITY_MED)
@@ -217,9 +217,10 @@ void PBR_ComputeDirectLight(vec3 normal, vec3 lightDir, vec3 viewDir,
     // Compute normal distribution function via Blinn-Phong.
     // Alternatively, use GGX instead of Blinn-Phong (Unreal Engine)
     float blinnPhong = pow(ndoth, gloss);
-    
+
     // Compute product of specular factors.
     float specular = reduction * blinnPhong * ndotl * fresnel * visibility;
 
-    outSpecular = vec3(specular) * lightColor;
+    //outSpecular = vec3(specular) * lightColor;
+    outSpecular = specular;
 }

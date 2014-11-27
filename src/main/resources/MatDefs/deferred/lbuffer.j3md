@@ -8,9 +8,7 @@ MaterialDef lbuffer {
 
 		Texture2D NormalBuffer
 		Texture2D DepthBuffer
-		Texture2D AOBuffer
 		Texture2D MatBuffer
-		Texture2D AlbedoBuffer
 		Texture2D SpecularBuffer
 		Vector3 ClipInfo
 		Vector4 ProjInfo
@@ -46,6 +44,18 @@ MaterialDef lbuffer {
 		//FragmentShader GLSL150 : Shaders/deferred/black.frag
 		WorldParameters {
 			WorldViewProjectionMatrix
+		}
+	}
+
+	Technique LBufAmbiant {
+		VertexShader GLSL150:   Shaders/deferred/quad.vert
+		FragmentShader GLSL150 : Shaders/deferred/lightingAmbiant.frag
+		WorldParameters {
+			WorldViewProjectionMatrix
+			Resolution
+		}
+		Defines {
+			FULLVIEW : FullView
 		}
 	}
 }

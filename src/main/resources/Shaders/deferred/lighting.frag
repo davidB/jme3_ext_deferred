@@ -9,7 +9,6 @@ uniform float m_LightFallOffDist;
 uniform sampler2D m_DepthBuffer;
 uniform sampler2D m_NormalBuffer;
 uniform sampler2D m_MatBuffer;
-uniform sampler2D m_AlbedoBuffer;
 uniform vec4 m_ProjInfo;
 uniform vec3 m_ClipInfo;
 //ViewProjectionMatrixInverse
@@ -79,10 +78,8 @@ void main(){
 	vec3 norWS = readNormal(m_NormalBuffer, texCoord);
 	int matId = int(texelFetch(m_NormalBuffer, ivec2(posSS), 0).a * 256.0);
 	//vec4 diffuse = texelFetch(m_MatBuffer, ivec2(0, matId), 0);
-	vec4 diffuse = texture2D(m_AlbedoBuffer, texCoord);
 	//vec4 specular = texelFetch(m_MatBuffer, ivec2(1, matId), 0);
 	float shininess = 0.5;
-	//vec3 diffuse = readDiffuse(m_DiffuseBuffer, texCoord);
 #ifdef WSLIGHTDIR
 	vec3 lightDirWS = normalize(-m_LightDir);
 #else
@@ -95,29 +92,13 @@ void main(){
 	float spec = 0.03;
 	float gloss = 512;
 	vec3 outDiffuse = vec3(0);
-	vec3 outSpecular = vec3(0);
+	float outSpecular = 0;
 	PBR_ComputeDirectLight(norWS, lightDirWS, viewDir, lightColor, spec, gloss, QUALITY_HIGH, outDiffuse, outSpecular);
 
 #ifdef FALLOFF
 	outDiffuse *= attenuation(distance(m_LightPos, posWS), m_LightFallOffDist);
 	//outDiffuse *= influence(normalize(m_LightPos), 20);
 #endif
-
-	out_FragColor.rgb = max(outDiffuse * diffuse.rgb + spec, 0.0);
 	out_FragColor.rgb = outDiffuse;
-	out_FragColor.a = outSpecular.r;
-	// to debug
-#ifdef FALLOFF
-	//out_FragColor.rgb = vec3(attenuation(distance(m_LightPos, posWS), m_LightFallOffDist));
-	//out_FragColor.rgb = vec3(m_LightFallOffDist);
-	//out_FragColor.rgb = vec3(0.0,1.0,0.0);
-#else
-	out_FragColor.rgb = vec3(1.0,0.0,0.0);
-#endif
-	//out_FragColor = max(intensity * diffuse + spec, 0.0);
-	//out_FragColor.rgb = posWS;
-	//out_FragColor.rgb = m_Color.rgb;
-	//out_FragColor = diffuse;
-	//out_FragColor.rgb = vec3(float(matId) * 10.0 /256.0);
-	//out_FragColor.a = 1.0;
+	out_FragColor.a = outSpecular;
 }

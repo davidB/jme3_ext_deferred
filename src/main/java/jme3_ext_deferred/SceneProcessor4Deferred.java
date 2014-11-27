@@ -63,7 +63,7 @@ public class SceneProcessor4Deferred implements SceneProcessor {
 		cleanup();
 		pass4gbuffer = new Pass4GBuffer(w, h, vp, rm);
 		pass4ao = new Pass4AO(w, h, vp, rm, assetManager, pass4gbuffer.gbuffer, finalQuad, false);
-		pass4lbuffer = new Pass4LBuffer(w, h, vp, rm, assetManager, lights, pass4gbuffer.gbuffer, matIdManager.tableTex, pass4ao.finalTex);
+		pass4lbuffer = new Pass4LBuffer(w, h, vp, rm, assetManager, lights, pass4gbuffer.gbuffer, matIdManager.tableTex);
 		//pass4tex = new Pass4Tex(finalQuad, vp, rm, assetManager, pass4ao.finalTex);
 		pass4shade = new Pass4Shade(finalQuad, vp, rm, assetManager, pass4gbuffer.gbuffer, matIdManager.tableTex, pass4ao.finalTex,pass4lbuffer.lbuffer.tex);
 		pass4tex = new Pass4Tex(finalQuad, vp, rm, assetManager, pass4lbuffer.lbuffer.tex);

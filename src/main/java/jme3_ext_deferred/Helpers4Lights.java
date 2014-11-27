@@ -51,6 +51,7 @@ public class Helpers4Lights {
 		if (geo.getUserData(UD_Global) == null) {
 			geo.setUserData(UD_Global, true);
 		}
+		geo.setUserData(UD_Enable, true);
 		geo.setMaterial(mat);
 		geo.updateGeometricState();
 		geo.updateModelBound();
@@ -87,10 +88,11 @@ public class Helpers4Lights {
 	 * @return
 	 */
 	public static Geometry newAmbiantLight(String name, ColorRGBA color, AssetManager assetManager) {
-		Material mat = assetManager.loadMaterial("Materials/deferred/lightingAmbiant.j3m");
+		Material mat = assetManager.loadMaterial("Materials/deferred/lighting.j3m");
 		mat.setColor("Color", color);
 		Geometry geo = new Geometry(name, new Quad(0.5f, 0.5f));
 		geo.setUserData(UD_Ambiant, true);
+		geo.setUserData(UD_Enable, true);
 		geo.setMaterial(mat);
 		geo.updateGeometricState();
 		geo.updateModelBound();
