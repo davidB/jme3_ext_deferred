@@ -3,6 +3,7 @@ package jme3_ext_deferred;
 import rx_ext.Iterable4AddRemove;
 
 import com.jme3.asset.AssetManager;
+import com.jme3.light.SpotLight;
 import com.jme3.material.Material;
 import com.jme3.material.RenderState;
 import com.jme3.material.RenderState.BlendMode;
@@ -10,6 +11,7 @@ import com.jme3.material.RenderState.FaceCullMode;
 import com.jme3.material.RenderState.StencilOperation;
 import com.jme3.material.RenderState.TestFunction;
 import com.jme3.math.ColorRGBA;
+import com.jme3.math.Matrix4f;
 import com.jme3.math.Vector3f;
 import com.jme3.math.Vector4f;
 import com.jme3.renderer.Camera;
@@ -18,12 +20,17 @@ import com.jme3.renderer.Renderer;
 import com.jme3.renderer.ViewPort;
 import com.jme3.renderer.queue.GeometryList;
 import com.jme3.renderer.queue.NullComparator;
+import com.jme3.renderer.queue.RenderQueue;
+import com.jme3.renderer.queue.RenderQueue.ShadowMode;
 import com.jme3.scene.Geometry;
 import com.jme3.scene.Spatial;
 import com.jme3.scene.shape.Quad;
+import com.jme3.shadow.CompareMode;
+import com.jme3.shadow.SpotLightShadowRenderer;
 import com.jme3.texture.FrameBuffer;
 import com.jme3.texture.FrameBufferHack;
 import com.jme3.texture.Image.Format;
+import com.jme3.texture.Texture;
 import com.jme3.texture.Texture2D;
 
 // @see http://ogldev.atspace.co.uk/www/tutorial37/tutorial37.html
@@ -48,7 +55,12 @@ class Pass4LBuffer {
 	final RenderState rsLBuf = new RenderState();
 	final RenderState rs0 = new RenderState();
 	final RenderState rsAmbiant = new RenderState();
+	final RenderState rsShadow = new RenderState();
 	final Geometry finalQuad;
+
+	final AssetManager assetManager;
+
+	final RSpotLightShadowRenderer shadowMapGen4Spot;
 
 	public Pass4LBuffer(int width, int height, ViewPort vp, RenderManager rm, AssetManager assetManager, Iterable4AddRemove<Geometry> lights, GBuffer gbuffer, Texture2D matBuffer) {
 		this.gbuffer = gbuffer;
@@ -59,6 +71,7 @@ class Pass4LBuffer {
 
 		this.vp = vp;
 		this.rm = rm;
+		this.assetManager = assetManager;
 		this.m_MatBuffer = matBuffer;
 		Camera cam = vp.getCamera();
 		this.m_ProjInfo = Helpers.projInfo(cam, width, height);
@@ -66,26 +79,26 @@ class Pass4LBuffer {
 		this.debugGeomMat = assetManager.loadMaterial("Materials/deferred/debugGeom.j3m");
 
 		rsLBufMask.setStencil(true,
-			//_frontStencilStencilFailOperation, _frontStencilDepthFailOperation, _frontStencilDepthPassOperation,
-			StencilOperation.Keep, StencilOperation.DecrementWrap, StencilOperation.Keep,
-			//_backStencilStencilFailOperation, _backStencilDepthFailOperation, _backStencilDepthPassOperation,
-			StencilOperation.Keep, StencilOperation.IncrementWrap, StencilOperation.Keep,
-			//_frontStencilFunction, _backStencilFunction
-			TestFunction.Always, TestFunction.Always
-		);
+				//_frontStencilStencilFailOperation, _frontStencilDepthFailOperation, _frontStencilDepthPassOperation,
+				StencilOperation.Keep, StencilOperation.DecrementWrap, StencilOperation.Keep,
+				//_backStencilStencilFailOperation, _backStencilDepthFailOperation, _backStencilDepthPassOperation,
+				StencilOperation.Keep, StencilOperation.IncrementWrap, StencilOperation.Keep,
+				//_frontStencilFunction, _backStencilFunction
+				TestFunction.Always, TestFunction.Always
+				);
 		rsLBufMask.setDepthTest(true);
 		rsLBufMask.setDepthWrite(false);
 		rsLBufMask.setFaceCullMode(FaceCullMode.Off);
 		rsLBufMask.setBlendMode(BlendMode.Color);
 
 		rsLBuf.setStencil(true,
-			//_frontStencilStencilFailOperation, _frontStencilDepthFailOperation, _frontStencilDepthPassOperation,
-			StencilOperation.Keep, StencilOperation.Keep, StencilOperation.Keep,
-			//_backStencilStencilFailOperation, _backStencilDepthFailOperation, _backStencilDepthPassOperation,
-			StencilOperation.Keep, StencilOperation.Keep, StencilOperation.Keep,
-			//_frontStencilFunction, _backStencilFunction
-			TestFunction.NotEqual, TestFunction.NotEqual
-		);
+				//_frontStencilStencilFailOperation, _frontStencilDepthFailOperation, _frontStencilDepthPassOperation,
+				StencilOperation.Keep, StencilOperation.Keep, StencilOperation.Keep,
+				//_backStencilStencilFailOperation, _backStencilDepthFailOperation, _backStencilDepthPassOperation,
+				StencilOperation.Keep, StencilOperation.Keep, StencilOperation.Keep,
+				//_frontStencilFunction, _backStencilFunction
+				TestFunction.NotEqual, TestFunction.NotEqual
+				);
 		rsLBuf.setDepthTest(false);
 		rsLBuf.setDepthWrite(false);
 		rsLBuf.setFaceCullMode(FaceCullMode.Front);
@@ -106,6 +119,9 @@ class Pass4LBuffer {
 
 		this.lights = lights;
 		this.lights.ar.add.subscribe(this::addLight);
+		shadowMapGen4Spot = new RSpotLightShadowRenderer(assetManager, 2048, vp, rm);
+		shadowMapGen4Spot.setShadowZExtend(1000);
+
 		for(Geometry g : this.lights){addLight(g);}
 	}
 
@@ -117,10 +133,19 @@ class Pass4LBuffer {
 		mat.setTexture("SpecularBuffer", gbuffer.specular);
 		mat.setVector3("ClipInfo", m_ClipInfo);
 		mat.setVector4("ProjInfo", m_ProjInfo);
+
+		//init required default value, useless when no shadow, else updated by renderer
+		mat.setFloat("ShadowMapSize", 2048);
+		mat.setFloat("PCFEdge", 1);
+
+		if (Helpers4Lights.ShadowSourceMode.Spot == Helpers4Lights.getShadowSourceMode(g)) {
+			//TODO update params of the material, avoid to update params linked to "#define"
+			shadowMapGen4Spot.initMaterial(mat);
+		}
 	}
 
 	//TODO optimize
-	public void render() {
+	public void render(RenderQueue rq) {
 		FrameBuffer fbOrig = vp.getOutputFrameBuffer();
 		renderedLightGeometries.clear();
 		vp.getCamera().setPlaneState(0);
@@ -146,6 +171,17 @@ class Pass4LBuffer {
 			boolean global = Helpers4Lights.isGlobal(g);
 			if (!global) {
 				mat.setVector3("LightPos", g.getWorldTranslation());
+				// using a fullview quad for this pass is possible but less performent (eg when lighting part of the screen)
+				if (Helpers4Lights.ShadowSourceMode.Spot == Helpers4Lights.getShadowSourceMode(g)) {
+					//TODO update params of the material, avoid to update params linked to "#define"
+					//shadowMapGen4Spot.displayFrustum();
+					//shadowMapGen4Spot.displayDebug();
+					//rm.setForcedRenderState(rsShadow);
+					shadowMapGen4Spot.renderShadowMaps(g, rq, mat);
+					r.setFrameBuffer(lbuffer.fb);
+					//shadowMapGen4Spot.displayShadowMaps();
+				}
+
 				rm.setWorldMatrix(g.getWorldMatrix());
 
 				mat.selectTechnique("LBufMask", rm);
@@ -153,7 +189,6 @@ class Pass4LBuffer {
 				rm.setForcedRenderState(rsLBufMask);
 				mat.render(g, rm);
 
-				// using a fullview quad for this pass is possible but less performant (eg when lighting part of the screen)
 				mat.selectTechnique("LBuf", rm);
 				mat.setBoolean("FullView", false);
 				rm.setForcedRenderState(rsLBuf);
@@ -196,10 +231,131 @@ class Pass4LBuffer {
 		rm.setForcedRenderState(null);
 		//rm.getRenderer().setFrameBuffer(vp.getOutputFrameBuffer());
 		vp.setOutputFrameBuffer(fbOrig);
-		rm.getRenderer().setFrameBuffer(fbOrig);
+		r.setFrameBuffer(fbOrig);
 	}
 
 	public void dispose(){
 
 	}
+}
+
+class RSpotLightShadowRenderer extends SpotLightShadowRenderer {
+	Vector3f dir = new Vector3f(0,-1,0);
+	public Texture shadowMap0;
+	private String[] shadowMapStringCache;
+	private String[] lightViewStringCache;
+
+	public RSpotLightShadowRenderer(AssetManager assetManager, int shadowMapSize, ViewPort vp, RenderManager rm) {
+		super(assetManager, shadowMapSize);
+		initialize(rm, vp);
+		setLight(new SpotLight());
+		shadowMapStringCache = new String[nbShadowMaps];
+		lightViewStringCache = new String[nbShadowMaps];
+
+		for (int i = 0; i < nbShadowMaps; i++) {
+			shadowMapStringCache[i] = "ShadowMap" + i;
+			lightViewStringCache[i] = "LightViewProjectionMatrix" + i;
+		}
+
+		//shadowMap0 = shadowMaps[0];
+		//shadowMap0 = shadowFB[0].getColorBuffer().getTexture();
+		shadowMap0 = shadowFB[0].getDepthBuffer().getTexture();
+	}
+
+	public void initMaterial(Material mat) {
+		super.setPostShadowMaterial(mat);
+		mat.setFloat("ShadowMapSize", shadowMapSize);
+		mat.setBoolean("HardwareShadows", shadowCompareMode == CompareMode.Hardware);
+		mat.setInt("FilterMode", edgeFilteringMode.getMaterialParamValue());
+		mat.setFloat("PCFEdge", edgesThickness);
+		mat.setFloat("ShadowIntensity", shadowIntensity);
+	}
+
+	public void renderShadowMaps(Geometry g, RenderQueue rq, Material mat) {
+		light.setPosition(g.getWorldTranslation());
+		//g.getWorldMatrix().mult(dir, light.getDirection());
+		light.setDirection(dir);
+		light.setSpotRange(100);
+		//light.setSpotOuterAngle(spotOuterAngle);
+		preFrame(0);
+		postQueue(rq);
+
+		for (int j = 0; j < nbShadowMaps; j++) {
+			mat.setMatrix4(lightViewStringCache[j], lightViewProjectionsMatrices[j]);
+		}
+		for (int j = 0; j < nbShadowMaps; j++) {
+			mat.setTexture(shadowMapStringCache[j], shadowMaps[j]);
+		}
+		//mat.setFloat("ShadowMapSize", shadowMapSize);
+		//mat.setBoolean("HardwareShadows", shadowCompareMode == CompareMode.Hardware);
+		//mat.setInt("FilterMode", edgeFilteringMode.getMaterialParamValue());
+		//mat.setFloat("PCFEdge", edgesThickness);
+		//mat.setFloat("ShadowIntensity", shadowIntensity);
+
+		//setMaterialParameters(mat);
+
+		//At least one material of the receiving geoms does not support the post shadow techniques
+		//so we fall back to the forced material solution (transparent shadows won't be supported for these objects)
+//		if (needsfallBackMaterial) {
+//			setPostShadowParams();
+//		}
+	}
+
+	public void displayShadowMaps() {
+		displayShadowMap(renderManager.getRenderer());
+	}
+
+//	@SuppressWarnings("fallthrough")
+//	public void postQueue(RenderQueue rq) {
+//		GeometryList occluders = rq.getShadowQueueContent(ShadowMode.Cast);
+//		sceneReceivers = rq.getShadowQueueContent(ShadowMode.Receive);
+//		skipPostPass = false;
+//		if (sceneReceivers.size() == 0 || occluders.size() == 0) {
+//			skipPostPass = true;
+//			return;
+//		}
+//
+//		updateShadowCams(viewPort.getCamera());
+//
+//		Renderer r = renderManager.getRenderer();
+//		renderManager.setForcedMaterial(preshadowMat);
+//		renderManager.setForcedTechnique("PreShadow");
+//
+//		for (int shadowMapIndex = 0; shadowMapIndex < nbShadowMaps; shadowMapIndex++) {
+//
+//			//            if (debugfrustums) {
+//			//                doDisplayFrustumDebug(shadowMapIndex);
+//			//            }
+//			renderShadowMap(shadowMapIndex, occluders, sceneReceivers);
+//
+//		}
+//
+//		//debugfrustums = false;
+//		if (flushQueues) {
+//			occluders.clear();
+//		}
+//		//restore setting for future rendering
+//		r.setFrameBuffer(viewPort.getOutputFrameBuffer());
+//		renderManager.setForcedMaterial(null);
+//		renderManager.setForcedTechnique(null);
+//		renderManager.setCamera(viewPort.getCamera(), false);
+//
+//	}
+//
+//	protected void renderShadowMap(int shadowMapIndex, GeometryList occluders, GeometryList receivers) {
+//		shadowMapOccluders = getOccludersToRender(shadowMapIndex, occluders, receivers, shadowMapOccluders);
+//		Camera shadowCam = getShadowCam(shadowMapIndex);
+//		//shadowCam.setFrustumNear(0.1f);
+//		//saving light view projection matrix for this split
+//		lightViewProjectionsMatrices[shadowMapIndex].set(shadowCam.getViewProjectionMatrix());
+//		renderManager.setCamera(shadowCam, false);
+//
+//		renderManager.getRenderer().setFrameBuffer(shadowFB[shadowMapIndex]);
+//		//renderManager.getRenderer().setBackgroundColor(ColorRGBA.BlackNoAlpha);
+//		renderManager.getRenderer().setBackgroundColor(ColorRGBA.Red);
+//		renderManager.getRenderer().clearBuffers(true, true, false);
+//
+//		// render shadow casters to shadow map
+//		viewPort.getQueue().renderShadowQueue(shadowMapOccluders, renderManager, shadowCam, true);
+//	}
 }

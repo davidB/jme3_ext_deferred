@@ -14,6 +14,33 @@ MaterialDef lbuffer {
 		Vector4 ProjInfo
 
 		Boolean FullView
+
+        Int FilterMode
+        Boolean HardwareShadows
+
+        Texture2D ShadowMap0
+        Texture2D ShadowMap1
+        Texture2D ShadowMap2
+        Texture2D ShadowMap3
+        //pointLights
+        Texture2D ShadowMap4
+        Texture2D ShadowMap5
+
+        Float ShadowIntensity
+        Vector4 Splits
+        Vector2 FadeInfo
+
+        Matrix4 LightViewProjectionMatrix0
+        Matrix4 LightViewProjectionMatrix1
+        Matrix4 LightViewProjectionMatrix2
+        Matrix4 LightViewProjectionMatrix3
+        //pointLight
+        Matrix4 LightViewProjectionMatrix4
+        Matrix4 LightViewProjectionMatrix5
+
+        Float PCFEdge
+
+        Float ShadowMapSize
 	}
 
 	Technique {
@@ -29,12 +56,26 @@ MaterialDef lbuffer {
 			ViewMatrixInverse
 			CameraPosition
 			ViewProjectionMatrixInverse
+            WorldMatrix
 		}
 		Defines {
 			FULLVIEW : FullView
 			WSLIGHTDIR : LightDir
 			FALLOFF : LightFallOffDist
+
+			USE_SHADOW: ShadowMap0
+            HARDWARE_SHADOWS : HardwareShadows
+            FILTER_MODE : FilterMode
+            PCFEDGE : PCFEdge
+            SHADOWMAP_SIZE : ShadowMapSize
+            FADE : FadeInfo
+            PSSM : Splits
+            POINTLIGHT : LightViewProjectionMatrix5
+
 		}
+        RenderState {
+            PolyOffset -0.1 0
+        }
 	}
 
 	Technique LBufMask {

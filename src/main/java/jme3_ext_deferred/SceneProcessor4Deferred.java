@@ -80,10 +80,11 @@ public class SceneProcessor4Deferred implements SceneProcessor {
 	}
 
 	public void postQueue(RenderQueue rq) {
+		rm.getRenderer().clearBuffers(true,true,true);
 		String techOrig = rm.getForcedTechnique();
 		pass4gbuffer.render();
 		pass4ao.render();
-		pass4lbuffer.render();
+		pass4lbuffer.render(rq);
 		//pass4tex.render();
 		pass4shade.render();
 		rm.setForcedTechnique(techOrig);

@@ -20,6 +20,7 @@ import com.jme3.math.Quaternion;
 import com.jme3.math.Vector3f;
 import com.jme3.renderer.RenderManager;
 import com.jme3.renderer.ViewPort;
+import com.jme3.renderer.queue.RenderQueue.ShadowMode;
 import com.jme3.scene.Geometry;
 import com.jme3.scene.Mesh;
 import com.jme3.scene.Node;
@@ -87,6 +88,7 @@ public class AppState4Sample01 extends AbstractAppState {
 					mat.setColor("Color", colors[i % colors.length]);
 					mat.setColor("Specular", ColorRGBA.White);
 					child.setMaterial(mat);
+					child.setShadowMode(ShadowMode.CastAndReceive);
 					group.attachChild(child);
 				}
 			}
@@ -95,6 +97,7 @@ public class AppState4Sample01 extends AbstractAppState {
 
 		Spatial sponza = assetManager.loadModel("Models/crytek_sponza2.j3o");
 		sponza.scale(10.0f);
+		sponza.setShadowMode(ShadowMode.CastAndReceive);
 		//sponza.setLocalTranslation(new Vector3f(-8.f, -0.25f, 0.f).multLocal(sponza.getWorldBound().getCenter()));
 		sponza.setLocalTranslation(new Vector3f(0f, -8f + 1.5f, 0.f)); //-8 if the location of physical floor in Sample02 :-P
 		group.attachChild(sponza);
@@ -144,6 +147,8 @@ public class AppState4Sample01 extends AbstractAppState {
 					for (int i = 0; i < pls.length; i++){
 						//Geometry pl = new Geometry("pl"+i, new Sphere(16, 16, radius));
 						Geometry pl = Helpers4Lights.asPointLight(new Geometry("pl"+i, mesh), colors[i % colors.length], assetManager, rangeY);
+						//if (i == 4)
+						Helpers4Lights.setShadowSourceMode(pl, Helpers4Lights.ShadowSourceMode.Spot);
 						pl.setLocalRotation(rot);
 						anchor.attachChild(pl);
 						lights.add.onNext(pl);

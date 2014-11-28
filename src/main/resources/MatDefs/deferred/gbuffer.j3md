@@ -30,4 +30,30 @@ MaterialDef gbuffer {
 		}
 	}
 
+	Technique PreShadow {
+
+		VertexShader GLSL150 : Shaders/deferred/gbuffer.vert
+		//VertexShader GLSL100 :   Common/MatDefs/Shadow/PreShadow.vert
+		FragmentShader GLSL100 : Common/MatDefs/Shadow/PreShadow.frag
+		//FragmentShader GLSL150 : Shaders/debug/black.frag
+		//FragmentShader GLSL150 : Shaders/debug/show_fullgreen.frag
+		//FragmentShader GLSL150 : Shaders/debug/z.frag
+		WorldParameters {
+			WorldViewProjectionMatrix
+			WorldViewMatrix
+		}
+
+		Defines {
+			COLOR_MAP : ColorMap
+			DISCARD_ALPHA : AlphaDiscardThreshold
+		}
+
+		ForcedRenderState {
+			FaceCull Off
+			DepthTest On
+			DepthWrite On
+			PolyOffset 5 3
+			ColorWrite Off
+		}
+	}
 }

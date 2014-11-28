@@ -10,9 +10,15 @@ import com.jme3.scene.shape.Quad;
 import com.jme3.scene.shape.Sphere;
 
 public class Helpers4Lights {
+	public static enum ShadowSourceMode {
+		Undef
+		, Spot
+	};
+
 	public static String UD_Enable = "LightEnable";
 	public static String UD_Global = "LightGlobal";
 	public static String UD_Ambiant = "LightAmbiant";
+	public static String UD_ShadowSource = "ShadowSourceMode";
 
 	/**
 	 *
@@ -120,5 +126,15 @@ public class Helpers4Lights {
 	public static boolean isAmbiant(Geometry l) {
 		Object v = l.getUserData(UD_Ambiant);
 		return (v != null)?(boolean)v : false;
+	}
+
+	public static ShadowSourceMode getShadowSourceMode(Geometry l) {
+		Object v = l.getUserData(UD_ShadowSource);
+		return (v != null)? ShadowSourceMode.values()[(int)v] : ShadowSourceMode.Undef;
+	}
+
+	public static Geometry setShadowSourceMode(Geometry l, ShadowSourceMode v) {
+		l.setUserData(UD_ShadowSource, v.ordinal());
+		return l;
 	}
 }

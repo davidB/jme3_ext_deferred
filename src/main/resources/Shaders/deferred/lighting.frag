@@ -71,6 +71,68 @@ float lambert(vec3 surfaceNormal, vec3 lightDir){
   return max(0.0, dot(surfaceNormal, lightDir));
 }
 
+#import "Common/ShaderLib/Shadows15.glsllib"
+
+uniform mat4 g_ViewMatrix;
+
+#ifdef FADE
+uniform vec2 m_FadeInfo;
+#endif
+uniform mat4 m_LightViewProjectionMatrix0;
+uniform mat4 m_LightViewProjectionMatrix1;
+uniform mat4 m_LightViewProjectionMatrix2;
+uniform mat4 m_LightViewProjectionMatrix3;
+#ifdef POINTLIGHT
+uniform mat4 m_LightViewProjectionMatrix4;
+uniform mat4 m_LightViewProjectionMatrix5;
+#endif
+
+const mat4 biasMat = mat4(0.5, 0.0, 0.0, 0.0,
+                          0.0, 0.5, 0.0, 0.0,
+                          0.0, 0.0, 0.5, 0.0,
+                          0.5, 0.5, 0.5, 1.0);
+
+float shadowOf(vec4 worldPos, float shadowPosition){
+    float shadow = 1.0;
+
+    // populate the light view matrices array and convert vertex to light viewProj space
+    vec4 projCoord0 = biasMat * m_LightViewProjectionMatrix0 * worldPos;
+    vec4 projCoord1 = biasMat * m_LightViewProjectionMatrix1 * worldPos;
+    vec4 projCoord2 = biasMat * m_LightViewProjectionMatrix2 * worldPos;
+    vec4 projCoord3 = biasMat * m_LightViewProjectionMatrix3 * worldPos;
+    #ifdef POINTLIGHT
+        vec4 projCoord4 = biasMat * m_LightViewProjectionMatrix4 * worldPos;
+        vec4 projCoord5 = biasMat * m_LightViewProjectionMatrix5 * worldPos;
+    #else
+
+        vec4 vLightPos = g_ViewMatrix * vec4(m_LightPos,1.0);
+        vec4 vPos = g_ViewMatrix * worldPos;
+        vec3 lightVec = vLightPos.xyz - vPos.xyz;
+    #endif
+
+    #ifdef POINTLIGHT
+            shadow = getPointLightShadows(worldPos, m_LightPos,
+                           m_ShadowMap0,m_ShadowMap1,m_ShadowMap2,m_ShadowMap3,m_ShadowMap4,m_ShadowMap5,
+                           projCoord0, projCoord1, projCoord2, projCoord3, projCoord4, projCoord5);
+    #else
+       #ifdef PSSM
+            shadow = getDirectionalLightShadows(m_Splits, shadowPosition,
+                           m_ShadowMap0,m_ShadowMap1,m_ShadowMap2,m_ShadowMap3,
+                           projCoord0, projCoord1, projCoord2, projCoord3);
+       #else
+            //spotlight
+            shadow = getSpotLightShadows(m_ShadowMap0,projCoord0);
+       #endif
+    #endif
+
+    #ifdef FADE
+      shadow = max(0.0,mix(shadow,1.0,(shadowPosition - m_FadeInfo.x) * m_FadeInfo.y));
+    #endif
+
+    //shadow = shadow * m_ShadowIntensity + (1.0 - m_ShadowIntensity);
+    return shadow;
+}
+
 void main(){
 	vec2 posSS = gl_FragCoord.xy;
 	vec2 texCoord = posSS / g_Resolution;
@@ -98,6 +160,12 @@ void main(){
 #ifdef FALLOFF
 	outDiffuse *= attenuation(distance(m_LightPos, posWS), m_LightFallOffDist);
 	//outDiffuse *= influence(normalize(m_LightPos), 20);
+#endif
+
+#ifdef USE_SHADOW
+	outDiffuse *= shadowOf(vec4(posWS,1.0), gl_FragCoord.z);
+	//outDiffuse = vec3(shadowOf(vec4(posWS,1.0), gl_FragCoord.z));
+	//outDiffuse = vec3(1.0,0.0,0.0);
 #endif
 
 	out_FragColor.rgb = outDiffuse;
