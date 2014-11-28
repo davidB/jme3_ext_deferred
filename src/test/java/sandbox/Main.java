@@ -40,7 +40,8 @@ public class Main {
 		//Setup Camera
 		app.enqueue(() -> {
 			app.getFlyByCamera().setMoveSpeed(10);
-//			app.getFlyByCamera().setEnabled(false);
+			//app.getFlyByCamera().setEnabled(false);
+			app.getInputManager().setCursorVisible(true);
 //			app.getCamera().setFrustumFar(1000.0f);
 //			ChaseCamera chaseCam = new ChaseCamera(app.getCamera(), app.getRootNode(), app.getInputManager());
 //			chaseCam.setDefaultDistance(6.0f);
