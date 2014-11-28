@@ -272,9 +272,8 @@ public class AppState4Sample02_BrokenCube extends AbstractAppState {
 		RigidBodyControl control = new RigidBodyControl(shape, weight);
 		ball.addControl(control);
 		stateManager.getState(BulletAppState.class).getPhysicsSpace().add(control);
-		System.err.println("cam : " + cam.getLocation() + " // " + cam.getDirection());
 		control.setPhysicsLocation(cam.getLocation().add(cam.getDirection().mult(2)));
-		control.setLinearVelocity(cam.getDirection().mult(20));
+		control.applyImpulse(cam.getDirection().normalize().mult(2), Vector3f.ZERO);
 		control.setFriction(1f);
 		control.setRestitution(0.56f);
 		control.setAngularDamping(.67f);
