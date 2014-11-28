@@ -2,6 +2,7 @@ MaterialDef debug_gbuffer {
 
 	MaterialParameters {
 		Boolean FullView
+		Texture2D Texture
 		Texture2D MatBuffer
 		Texture2D NormalBuffer
 		Texture2D DepthBuffer
@@ -153,4 +154,15 @@ MaterialDef debug_gbuffer {
 		Defines {
 			FULLVIEW : FullView
 		}
-	}}
+	}
+	Technique texture {
+		VertexShader GLSL150:   Shaders/deferred/quad.vert
+		FragmentShader GLSL150: Shaders/debug/show_tex.frag
+		WorldParameters {
+			WorldViewProjectionMatrix
+		}
+		Defines {
+			FULLVIEW : FullView
+		}
+	}
+}
