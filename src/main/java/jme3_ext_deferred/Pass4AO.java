@@ -23,6 +23,7 @@ import com.jme3.texture.Texture.MinFilter;
  * @see http://floored.com/blog/2013/ssao-screen-space-ambient-occlusion.html
  * @see http://issamkhalil.wordpress.com/2013/07/22/implementing-ssao-part-1/
  * @see http://wili.cc/research/ffao/
+ * @see http://fr.slideshare.net/ozlael/mssao-presentation
  *
  * @author David Bernard
  */
