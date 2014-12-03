@@ -5,6 +5,7 @@ import com.jme3.material.Material;
 import com.jme3.material.MaterialCustom;
 import com.jme3.math.ColorRGBA;
 import com.jme3.math.Vector3f;
+import com.jme3.renderer.queue.RenderQueue.ShadowMode;
 import com.jme3.scene.Geometry;
 import com.jme3.scene.shape.Quad;
 import com.jme3.scene.shape.Sphere;
@@ -19,6 +20,19 @@ public class Helpers4Lights {
 	public static String UD_Global = "LightGlobal";
 	public static String UD_Ambiant = "LightAmbiant";
 	public static String UD_ShadowSource = "ShadowSourceMode";
+
+	protected static Geometry asLight(Geometry geo, boolean defaultGlobal) {
+		if (geo.getUserData(UD_Global) == null) {
+			geo.setUserData(UD_Global, defaultGlobal);
+		}
+		geo.setUserData(UD_Enable, true);
+		// avoid light geometries to be processed like opaque/regular geometry (by other lights,...)
+		geo.setShadowMode(ShadowMode.Off);
+		geo.getMaterial().setTransparent(true);
+		geo.updateGeometricState();
+		geo.updateModelBound();
+		return geo;
+	}
 
 	/**
 	 *
@@ -35,14 +49,8 @@ public class Helpers4Lights {
 			mat.setFloat("LightFallOffDist", Math.abs(lightFallOffDist));
 			System.err.println("LightFallOffDist : " + lightFallOffDist);
 		}
-		if (geo.getUserData(UD_Global) == null) {
-			geo.setUserData(UD_Global, false);
-		}
-		geo.setUserData(UD_Enable, true);
 		geo.setMaterial(mat);
-		geo.updateGeometricState();
-		geo.updateModelBound();
-		return geo;
+		return asLight(geo, false);
 	}
 
 	/**
@@ -57,14 +65,9 @@ public class Helpers4Lights {
 		Material mat = new MaterialCustom(assetManager, "MatDefs/deferred/lbuffer.j3md");
 		mat.setColor("Color", color);
 		mat.setVector3("LightDir", direction);
-		if (geo.getUserData(UD_Global) == null) {
-			geo.setUserData(UD_Global, true);
-		}
-		geo.setUserData(UD_Enable, true);
 		geo.setMaterial(mat);
-		geo.updateGeometricState();
-		geo.updateModelBound();
-		return geo;
+		geo.setMaterial(mat);
+		return asLight(geo, true);
 	}
 
 	public static Geometry newPointLight(String name, float radius, ColorRGBA color, AssetManager assetManager) {
