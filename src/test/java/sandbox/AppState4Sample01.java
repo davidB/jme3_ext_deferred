@@ -115,8 +115,10 @@ public class AppState4Sample01 extends AbstractAppState {
 		anchor.attachChild(light0);
 		lights.add.onNext(light0);
 
-
-		Geometry light1 = Helpers4Lights.newDirectionnalLight("ldir", new Vector3f(-0.5f, -0.5f, -0.5f), new ColorRGBA(241f/255f*0.2f,215f/255f*0.2f,106f/255f*0.2f,1.0f), assetManager);
+		ColorRGBA light1c = new ColorRGBA(241f/255f*0.2f,215f/255f*0.2f,106f/255f*0.2f,1.0f);
+		//ColorRGBA light1c = new ColorRGBA(0.8f, 0.8f, 0.8f,1.0f);
+		Geometry light1 = Helpers4Lights.newDirectionalLight("ldir", new Vector3f(-0.5f, -0.5f, -0.5f), light1c, assetManager);
+		Helpers4Lights.setShadowSourceMode(light1, Helpers4Lights.ShadowSourceMode.Directional);
 		anchor.attachChild(light1);
 		lights.add.onNext(light1);
 

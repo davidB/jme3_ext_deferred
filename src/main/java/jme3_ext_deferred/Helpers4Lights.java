@@ -14,6 +14,7 @@ public class Helpers4Lights {
 	public static enum ShadowSourceMode {
 		Undef
 		, Spot
+		, Directional
 	};
 
 	public static String UD_Enable = "LightEnable";
@@ -60,7 +61,7 @@ public class Helpers4Lights {
 	 * @param assetManager
 	 * @return
 	 */
-	public static Geometry asDirectionnalLight(Geometry geo, Vector3f direction, ColorRGBA color, AssetManager assetManager) {
+	public static Geometry asDirectionalLight(Geometry geo, Vector3f direction, ColorRGBA color, AssetManager assetManager) {
 		//Material mat = assetManager.loadMaterial("Materials/deferred/lighting.j3m");
 		Material mat = new MaterialCustom(assetManager, "MatDefs/deferred/lbuffer.j3md");
 		mat.setColor("Color", color);
@@ -88,9 +89,9 @@ public class Helpers4Lights {
 		return asPointLight(geo, color, assetManager, null);
 	}
 
-	public static Geometry newDirectionnalLight(String name, Vector3f direction, ColorRGBA color, AssetManager assetManager) {
+	public static Geometry newDirectionalLight(String name, Vector3f direction, ColorRGBA color, AssetManager assetManager) {
 		Geometry geo = new Geometry(name, new Quad(0.5f, 0.5f));
-		return asDirectionnalLight(geo, direction, color, assetManager);
+		return asDirectionalLight(geo, direction, color, assetManager);
 	}
 
 	/**

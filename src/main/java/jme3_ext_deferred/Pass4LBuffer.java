@@ -3,6 +3,7 @@ package jme3_ext_deferred;
 import rx_ext.Iterable4AddRemove;
 
 import com.jme3.asset.AssetManager;
+import com.jme3.light.DirectionalLight;
 import com.jme3.light.SpotLight;
 import com.jme3.material.Material;
 import com.jme3.material.RenderState;
@@ -11,7 +12,6 @@ import com.jme3.material.RenderState.FaceCullMode;
 import com.jme3.material.RenderState.StencilOperation;
 import com.jme3.material.RenderState.TestFunction;
 import com.jme3.math.ColorRGBA;
-import com.jme3.math.Matrix4f;
 import com.jme3.math.Vector3f;
 import com.jme3.math.Vector4f;
 import com.jme3.renderer.Camera;
@@ -21,11 +21,11 @@ import com.jme3.renderer.ViewPort;
 import com.jme3.renderer.queue.GeometryList;
 import com.jme3.renderer.queue.NullComparator;
 import com.jme3.renderer.queue.RenderQueue;
-import com.jme3.renderer.queue.RenderQueue.ShadowMode;
 import com.jme3.scene.Geometry;
 import com.jme3.scene.Spatial;
 import com.jme3.scene.shape.Quad;
 import com.jme3.shadow.CompareMode;
+import com.jme3.shadow.DirectionalLightShadowRenderer;
 import com.jme3.shadow.SpotLightShadowRenderer;
 import com.jme3.texture.FrameBuffer;
 import com.jme3.texture.FrameBufferHack;
@@ -57,11 +57,12 @@ class Pass4LBuffer {
 	final RenderState rsAmbiant = new RenderState();
 	final RenderState rsShadow = new RenderState();
 	final Geometry finalQuad;
+	protected Geometry ambiant0;
 
 	final AssetManager assetManager;
 
 	final RSpotLightShadowRenderer shadowMapGen4Spot;
-	private Geometry ambiant0;
+	final RDirectionalLightShadowRenderer shadowMapGen4Directional;
 
 	public Pass4LBuffer(int width, int height, ViewPort vp, RenderManager rm, AssetManager assetManager, Iterable4AddRemove<Geometry> lights, GBuffer gbuffer, Texture2D matBuffer) {
 		this.gbuffer = gbuffer;
@@ -120,8 +121,14 @@ class Pass4LBuffer {
 
 		this.lights = lights;
 		this.lights.ar.add.subscribe(this::addLight);
+
+		//TODO lazy creation of shadowMapGens
+		//TODO allow to configure shadowMapGens (use a Provider)
 		shadowMapGen4Spot = new RSpotLightShadowRenderer(assetManager, 2048, vp, rm);
 		shadowMapGen4Spot.setShadowZExtend(1000);
+
+		shadowMapGen4Directional = new RDirectionalLightShadowRenderer(assetManager, 2048, 3, vp, rm);
+		shadowMapGen4Directional.setShadowZExtend(1000);
 
 		for(Geometry g : this.lights){addLight(g);}
 	}
@@ -139,9 +146,16 @@ class Pass4LBuffer {
 		mat.setFloat("ShadowMapSize", 2048);
 		mat.setFloat("PCFEdge", 1);
 
-		if (Helpers4Lights.ShadowSourceMode.Spot == Helpers4Lights.getShadowSourceMode(g)) {
+		switch(Helpers4Lights.getShadowSourceMode(g)) {
+		case Undef: break;
+		case Spot:
 			//TODO update params of the material, avoid to update params linked to "#define"
 			shadowMapGen4Spot.initMaterial(mat);
+			break;
+		case Directional:
+			//TODO update params of the material, avoid to update params linked to "#define"
+			shadowMapGen4Directional.initMaterial(mat);
+			break;
 		}
 	}
 
@@ -178,10 +192,9 @@ class Pass4LBuffer {
 			Geometry g = renderedLightGeometries.get(i);
 			Material mat = g.getMaterial();
 			boolean global = Helpers4Lights.isGlobal(g);
-			if (!global) {
-				mat.setVector3("LightPos", g.getWorldTranslation());
-				// using a fullview quad for this pass is possible but less performent (eg when lighting part of the screen)
-				if (Helpers4Lights.ShadowSourceMode.Spot == Helpers4Lights.getShadowSourceMode(g)) {
+			switch(Helpers4Lights.getShadowSourceMode(g)) {
+				case Undef: break;
+				case Spot : {
 					//TODO update params of the material, avoid to update params linked to "#define"
 					//shadowMapGen4Spot.displayFrustum();
 					//shadowMapGen4Spot.displayDebug();
@@ -189,7 +202,22 @@ class Pass4LBuffer {
 					shadowMapGen4Spot.renderShadowMaps(g, rq, mat);
 					r.setFrameBuffer(lbuffer.fb);
 					//shadowMapGen4Spot.displayShadowMaps();
+					break;
 				}
+				case Directional : {
+					//TODO update params of the material, avoid to update params linked to "#define"
+					//shadowMapGen4Spot.displayFrustum();
+					//shadowMapGen4Spot.displayDebug();
+					//rm.setForcedRenderState(rsShadow);
+					shadowMapGen4Directional.renderShadowMaps(g, rq, mat);
+					r.setFrameBuffer(lbuffer.fb);
+					//shadowMapGen4Spot.displayShadowMaps();
+					break;
+				}
+			}
+			if (!global) {
+				mat.setVector3("LightPos", g.getWorldTranslation());
+				// using a fullview quad for this pass is possible but less performent (eg when lighting part of the screen)
 
 				rm.setWorldMatrix(g.getWorldMatrix());
 
@@ -367,4 +395,56 @@ class RSpotLightShadowRenderer extends SpotLightShadowRenderer {
 //		// render shadow casters to shadow map
 //		viewPort.getQueue().renderShadowQueue(shadowMapOccluders, renderManager, shadowCam, true);
 //	}
+}
+
+class RDirectionalLightShadowRenderer extends DirectionalLightShadowRenderer {
+	public Texture shadowMap0;
+	private String[] shadowMapStringCache;
+	private String[] lightViewStringCache;
+
+	public RDirectionalLightShadowRenderer(AssetManager assetManager, int shadowMapSize, int nbSplits, ViewPort vp, RenderManager rm) {
+		super(assetManager, shadowMapSize, nbSplits);
+		initialize(rm, vp);
+		setLight(new DirectionalLight());
+		shadowMapStringCache = new String[nbShadowMaps];
+		lightViewStringCache = new String[nbShadowMaps];
+
+		for (int i = 0; i < nbShadowMaps; i++) {
+			shadowMapStringCache[i] = "ShadowMap" + i;
+			lightViewStringCache[i] = "LightViewProjectionMatrix" + i;
+		}
+
+		//shadowMap0 = shadowMaps[0];
+		//shadowMap0 = shadowFB[0].getColorBuffer().getTexture();
+		shadowMap0 = shadowFB[0].getDepthBuffer().getTexture();
+	}
+
+	public void initMaterial(Material mat) {
+		mat.setFloat("ShadowMapSize", shadowMapSize);
+		mat.setBoolean("HardwareShadows", shadowCompareMode == CompareMode.Hardware);
+		mat.setInt("FilterMode", edgeFilteringMode.getMaterialParamValue());
+		mat.setFloat("PCFEdge", edgesThickness);
+		mat.setFloat("ShadowIntensity", shadowIntensity);
+		super.setPostShadowMaterial(mat);
+		super.setMaterialParameters(mat);
+	}
+
+	public void renderShadowMaps(Geometry g, RenderQueue rq, Material mat) {
+		light.setColor((ColorRGBA)g.getMaterial().getParam("Color").getValue());
+		light.setDirection((Vector3f)g.getMaterial().getParam("LightDir").getValue());
+		preFrame(0);
+		postQueue(rq);
+
+		for (int j = 0; j < nbShadowMaps; j++) {
+			mat.setMatrix4(lightViewStringCache[j], lightViewProjectionsMatrices[j]);
+		}
+		for (int j = 0; j < nbShadowMaps; j++) {
+			mat.setTexture(shadowMapStringCache[j], shadowMaps[j]);
+		}
+	}
+
+	public void displayShadowMaps() {
+		displayShadowMap(renderManager.getRenderer());
+	}
+
 }

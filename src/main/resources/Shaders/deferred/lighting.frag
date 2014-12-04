@@ -17,6 +17,7 @@ uniform mat4 g_ViewMatrixInverse;
 uniform mat4 g_ViewProjectionMatrixInverse;
 uniform vec2 g_Resolution;
 uniform vec3 g_CameraPosition;
+uniform mat4 g_WorldViewProjectionMatrix;
 
 out vec4 out_FragColor;
 
@@ -163,11 +164,26 @@ void main(){
 #endif
 
 #ifdef USE_SHADOW
-	outDiffuse *= shadowOf(vec4(posWS,1.0), gl_FragCoord.z);
-	//outDiffuse = vec3(shadowOf(vec4(posWS,1.0), gl_FragCoord.z));
+#ifdef PSSM
+	//float depth = readDepth(m_DepthBuffer, texCoord, gl_DepthRange.near, gl_DepthRange.far);
+	//float depth = readDepth(m_DepthBuffer, texCoord, g_FrustumNearFar.x, g_FrustumNearFar.y);
+	//float depth = readDepth(m_DepthBuffer, texCoord, 0.1, 1000);
+	//float depth = 190.5;
+	//TODO optimize
+	float depth = (g_WorldViewProjectionMatrix * vec4(posWS,1.0)).z;
+#else
+	float depth = 1.0;
+#endif
+	outDiffuse *= shadowOf(vec4(posWS,1.0), depth);
+	//outDiffuse = vec3(shadowOf(vec4(posWS,1.0), depth));
 	//outDiffuse = vec3(1.0,0.0,0.0);
 #endif
 
 	out_FragColor.rgb = outDiffuse;
 	out_FragColor.a = outSpecular;
+#ifdef USE_SHADOW
+#ifdef PSSM
+//out_FragColor.rgb = vec3(0.0,1.0,0.0);
+#endif
+#endif
 }
