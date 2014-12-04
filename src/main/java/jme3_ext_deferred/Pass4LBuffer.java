@@ -61,6 +61,7 @@ class Pass4LBuffer {
 	final AssetManager assetManager;
 
 	final RSpotLightShadowRenderer shadowMapGen4Spot;
+	private Geometry ambiant0;
 
 	public Pass4LBuffer(int width, int height, ViewPort vp, RenderManager rm, AssetManager assetManager, Iterable4AddRemove<Geometry> lights, GBuffer gbuffer, Texture2D matBuffer) {
 		this.gbuffer = gbuffer;
@@ -150,12 +151,20 @@ class Pass4LBuffer {
 		renderedLightGeometries.clear();
 		vp.getCamera().setPlaneState(0);
 		Geometry ambiant = null;
-		for(Geometry g : lights.data) {
-			if (!Helpers4Lights.isEnabled(g)) continue;
-			if (Helpers4Lights.isAmbiant(g)) {
-				ambiant = g;
-			}else if(Helpers4Lights.isGlobal(g) || g.checkCulling(vp.getCamera())){
-				renderedLightGeometries.add(g);
+		if (lights.data.isEmpty()) {
+			if (ambiant0 == null) {
+				ambiant0 = Helpers4Lights.newAmbiantLight("nolight", ColorRGBA.White, assetManager);
+			}
+			ambiant = ambiant0;
+		} else {
+			ambiant0 = null;
+			for(Geometry g : lights.data) {
+				if (!Helpers4Lights.isEnabled(g)) continue;
+				if (Helpers4Lights.isAmbiant(g)) {
+					ambiant = g;
+				}else if(Helpers4Lights.isGlobal(g) || g.checkCulling(vp.getCamera())){
+					renderedLightGeometries.add(g);
+				}
 			}
 		}
 
