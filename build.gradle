@@ -42,7 +42,7 @@ dependencies {
 	compile "com.jme3:jme3-effects:${v_jme}"
 	compile "org.slf4j:slf4j-api:${v_slf4j}"
 	compile 'com.netflix.rxjava:rxjava-core:0.19.2'
-	testRuntime "com.jme3:jme3-lwjgl:${v_jme}"
+	compile "com.jme3:jme3-lwjgl:${v_jme}"
 	testRuntime "com.jme3:jme3-desktop:${v_jme}"
 	testRuntime "org.slf4j:slf4j-jdk14:${v_slf4j}"
 	testCompile 'junit:junit:4.11'
@@ -98,4 +98,81 @@ task glslValidate(type:Exec) {
   errorOutput System.err
   standardOutput System.out
   //commandLine 'cmd', '/c', 'stop.bat'
+}
+
+buildscript {
+	repositories {
+		jcenter()
+	}
+	dependencies {
+		classpath 'com.jfrog.bintray.gradle:gradle-bintray-plugin:0.5'
+	}
+}
+
+apply plugin: 'maven-publish'
+apply plugin: 'com.jfrog.bintray'
+
+task sourcesJar(type: Jar) {
+	from sourceSets.main.allSource
+	classifier = 'sources'
+}
+	//jar.dependsOn sourcesJar
+
+def pomConfig = {
+	licenses {
+		license {
+			name "Public domain (CC0-1.0)"
+			url "http://creativecommons.org/publicdomain/zero/1.0/"
+			distribution "repo"
+		}
+	}
+	developers {
+		developer {
+			id "davidB"
+			name "David Bernard"
+		}
+	}
+}
+
+publishing {
+	publications {
+		mavenStuff(MavenPublication) {
+			from components.java
+			artifact sourcesJar
+			pom.withXml {
+				def root = asNode()
+				if (description) root.appendNode('description', description)
+				root.children().last() + pomConfig
+			}
+		}
+	}
+}
+
+bintray {
+	user = bintray_user
+	key = bintray_api_key
+
+	publications = ['mavenStuff'] //When uploading Maven-based publication files
+	//dryRun = false //Whether to run this as dry-run, without deploying
+	publish = true //If version should be auto published after an upload
+	pkg {
+		repo = 'jme3stuff'
+		name = project.name
+		desc = description
+		websiteUrl = "https://github.com/davidB/${project.name}"
+		issueTrackerUrl = "https://github.com/davidB/${project.name}/issues"
+		vcsUrl = "https://github.com/davidB/${project.name}.git"
+		licenses = ['CC0-1.0']
+		labels = ['jme3']
+		publicDownloadNumbers = true
+		version {
+			name = project.version
+			vcsTag = project.version
+			//attributes = []
+			//gpg {
+			//	sign = true //Determines whether to GPG sign the files. The default is false
+			//	passphrase = 'optional, the passphrase for GPG signing'
+			//}
+		}
+	}
 }
