@@ -1,9 +1,15 @@
 package jme3_ext_deferred;
 
 import com.jme3.asset.AssetManager;
+import com.jme3.light.AmbientLight;
+import com.jme3.light.DirectionalLight;
+import com.jme3.light.Light;
+import com.jme3.light.PointLight;
+import com.jme3.light.SpotLight;
 import com.jme3.material.Material;
 import com.jme3.material.MaterialCustom;
 import com.jme3.math.ColorRGBA;
+import com.jme3.math.FastMath;
 import com.jme3.math.Vector3f;
 import com.jme3.renderer.queue.RenderQueue.ShadowMode;
 import com.jme3.scene.Geometry;
@@ -19,7 +25,7 @@ public class Helpers4Lights {
 
 	public static String UD_Enable = "LightEnable";
 	public static String UD_Global = "LightGlobal";
-	public static String UD_Ambiant = "LightAmbiant";
+	public static String UD_Ambient = "LightAmbient";
 	public static String UD_ShadowSource = "ShadowSourceMode";
 
 	protected static Geometry asLight(Geometry geo, boolean defaultGlobal) {
@@ -99,12 +105,12 @@ public class Helpers4Lights {
 	 * @param assetManager
 	 * @return
 	 */
-	public static Geometry newAmbiantLight(String name, ColorRGBA color, AssetManager assetManager) {
+	public static Geometry newAmbientLight(String name, ColorRGBA color, AssetManager assetManager) {
 		//Material mat = assetManager.loadMaterial("Materials/deferred/lighting.j3m");
 		Material mat = new MaterialCustom(assetManager, "MatDefs/deferred/lbuffer.j3md");
 		mat.setColor("Color", color);
 		Geometry geo = new Geometry(name, new Quad(0.5f, 0.5f));
-		geo.setUserData(UD_Ambiant, true);
+		geo.setUserData(UD_Ambient, true);
 		geo.setUserData(UD_Enable, true);
 		geo.setMaterial(mat);
 		geo.updateGeometricState();
@@ -128,7 +134,7 @@ public class Helpers4Lights {
 	}
 
 	public static boolean isAmbiant(Geometry l) {
-		Object v = l.getUserData(UD_Ambiant);
+		Object v = l.getUserData(UD_Ambient);
 		return (v != null)?(boolean)v : false;
 	}
 
@@ -140,5 +146,32 @@ public class Helpers4Lights {
 	public static Geometry setShadowSourceMode(Geometry l, ShadowSourceMode v) {
 		l.setUserData(UD_ShadowSource, v.ordinal());
 		return l;
+	}
+
+	public static Geometry toGeometry(Light l, boolean castShadow, AssetManager assetManager) {
+		if (l instanceof DirectionalLight) return toGeometry((DirectionalLight)l, castShadow, assetManager);
+		if (l instanceof PointLight) return toGeometry((PointLight)l, castShadow, assetManager);
+		if (l instanceof SpotLight) return toGeometry((SpotLight)l, castShadow, assetManager);
+		if (l instanceof AmbientLight) return toGeometry((AmbientLight)l, assetManager);
+		throw new IllegalArgumentException("unsupported Light type : " + l.getClass());
+	}
+	public static Geometry toGeometry(DirectionalLight l, boolean castShadow, AssetManager assetManager) {
+		Geometry b = Helpers4Lights.newDirectionalLight(l.getName(), l.getDirection(), l.getColor(), assetManager);
+		if (castShadow) Helpers4Lights.setShadowSourceMode(b, ShadowSourceMode.Directional);
+		return b;
+	}
+	public static Geometry toGeometry(SpotLight l, boolean castShadow, AssetManager assetManager) {
+		Geometry b = Helpers4Lights.newSpotLight(l.getName(), FastMath.sin(l.getSpotOuterAngle())* l.getSpotRange(), l.getSpotRange(), l.getColor(), assetManager);
+		if (castShadow) Helpers4Lights.setShadowSourceMode(b, ShadowSourceMode.Spot);
+		return b;
+	}
+	public static Geometry toGeometry(PointLight l, boolean castShadow, AssetManager assetManager) {
+		Geometry b = Helpers4Lights.newPointLight(l.getName(), l.getRadius(), l.getColor(), assetManager);
+		//if (castShadow) Helpers4Lights.setShadowSourceMode(b, ShadowSourceMode.Point);
+		return b;
+	}
+	public static Geometry toGeometry(AmbientLight l, AssetManager assetManager) {
+		Geometry b = Helpers4Lights.newAmbientLight(l.getName(), l.getColor(), assetManager);
+		return b;
 	}
 }

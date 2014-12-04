@@ -111,7 +111,7 @@ public class AppState4Sample01 extends AbstractAppState {
 	}
 
 	void makeLigths(Observable4AddRemove<Geometry> lights, Node anchor) {
-		Geometry light0 = Helpers4Lights.newAmbiantLight("lambiant", new ColorRGBA(0.05f,0.05f,0.02f,1.0f), assetManager);
+		Geometry light0 = Helpers4Lights.newAmbientLight("lambiant", new ColorRGBA(0.05f,0.05f,0.02f,1.0f), assetManager);
 		anchor.attachChild(light0);
 		lights.add.onNext(light0);
 

@@ -167,7 +167,7 @@ class Pass4LBuffer {
 		Geometry ambiant = null;
 		if (lights.data.isEmpty()) {
 			if (ambiant0 == null) {
-				ambiant0 = Helpers4Lights.newAmbiantLight("nolight", ColorRGBA.White, assetManager);
+				ambiant0 = Helpers4Lights.newAmbientLight("nolight", ColorRGBA.White, assetManager);
 			}
 			ambiant = ambiant0;
 		} else {
