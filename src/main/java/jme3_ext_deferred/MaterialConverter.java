@@ -6,6 +6,7 @@ import com.jme3.asset.AssetManager;
 import com.jme3.material.MatParam;
 import com.jme3.material.Material;
 import com.jme3.material.MaterialCustom;
+import com.jme3.material.RenderState;
 import com.jme3.math.ColorRGBA;
 import com.jme3.scene.Geometry;
 import com.jme3.scene.SceneGraphVisitorAdapter;
@@ -15,7 +16,7 @@ import com.jme3.texture.Texture;
 public class MaterialConverter extends SceneGraphVisitorAdapter {
 	final AssetManager assetManager;
 	final MatIdManager matIdManager;
-	public Material defaultMaterial;
+	public MaterialCustom defaultMaterial;
 
 	@SuppressWarnings("unchecked")
 	public static <T> T read(Material m, String name) {
@@ -40,7 +41,23 @@ public class MaterialConverter extends SceneGraphVisitorAdapter {
 			dest.setBoolean(destName, v);
 		}
 	}
-
+	public static void copyRenderState(Material dest, Material src, boolean all) {
+		RenderState s = src.getAdditionalRenderState();
+		RenderState o = dest.getAdditionalRenderState();
+		if (s.isApplyWireFrame()) o.setWireframe(s.isWireframe());
+		if (s.isApplyCullMode()) o.setFaceCullMode(s.getFaceCullMode());
+		if (s.isApplyPolyOffset()) o.setPolyOffset(s.getPolyOffsetFactor(), s.getPolyOffsetUnits());
+		if (all) {
+			if (s.isApplyAlphaFallOff()) o.setAlphaFallOff(s.getAlphaFallOff());
+			if (s.isApplyAlphaTest()) o.setAlphaTest(s.isAlphaTest());
+			if (s.isApplyBlendMode()) o.setBlendMode(s.getBlendMode());
+			if (s.isApplyColorWrite()) o.setColorWrite(s.isApplyColorWrite());
+			if (s.isApplyDepthTest()) o.setDepthTest(s.isDepthTest());
+			if (s.isApplyDepthWrite()) o.setDepthWrite(s.isDepthWrite());
+			if (s.isApplyPointSprite()) o.setPointSprite(s.isPointSprite());
+			if (s.isStencilTest()) o.setStencil(s.isStencilTest(), s.getFrontStencilStencilFailOperation(), s.getFrontStencilDepthFailOperation(), s.getFrontStencilDepthPassOperation(), s.getBackStencilStencilFailOperation(), s.getBackStencilDepthFailOperation(), s.getBackStencilDepthPassOperation(), s.getFrontStencilFunction(), s.getBackStencilFunction());
+		}
+	}
 	@Override
 	public void visit(Geometry g) {
 		Material m0 = g.getMaterial();
@@ -59,10 +76,27 @@ public class MaterialConverter extends SceneGraphVisitorAdapter {
 
 			copyTexture(m, "NormalMap", m0, "NormalMap");
 			copyTexture(m, "AlphaMap", m0, "AlphaMap");
+			copyRenderState(m, m0, false);
 			g.setMaterial(m);
 		} else if (defaultMaterial != null){
 			g.setMaterial(defaultMaterial);
+		} else {
+			g.setMaterial(toMaterialCustom(m0));
 		}
+	}
+
+	public MaterialCustom toMaterialCustom(Material m0) {
+		if (m0 instanceof MaterialCustom) {
+			return (MaterialCustom) m0;
+		}
+		MaterialCustom b = new MaterialCustom(m0.getMaterialDef());
+		for (MatParam p : m0.getParams()) {
+			b.setParam(p.getName(), p.getVarType(), p.getValue());
+		}
+		b.setTransparent(m0.isTransparent());
+		b.setReceivesShadows(m0.isReceivesShadows());
+		copyRenderState(b, m0, true);
+		return b;
 	}
 
 }
