@@ -28,6 +28,7 @@ import com.jme3.scene.Spatial;
 import com.jme3.scene.control.AbstractControl;
 import com.jme3.scene.shape.Box;
 import com.jme3.scene.shape.Sphere;
+import com.jme3.util.SkyFactory;
 
 @RequiredArgsConstructor
 public class AppState4Sample01 extends AbstractAppState {
@@ -53,6 +54,7 @@ public class AppState4Sample01 extends AbstractAppState {
 		assetManager = app.getAssetManager();
 		Node anchor = new Node("Sample01");
 		makeScene(anchor, 5, 7, 4);
+		anchor.attachChild(SkyFactory.createSky(assetManager, "Textures/Sky/Bright/BrightSky.dds", false));
 		makeLigths(lights, anchor);
 		((SimpleApplication) app).getRootNode().attachChild(anchor);
 	}
@@ -103,7 +105,6 @@ public class AppState4Sample01 extends AbstractAppState {
 		group.attachChild(sponza);
 
 		MaterialConverter mc = new MaterialConverter(assetManager, matIdManager);
-//		mc.defaultMaterial = matDef;
 		group.breadthFirstTraversal(mc);
 
 		anchor0.attachChild(group);
@@ -111,13 +112,13 @@ public class AppState4Sample01 extends AbstractAppState {
 	}
 
 	void makeLigths(Observable4AddRemove<Geometry> lights, Node anchor) {
-		Geometry light0 = Helpers4Lights.newAmbientLight("lambiant", new ColorRGBA(0.05f,0.05f,0.02f,1.0f), assetManager);
+		Geometry light0 = Helpers4Lights.newAmbientLight("lambiant", new ColorRGBA(0.1f,0.1f,0.04f,1.0f), assetManager);
 		anchor.attachChild(light0);
 		lights.add.onNext(light0);
 
-		ColorRGBA light1c = new ColorRGBA(241f/255f*0.2f,215f/255f*0.2f,106f/255f*0.2f,1.0f);
-		//ColorRGBA light1c = new ColorRGBA(0.8f, 0.8f, 0.8f,1.0f);
-		Geometry light1 = Helpers4Lights.newDirectionalLight("ldir", new Vector3f(-0.5f, -0.5f, -0.5f), light1c, assetManager);
+		//ColorRGBA light1c = new ColorRGBA(241f/255f*0.2f,215f/255f*0.2f,106f/255f*0.2f,1.0f);
+		ColorRGBA light1c = new ColorRGBA(0.8f, 0.8f, 0.8f,1.0f);
+		Geometry light1 = Helpers4Lights.newDirectionalLight("ldir", new Vector3f(-0.5f, -5f, -0.0f).normalizeLocal(), light1c, assetManager);
 		Helpers4Lights.setShadowSourceMode(light1, Helpers4Lights.ShadowSourceMode.Directional);
 		anchor.attachChild(light1);
 		lights.add.onNext(light1);
