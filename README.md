@@ -19,6 +19,8 @@ https://www.youtube.com/watch?v=lDPRoRGYWnY
 * try accumulated light buffer (ignoring material/surface)
 * add NPR samples
 * optimisation
+  * profiler (jvisualvm, mat, ...)
+  * bench : via [jmh](https://github.com/melix/jmh-gradle-plugin)
 * clean-up
 * modularize shader to ease reuse, customisation,...
 * basic documentation (README, usages)
@@ -29,6 +31,7 @@ https://www.youtube.com/watch?v=lDPRoRGYWnY
   * extends MatIdManager to store additionnal data
 * add shadow
   * cast-received shadow (hybrid map + volume) ?
+* try [mssao](http://www.comp.nus.edu.sg/~lowkl/publications/mssao_cgi2011.pdf)
 * use deep GBuffer based on 
   * update SAO
   * add  pseudo-radiosity (??)
