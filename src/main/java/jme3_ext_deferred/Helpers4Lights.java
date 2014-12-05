@@ -11,6 +11,7 @@ import com.jme3.material.MaterialCustom;
 import com.jme3.math.ColorRGBA;
 import com.jme3.math.FastMath;
 import com.jme3.math.Vector3f;
+import com.jme3.renderer.queue.RenderQueue.Bucket;
 import com.jme3.renderer.queue.RenderQueue.ShadowMode;
 import com.jme3.scene.Geometry;
 import com.jme3.scene.shape.Quad;
@@ -36,6 +37,7 @@ public class Helpers4Lights {
 		// avoid light geometries to be processed like opaque/regular geometry (by other lights,...)
 		geo.setShadowMode(ShadowMode.Off);
 		geo.getMaterial().setTransparent(true);
+		geo.setQueueBucket(Bucket.Translucent);
 		geo.updateGeometricState();
 		geo.updateModelBound();
 		return geo;
@@ -54,7 +56,6 @@ public class Helpers4Lights {
 		mat.setColor("Color", color);
 		if (lightFallOffDist != null){
 			mat.setFloat("LightFallOffDist", Math.abs(lightFallOffDist));
-			System.err.println("LightFallOffDist : " + lightFallOffDist);
 		}
 		geo.setMaterial(mat);
 		return asLight(geo, false);
@@ -116,6 +117,10 @@ public class Helpers4Lights {
 		geo.updateGeometricState();
 		geo.updateModelBound();
 		return geo;
+	}
+
+	public static boolean isLight(Geometry l) {
+		return l.getUserData(UD_Enable) != null;
 	}
 
 	public static boolean isEnabled(Geometry l) {
