@@ -173,6 +173,11 @@ class Pass4LBuffer {
 		} else {
 			ambiant0 = null;
 			for(Geometry g : lights.data) {
+				if (g.getParent() == null) {
+					lights.ar.remove.onNext(g);
+					//TODO log a warning about use of invalid lights
+					continue;
+				}
 				if (!Helpers4Lights.isEnabled(g)) continue;
 				if (Helpers4Lights.isAmbiant(g)) {
 					ambiant = g;
