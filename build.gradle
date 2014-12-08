@@ -87,6 +87,7 @@ task fmpp() << {
 		, outputRoot: generated_assets_dir
 	)
 }
+compileJava.dependsOn(fmpp)
 
 // see https://cvs.khronos.org/svn/repos/ogl/trunk/ecosystem/public/sdk/tools/glslang/Install/
 task glslValidate(type:Exec) {
