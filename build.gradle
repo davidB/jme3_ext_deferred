@@ -16,7 +16,7 @@ ext.mainClass = 'vdrones.Main'
 if (hasProperty('mainClass')) {
 	ext.mainClass = mainClass
 }
-version = '0.1.0'
+version = '0.1.1'
 group = 'net.alchim31.jme3'
 
 repositories {
@@ -93,7 +93,8 @@ compileJava.dependsOn(fmpp)
 task glslValidate(type:Exec) {
   executable 'glslangValidator'
   //args "-d"
-  args fileTree(dir: generated_assets_dir, includes: ['**/*.frag', '**/*.vert']).getFiles()
+  //args fileTree(dir: generated_assets_dir, includes: ['**/*.frag', '**/*.vert']).getFiles()
+  args fileTree(dir: "$projectDir/src/main/resources", includes: ['**/*.frag', '**/*.vert']).getFiles()
   //args fileTree(dir: generated_assets_dir, includes: ['**/deferred.frag']).getFiles()
   workingDir generated_assets_dir
   errorOutput System.err

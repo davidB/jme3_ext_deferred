@@ -34,10 +34,11 @@ MaterialDef gbuffer {
 
 		VertexShader GLSL150 : Shaders/deferred/gbuffer.vert
 		//VertexShader GLSL100 :   Common/MatDefs/Shadow/PreShadow.vert
-		FragmentShader GLSL100 : Common/MatDefs/Shadow/PreShadow.frag
+		//FragmentShader GLSL100 : Common/MatDefs/Shadow/PreShadow.frag
 		//FragmentShader GLSL150 : Shaders/debug/black.frag
 		//FragmentShader GLSL150 : Shaders/debug/show_fullgreen.frag
 		//FragmentShader GLSL150 : Shaders/debug/z.frag
+		FragmentShader GLSL150 : Shaders/deferred/shadowmap.frag
 		WorldParameters {
 			WorldViewProjectionMatrix
 			WorldViewMatrix

@@ -70,6 +70,7 @@ class Pass4LBuffer {
 		//this.lbuffer = new TBuffer(width, height, Format.RGB8);
 		lbuffer.fb.setDepthTexture(gbuffer.depth);
 		FrameBufferHack.setDepthStencilAttachment(lbuffer.fb);
+		//FrameBufferHack.setStencilAttachment(lbuffer.fb);
 
 		this.vp = vp;
 		this.rm = rm;

@@ -1390,6 +1390,8 @@ public class LwjglRendererCustom implements Renderer {
             return GL_DEPTH_ATTACHMENT_EXT;
         } else if (attachmentSlot == -101) {
         	return GL_DEPTH_STENCIL_ATTACHMENT;
+        } else if (attachmentSlot == -102) {
+        	return GL_STENCIL_ATTACHMENT;
         } else if (attachmentSlot < 0 || attachmentSlot >= 16) {
             throw new UnsupportedOperationException("Invalid FBO attachment slot: " + attachmentSlot);
         }

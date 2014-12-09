@@ -1,9 +1,9 @@
 uniform mat4 g_WorldViewProjectionMatrix;
 
-attribute vec3 inPosition;
-attribute vec2 inTexCoord;
+in vec3 inPosition;
+in vec2 inTexCoord;
 
-varying vec2 texCoord;
+out vec2 texCoord;
 
 void main(){
    texCoord = inTexCoord;

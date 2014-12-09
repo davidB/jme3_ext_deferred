@@ -37,3 +37,13 @@ https://www.youtube.com/watch?v=lDPRoRGYWnY
   * add  pseudo-radiosity (??)
   * add Motion Blur
 * a lot of more ...
+* support env without depth24stencil8, some ways to explore :
+  * http://en.wikibooks.org/wiki/OpenGL_Programming/Stencil_buffer
+  * https://www.opengl.org/wiki/Framebuffer_Object_Examples#Stencil
+  * https://www.khronos.org/registry/gles/extensions/OES/OES_packed_depth_stencil.txt
+  * https://www.opengl.org/registry/specs/EXT/packed_depth_stencil.txt
+  * using STENCIL_INDEX8 https://www.khronos.org/registry/gles/extensions/OES/OES_texture_stencil8.txt
+     https://groups.google.com/forum/#!topic/webgl-dev-list/6pfpr1GW_-g
+* support mac osx
+  * https://developer.apple.com/opengl/
+  * https://developer.apple.com/opengl/capabilities/index.html
