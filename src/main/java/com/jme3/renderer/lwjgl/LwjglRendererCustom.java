@@ -275,7 +275,7 @@ public class LwjglRendererCustom implements Renderer {
             caps.add(Caps.FloatDepthBuffer);
         }
 
-        if (ctxCaps.OpenGL30) {
+        if (ctxCaps.OpenGL30 || ctxCaps.GL_EXT_packed_depth_stencil) {
             caps.add(Caps.PackedDepthStencilBuffer);
         }
 
