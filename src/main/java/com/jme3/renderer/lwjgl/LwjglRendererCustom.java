@@ -411,7 +411,11 @@ public class LwjglRendererCustom implements Renderer {
 
     public void cleanup() {
         logger.log(Level.FINE, "Deleting objects and invalidating state");
-        objManager.deleteAllObjects(this);
+        try {
+        	objManager.deleteAllObjects(this);
+        } catch(Throwable exc) {
+        	exc.printStackTrace();
+        }
         statistics.clearMemory();
         invalidateState();
     }
