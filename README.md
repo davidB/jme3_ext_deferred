@@ -1,6 +1,7 @@
 An experimental deferred rendering pipeline for [jmonkeyengine 3](http://jmonkeyengine.org).
 
-https://www.youtube.com/watch?v=lDPRoRGYWnY
+[![](http://img.youtube.com/vi/VcggFR0hMuA/0.jpg)](
+https://www.youtube.com/watch?v=VcggFR0hMuA&index=8&list=PLR6cFelWHJZ1-GbCoDQ7gxT3Q7qqyrmYE)
 
 
 # DONE (+/-)
