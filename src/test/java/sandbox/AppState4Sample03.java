@@ -1,11 +1,8 @@
 package sandbox;
 
-import jme3_ext_deferred.Helpers4Lights;
-import jme3_ext_deferred.Helpers4Mesh;
 import jme3_ext_deferred.MatIdManager;
 import jme3_ext_deferred.MaterialConverter;
 import lombok.RequiredArgsConstructor;
-import rx_ext.Observable4AddRemove;
 
 import com.jme3.app.Application;
 import com.jme3.app.SimpleApplication;
@@ -13,16 +10,18 @@ import com.jme3.app.state.AbstractAppState;
 import com.jme3.app.state.AppStateManager;
 import com.jme3.asset.AssetManager;
 import com.jme3.bounding.BoundingBox;
+import com.jme3.light.AmbientLight;
+import com.jme3.light.DirectionalLight;
+import com.jme3.light.SpotLight;
 import com.jme3.material.Material;
 import com.jme3.material.MaterialCustom;
 import com.jme3.math.ColorRGBA;
-import com.jme3.math.Quaternion;
+import com.jme3.math.FastMath;
 import com.jme3.math.Vector3f;
 import com.jme3.renderer.RenderManager;
 import com.jme3.renderer.ViewPort;
 import com.jme3.renderer.queue.RenderQueue.ShadowMode;
 import com.jme3.scene.Geometry;
-import com.jme3.scene.Mesh;
 import com.jme3.scene.Node;
 import com.jme3.scene.Spatial;
 import com.jme3.scene.control.AbstractControl;
@@ -31,7 +30,7 @@ import com.jme3.scene.shape.Sphere;
 import com.jme3.util.SkyFactory;
 
 @RequiredArgsConstructor
-public class AppState4Sample01 extends AbstractAppState {
+public class AppState4Sample03 extends AbstractAppState {
 	private final ColorRGBA[] colors = new ColorRGBA[]{
 			ColorRGBA.Red,
 			ColorRGBA.Green,
@@ -46,7 +45,6 @@ public class AppState4Sample01 extends AbstractAppState {
 	};
 
 	final public MatIdManager matIdManager;
-	final public Observable4AddRemove<Geometry> lights;
 	AssetManager assetManager;
 
 	@Override
@@ -55,7 +53,7 @@ public class AppState4Sample01 extends AbstractAppState {
 		Node anchor = new Node("Sample01");
 		makeScene(anchor, 5, 7, 4);
 		anchor.attachChild(SkyFactory.createSky(assetManager, "Textures/Sky/Bright/BrightSky.dds", false));
-		makeLigths(lights, anchor);
+		makeLigths(anchor);
 		((SimpleApplication) app).getRootNode().attachChild(anchor);
 	}
 
@@ -111,50 +109,63 @@ public class AppState4Sample01 extends AbstractAppState {
 		return group;
 	}
 
-	void makeLigths(Observable4AddRemove<Geometry> lights, Node anchor) {
-		Geometry light0 = Helpers4Lights.newAmbientLight("lambiant", new ColorRGBA(0.1f,0.1f,0.04f,1.0f), assetManager);
-		anchor.attachChild(light0);
-		lights.add.onNext(light0);
+	void makeLigths(Node anchor) {
+		AmbientLight light0 = new AmbientLight();
+		light0.setColor(new ColorRGBA(0.1f,0.1f,0.04f,1.0f));
+		anchor.addLight(light0);
 
 		//ColorRGBA light1c = new ColorRGBA(241f/255f*0.2f,215f/255f*0.2f,106f/255f*0.2f,1.0f);
 		ColorRGBA light1c = new ColorRGBA(0.8f, 0.8f, 0.8f,1.0f);
-		Geometry light1 = Helpers4Lights.newDirectionalLight("ldir", new Vector3f(-0.5f, -5f, -0.0f).normalizeLocal(), light1c, assetManager);
-		Helpers4Lights.setShadowSourceMode(light1, Helpers4Lights.ShadowSourceMode.Directional);
-		anchor.attachChild(light1);
-		lights.add.onNext(light1);
+		DirectionalLight light1 = new DirectionalLight();
+		light1.setColor(light1c);
+		light1.setDirection(new Vector3f(-0.5f, -5f, -0.0f).normalizeLocal());
+		light1.setName("ldir");
+		anchor.addLight(light1);
+		anchor.addControl(new AbstractControl(){
+			float time = 0;
+			@Override
+			protected void controlUpdate(float tpf) {
+				time += tpf;
+				float angle = 2 * FastMath.PI * ((time % 20f) / 20f);
+				light1.setDirection(new Vector3f(0, FastMath.sin(angle), FastMath.cos(angle)).normalizeLocal());
+			}
+
+			@Override
+			protected void controlRender(RenderManager rm, ViewPort vp) {
+			}
+
+		});
 
 		anchor.addControl(new AbstractControl() {
 
-			private Geometry[] pls = new Geometry[8];
+			private SpotLight[] pls = new SpotLight[4];
 			private Node anchor = null;
 			float radius = 10f;
-			float rangeY = -50;
+			float rangeY = 30;
 
 			@Override
 			public void setSpatial(Spatial spatial) {
 				super.setSpatial(spatial);
 				if (anchor != null && anchor != spatial) {
 					for (int i = 0; i < pls.length; i++){
-						anchor.detachChild(pls[i]);
+						anchor.removeLight(pls[i]);
 					}
 					anchor = null;
 				}
 				if (spatial != null && anchor != spatial) {
 					anchor = (Node)spatial;
-					//Mesh mesh = new Cylinder(16, 16, radius, 50f);
-					//Mesh mesh = new Sphere(16, 16, radius);
-					//Quaternion rot = new Quaternion(new float[]{(float)(0.5f * Math.PI), 0f, 0f}); // to have vertical cylinder
-					Mesh mesh = Helpers4Mesh.newCone(4, rangeY, radius);
-					Quaternion rot = new Quaternion();
-
+					float spotOuterAngle = FastMath.PI/4f;//FastMath.atan(radius/rangeY);
+					System.out.println("spotOuterAngle : " + spotOuterAngle);
 					for (int i = 0; i < pls.length; i++){
-						//Geometry pl = new Geometry("pl"+i, new Sphere(16, 16, radius));
-						Geometry pl = Helpers4Lights.asPointLight(new Geometry("pl"+i, mesh), colors[i % colors.length], assetManager, rangeY);
-						//if (i == 4)
-						Helpers4Lights.setShadowSourceMode(pl, Helpers4Lights.ShadowSourceMode.Spot);
-						pl.setLocalRotation(rot);
-						anchor.attachChild(pl);
-						lights.add.onNext(pl);
+						SpotLight pl = new SpotLight();
+						pl.setName("pl"+i);
+						//pl.setDirection(Vector3f.UNIT_Y);
+						pl.setColor(colors[i % colors.length]);
+						pl.setSpotRange(rangeY);
+						pl.setSpotOuterAngle(spotOuterAngle);
+						pl.setSpotInnerAngle(spotOuterAngle * 0.8f);
+						//pl.setDirection(direction);
+						anchor.addLight(pl);
 						pls[i] = pl;
 					}
 				}
@@ -178,8 +189,10 @@ public class AppState4Sample01 extends AbstractAppState {
 					for (int z = 0; z < nbSize; z++){
 						int i = x + z * nbSize;
 						if (i < pls.length) {
-							Geometry pl = pls[i];
-							pl.setLocalTranslation((x - nbSize/2) * 2f * radius, -rangeY * 0.5f, (z - nbSize/2) * 2f * radius);
+							SpotLight pl = pls[i];
+							Vector3f v = pl.getPosition();
+							v.set((x - nbSize/2) * 2f * radius, rangeY * 0.5f, (z - nbSize/2) * 2f * radius);
+							pl.setPosition(v);
 						}
 					}
 				}

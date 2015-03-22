@@ -1,29 +1,38 @@
 package jme3_ext_deferred;
 
-import rx_ext.Iterable4AddRemove;
+import java.util.ArrayList;
+import java.util.Collection;
 
 import com.jme3.asset.AssetManager;
+import com.jme3.light.AmbientLight;
 import com.jme3.light.DirectionalLight;
+import com.jme3.light.Light;
+import com.jme3.light.PointLight;
 import com.jme3.light.SpotLight;
 import com.jme3.material.Material;
+import com.jme3.material.MaterialCustom;
 import com.jme3.material.RenderState;
 import com.jme3.material.RenderState.BlendMode;
 import com.jme3.material.RenderState.FaceCullMode;
 import com.jme3.material.RenderState.StencilOperation;
 import com.jme3.material.RenderState.TestFunction;
 import com.jme3.math.ColorRGBA;
+import com.jme3.math.FastMath;
+import com.jme3.math.Quaternion;
 import com.jme3.math.Vector3f;
 import com.jme3.math.Vector4f;
 import com.jme3.renderer.Camera;
 import com.jme3.renderer.RenderManager;
 import com.jme3.renderer.Renderer;
 import com.jme3.renderer.ViewPort;
-import com.jme3.renderer.queue.GeometryList;
-import com.jme3.renderer.queue.NullComparator;
 import com.jme3.renderer.queue.RenderQueue;
+import com.jme3.renderer.queue.RenderQueue.Bucket;
+import com.jme3.renderer.queue.RenderQueue.ShadowMode;
 import com.jme3.scene.Geometry;
+import com.jme3.scene.Node;
 import com.jme3.scene.Spatial;
 import com.jme3.scene.shape.Quad;
+import com.jme3.scene.shape.Sphere;
 import com.jme3.shadow.CompareMode;
 import com.jme3.shadow.DirectionalLightShadowRenderer;
 import com.jme3.shadow.SpotLightShadowRenderer;
@@ -33,6 +42,7 @@ import com.jme3.texture.Image.Format;
 import com.jme3.texture.Texture;
 import com.jme3.texture.Texture2D;
 
+
 // @see http://ogldev.atspace.co.uk/www/tutorial37/tutorial37.html
 class Pass4LBuffer {
 	public final TBuffer lbuffer;
@@ -41,12 +51,9 @@ class Pass4LBuffer {
 	public boolean showLightGeom = false;
 	final Material debugGeomMat;
 
-
 	final GBuffer gbuffer;
 	final ViewPort vp;
 	final RenderManager rm;
-	final Iterable4AddRemove<Geometry> lights;
-	final GeometryList renderedLightGeometries = new GeometryList(new NullComparator());
 	final Vector4f m_ProjInfo;
 	final Vector3f m_ClipInfo;
 	final Texture2D m_MatBuffer;
@@ -56,15 +63,19 @@ class Pass4LBuffer {
 	final RenderState rs0 = new RenderState();
 	final RenderState rsAmbiant = new RenderState();
 	final RenderState rsShadow = new RenderState();
-	final Geometry finalQuad;
-	protected Geometry ambiant0;
+	protected AmbientLight ambient0;
+	final Collection<Light> lights0 = new ArrayList<Light>();
 
 	final AssetManager assetManager;
 
-	final RSpotLightShadowRenderer shadowMapGen4Spot;
-	final RDirectionalLightShadowRenderer shadowMapGen4Directional;
+	final LigthPeerTmpl4Ambient ligthPeerTmpl4Ambient;
+	final LigthPeerTmpl4Spot ligthPeerTmpl4Spot;
+	final LigthPeerTmpl4Spot ligthPeerTmpl4SpotAndShadow;
+	final LigthPeerTmpl4Point ligthPeerTmpl4Point;
+	final LigthPeerTmpl4Directional ligthPeerTmpl4Directional;
+	final LigthPeerTmpl4Directional ligthPeerTmpl4DirectionalAndShadow;
 
-	public Pass4LBuffer(int width, int height, ViewPort vp, RenderManager rm, AssetManager assetManager, Iterable4AddRemove<Geometry> lights, GBuffer gbuffer, Texture2D matBuffer) {
+	public Pass4LBuffer(int width, int height, ViewPort vp, RenderManager rm, AssetManager assetManager, GBuffer gbuffer, Texture2D matBuffer) {
 		this.gbuffer = gbuffer;
 		this.lbuffer = new TBuffer(width, height, Format.RGB16F);
 		//this.lbuffer = new TBuffer(width, height, Format.RGB8);
@@ -92,7 +103,8 @@ class Pass4LBuffer {
 		rsLBufMask.setDepthTest(true);
 		rsLBufMask.setDepthWrite(false);
 		rsLBufMask.setFaceCullMode(FaceCullMode.Off);
-		rsLBufMask.setBlendMode(BlendMode.Color);
+		rsLBufMask.setColorWrite(false);
+		rsLBufMask.setBlendMode(BlendMode.Off);
 
 		rsLBuf.setStencil(true,
 				//_frontStencilStencilFailOperation, _frontStencilDepthFailOperation, _frontStencilDepthPassOperation,
@@ -104,7 +116,7 @@ class Pass4LBuffer {
 				);
 		rsLBuf.setDepthTest(false);
 		rsLBuf.setDepthWrite(false);
-		rsLBuf.setFaceCullMode(FaceCullMode.Front);
+		rsLBuf.setFaceCullMode(FaceCullMode.Back);
 		rsLBuf.setBlendMode(BlendMode.Additive);
 
 		rs0.setDepthTest(false);
@@ -117,118 +129,126 @@ class Pass4LBuffer {
 		rsAmbiant.setFaceCullMode(FaceCullMode.Back);
 		rsAmbiant.setBlendMode(BlendMode.Additive);
 
-		finalQuad = new Geometry("finalQuad", new Quad(1, 1));
-		finalQuad.setCullHint(Spatial.CullHint.Never);
-
-		this.lights = lights;
-		this.lights.ar.add.subscribe(this::addLight);
-
 		//TODO lazy creation of shadowMapGens
 		//TODO allow to configure shadowMapGens (use a Provider)
-		shadowMapGen4Spot = new RSpotLightShadowRenderer(assetManager, 2048, vp, rm);
-		shadowMapGen4Spot.setShadowZExtend(1000);
-
-		shadowMapGen4Directional = new RDirectionalLightShadowRenderer(assetManager, 2048, 3, vp, rm);
-		shadowMapGen4Directional.setShadowZExtend(1000);
-
-		for(Geometry g : this.lights){addLight(g);}
+		ligthPeerTmpl4Ambient = new LigthPeerTmpl4Ambient(this);
+		ligthPeerTmpl4Directional = new LigthPeerTmpl4Directional(this, false);
+		ligthPeerTmpl4DirectionalAndShadow = new LigthPeerTmpl4Directional(this, true);
+		ligthPeerTmpl4Spot = new LigthPeerTmpl4Spot(this, false);
+		ligthPeerTmpl4SpotAndShadow = new LigthPeerTmpl4Spot(this, true);
+		ligthPeerTmpl4Point = new LigthPeerTmpl4Point(this, false);
 	}
 
-	void addLight(Geometry g) {
-		Material mat = g.getMaterial();
+	void initMaterial(Material mat) {
 		mat.setTexture("MatBuffer", m_MatBuffer);
 		mat.setTexture("DepthBuffer", gbuffer.depth);
 		mat.setTexture("NormalBuffer", gbuffer.normal);
 		mat.setTexture("SpecularBuffer", gbuffer.specular);
 		mat.setVector3("ClipInfo", m_ClipInfo);
 		mat.setVector4("ProjInfo", m_ProjInfo);
+	}
 
-		//init required default value, useless when no shadow, else updated by renderer
-		mat.setFloat("ShadowMapSize", 2048);
-		mat.setFloat("PCFEdge", 1);
-
-		switch(Helpers4Lights.getShadowSourceMode(g)) {
-		case Undef: break;
-		case Spot:
-			//TODO update params of the material, avoid to update params linked to "#define"
-			shadowMapGen4Spot.initMaterial(mat);
-			break;
-		case Directional:
-			//TODO update params of the material, avoid to update params linked to "#define"
-			shadowMapGen4Directional.initMaterial(mat);
-			break;
+	void collectLights(Collection<Light> out) {
+		out.clear();
+		for(Spatial c : vp.getScenes()) {
+			collectLights(out, c);
+		}
+		if (out.isEmpty()) {
+			if (ambient0 == null) {
+				ambient0 = new AmbientLight();
+				ambient0.setColor(ColorRGBA.White);
+			}
+			out.add(ambient0);
 		}
 	}
 
+	void collectLights(Collection<Light> out, Spatial s) {
+		for(Light l : s.getLocalLightList()) {
+			out.add(l);
+		}
+		if (s instanceof Node) {
+			for(Spatial c : ((Node)s).getChildren()) {
+				collectLights(out, c);
+			}
+		}
+	}
+
+	void configureLightPeer(LightPeer out, Light l) {
+		out.geom = null;
+		out.shadowMapGen = null;
+		boolean useShadow = findIfUseShadow(l);
+		if (l instanceof AmbientLight) {
+			LigthPeerTmpl4Ambient peer = ligthPeerTmpl4Ambient;
+			peer.configure((AmbientLight)l);
+			out.geom = peer.geom;
+			out.shadowMapGen = peer.shadowMapGen;
+			out.isGlobal = peer.isGlobal;
+		} else if (l instanceof DirectionalLight) {
+			LigthPeerTmpl4Directional peer = useShadow ? ligthPeerTmpl4DirectionalAndShadow : ligthPeerTmpl4Directional;
+			peer.configure((DirectionalLight)l);
+			out.geom = peer.geom;
+			out.shadowMapGen = peer.shadowMapGen;
+			out.isGlobal = peer.isGlobal;
+		} else if (l instanceof SpotLight) {
+			LigthPeerTmpl4Spot peer = useShadow ? ligthPeerTmpl4SpotAndShadow : ligthPeerTmpl4Spot;
+			peer.configure((SpotLight)l);
+			out.geom = peer.geom;
+			out.shadowMapGen = peer.shadowMapGen;
+			out.isGlobal = peer.isGlobal;
+		} else if (l instanceof PointLight) {
+			LigthPeerTmpl4Point peer = ligthPeerTmpl4Point;
+			peer.configure((PointLight)l);
+			out.geom = peer.geom;
+			out.shadowMapGen = peer.shadowMapGen;
+			out.isGlobal = peer.isGlobal;
+		}
+	}
+
+	boolean findIfUseShadow(Light l) {
+		return true;
+	}
+
+int debug = 10;
 	//TODO optimize
 	public void render(RenderQueue rq) {
 		FrameBuffer fbOrig = vp.getOutputFrameBuffer();
-		renderedLightGeometries.clear();
 		vp.getCamera().setPlaneState(0);
-		Geometry ambiant = null;
-		if (lights.data.isEmpty()) {
-			if (ambiant0 == null) {
-				ambiant0 = Helpers4Lights.newAmbientLight("nolight", ColorRGBA.White, assetManager);
-			}
-			ambiant = ambiant0;
-		} else {
-			ambiant0 = null;
-			for(Geometry g : lights.data) {
-				if (g.getParent() == null) {
-					lights.ar.remove.onNext(g);
-					//TODO log a warning about use of invalid lights
-					continue;
-				}
-				if (!Helpers4Lights.isEnabled(g)) continue;
-				if (Helpers4Lights.isAmbiant(g)) {
-					ambiant = g;
-				}else if(Helpers4Lights.isGlobal(g) || g.checkCulling(vp.getCamera())){
-					renderedLightGeometries.add(g);
-				}
-			}
-		}
+		collectLights(lights0);
 
 		Renderer r = rm.getRenderer();
 		r.setFrameBuffer(lbuffer.fb);
 		r.setBackgroundColor(new ColorRGBA(0,0,0,0));
 		//
 		r.clearBuffers(true, false, true);
-		int nb = renderedLightGeometries.size();
-		for (int i = 0; i < nb; i++) {
-			Geometry g = renderedLightGeometries.get(i);
-			Material mat = g.getMaterial();
-			boolean global = Helpers4Lights.isGlobal(g);
-			switch(Helpers4Lights.getShadowSourceMode(g)) {
-				case Undef: break;
-				case Spot : {
-					//TODO update params of the material, avoid to update params linked to "#define"
-					//shadowMapGen4Spot.displayFrustum();
-					//shadowMapGen4Spot.displayDebug();
-					//rm.setForcedRenderState(rsShadow);
-					shadowMapGen4Spot.renderShadowMaps(g, rq, mat);
-					r.setFrameBuffer(lbuffer.fb);
-					//shadowMapGen4Spot.displayShadowMaps();
-					break;
-				}
-				case Directional : {
-					//TODO update params of the material, avoid to update params linked to "#define"
-					//shadowMapGen4Spot.displayFrustum();
-					//shadowMapGen4Spot.displayDebug();
-					//rm.setForcedRenderState(rsShadow);
-					shadowMapGen4Directional.renderShadowMaps(g, rq, mat);
-					r.setFrameBuffer(lbuffer.fb);
-					//shadowMapGen4Spot.displayShadowMaps();
-					break;
-				}
+		LightPeer lp = new LightPeer();
+		for(Light l : lights0) {
+			configureLightPeer(lp, l);
+			if (lp.geom == null) continue;
+			if (debug > 0) {
+				//System.out.println("lp : " + lp.geom + " ... " + lp.geom.getWorldTransform() + ".. "+ ((SpotLight)l).getDirection() + " .. " + (lp.shadowMapGen != null));
+				debug--;
 			}
-			if (!global) {
+			Geometry g = lp.geom;
+			g.updateGeometricState();
+			g.updateModelBound();
+			Material mat = g.getMaterial();
+			if (lp.shadowMapGen != null) {
+					//TODO update params of the material, avoid to update params linked to "#define"
+					//shadowMapGen4Spot.displayFrustum();
+					//shadowMapGen4Spot.displayDebug();
+					//rm.setForcedRenderState(rsShadow);
+					lp.shadowMapGen.renderShadowMaps(g, rq, mat);
+					r.setFrameBuffer(lbuffer.fb);
+					//shadowMapGen4Spot.displayShadowMaps();
+			}
+			if (!lp.isGlobal) {
 				mat.setVector3("LightPos", g.getWorldTranslation());
 				// using a fullview quad for this pass is possible but less performent (eg when lighting part of the screen)
 
 				rm.setWorldMatrix(g.getWorldMatrix());
 
-				mat.selectTechnique("LBufMask", rm);
 				r.clearBuffers(false, false, true);
+				mat.selectTechnique("LBufMask", rm);
 				rm.setForcedRenderState(rsLBufMask);
 				mat.render(g, rm);
 
@@ -237,22 +257,17 @@ class Pass4LBuffer {
 				rm.setForcedRenderState(rsLBuf);
 				mat.render(g, rm);
 			} else {
-				mat.selectTechnique("LBuf", rm);
+				if (l instanceof AmbientLight){
+					mat.selectTechnique("LBufAmbiant", rm);
+					rm.setForcedRenderState(rsAmbiant);
+				} else {
+					mat.selectTechnique("LBuf", rm);
+					rm.setForcedRenderState(rs0);
+				}
 				mat.setBoolean("FullView", true);
-				rm.setForcedRenderState(rs0);
-				rm.setWorldMatrix(finalQuad.getWorldMatrix());
-				mat.render(finalQuad, rm);
+				rm.setWorldMatrix(g.getWorldMatrix());
+				mat.render(g, rm);
 			}
-			mat.selectTechnique("Default", rm);
-		}
-		//TODO apply ambient in final shade/compisition ?
-		if (ambiant != null) {
-			Material mat = ambiant.getMaterial();
-			mat.selectTechnique("LBufAmbiant", rm);
-			mat.setBoolean("FullView", true);
-			rm.setForcedRenderState(rsAmbiant);
-			rm.setWorldMatrix(finalQuad.getWorldMatrix());
-			mat.render(finalQuad, rm);
 			mat.selectTechnique("Default", rm);
 		}
 		if (showLightGeom) {
@@ -260,10 +275,11 @@ class Pass4LBuffer {
 			rm.setForcedRenderState(null);
 			r.clearBuffers(false, false, true);
 			//debugGeomMat.selectTechnique("redbackface", rm);
-			for (int i = 0; i < nb; i++) {
-				Geometry g = renderedLightGeometries.get(i);
-				boolean global = (boolean) g.getUserData(Helpers4Lights.UD_Global);
-				if (global) continue;
+			for(Light l : lights0) {
+				configureLightPeer(lp, l);
+				if (lp.isGlobal) continue;
+				if (lp.geom == null) continue;
+				Geometry g = lp.geom;
 				rm.setWorldMatrix(g.getWorldMatrix());
 				Material mat = g.getMaterial();
 				debugGeomMat.setColor("Color", (ColorRGBA)mat.getParam("Color").getValue());
@@ -281,17 +297,41 @@ class Pass4LBuffer {
 
 	}
 }
+interface ShadowMapGenerator {
+	public void renderShadowMaps(Geometry g, RenderQueue rq, Material mat);
+}
 
-class RSpotLightShadowRenderer extends SpotLightShadowRenderer {
-	Vector3f dir = new Vector3f(0,-1,0);
+class LightPeer {
+	public Geometry geom;
+	public ShadowMapGenerator shadowMapGen;
+	public boolean isGlobal;
+}
+
+abstract class LightPeerTmpl<T extends Light> {
+	public static Material setupGeom(Geometry geom, Pass4LBuffer lbuffer) {
+		Material mat = new MaterialCustom(lbuffer.assetManager, "MatDefs/deferred/lbuffer.j3md");
+		mat.setColor("Color",  ColorRGBA.White);
+		mat.setTransparent(true);
+		lbuffer.initMaterial(mat);
+
+		geom.setMaterial(mat);
+		geom.setShadowMode(ShadowMode.Off);
+		geom.setQueueBucket(Bucket.Translucent);
+
+		return mat;
+	}
+
+	public abstract void configure(T light);
+}
+
+class RSpotLightShadowRenderer extends SpotLightShadowRenderer implements ShadowMapGenerator{
 	public Texture shadowMap0;
 	private String[] shadowMapStringCache;
 	private String[] lightViewStringCache;
 
-	public RSpotLightShadowRenderer(AssetManager assetManager, int shadowMapSize, ViewPort vp, RenderManager rm) {
+	public RSpotLightShadowRenderer(AssetManager assetManager, int shadowMapSize) {
 		super(assetManager, shadowMapSize);
-		initialize(rm, vp);
-		setLight(new SpotLight());
+		setFlushQueues(false);
 		shadowMapStringCache = new String[nbShadowMaps];
 		lightViewStringCache = new String[nbShadowMaps];
 
@@ -307,7 +347,7 @@ class RSpotLightShadowRenderer extends SpotLightShadowRenderer {
 
 	public void initMaterial(Material mat) {
 		super.setPostShadowMaterial(mat);
-		mat.setFloat("ShadowMapSize", shadowMapSize);
+		//mat.setFloat("ShadowMapSize", shadowMapSize);
 		mat.setBoolean("HardwareShadows", shadowCompareMode == CompareMode.Hardware);
 		mat.setInt("FilterMode", edgeFilteringMode.getMaterialParamValue());
 		mat.setFloat("PCFEdge", edgesThickness);
@@ -315,11 +355,6 @@ class RSpotLightShadowRenderer extends SpotLightShadowRenderer {
 	}
 
 	public void renderShadowMaps(Geometry g, RenderQueue rq, Material mat) {
-		light.setPosition(g.getWorldTranslation());
-		//g.getWorldMatrix().mult(dir, light.getDirection());
-		light.setDirection(dir);
-		light.setSpotRange(100);
-		//light.setSpotOuterAngle(spotOuterAngle);
 		preFrame(0);
 		postQueue(rq);
 
@@ -347,71 +382,16 @@ class RSpotLightShadowRenderer extends SpotLightShadowRenderer {
 	public void displayShadowMaps() {
 		displayShadowMap(renderManager.getRenderer());
 	}
-
-//	@SuppressWarnings("fallthrough")
-//	public void postQueue(RenderQueue rq) {
-//		GeometryList occluders = rq.getShadowQueueContent(ShadowMode.Cast);
-//		sceneReceivers = rq.getShadowQueueContent(ShadowMode.Receive);
-//		skipPostPass = false;
-//		if (sceneReceivers.size() == 0 || occluders.size() == 0) {
-//			skipPostPass = true;
-//			return;
-//		}
-//
-//		updateShadowCams(viewPort.getCamera());
-//
-//		Renderer r = renderManager.getRenderer();
-//		renderManager.setForcedMaterial(preshadowMat);
-//		renderManager.setForcedTechnique("PreShadow");
-//
-//		for (int shadowMapIndex = 0; shadowMapIndex < nbShadowMaps; shadowMapIndex++) {
-//
-//			//            if (debugfrustums) {
-//			//                doDisplayFrustumDebug(shadowMapIndex);
-//			//            }
-//			renderShadowMap(shadowMapIndex, occluders, sceneReceivers);
-//
-//		}
-//
-//		//debugfrustums = false;
-//		if (flushQueues) {
-//			occluders.clear();
-//		}
-//		//restore setting for future rendering
-//		r.setFrameBuffer(viewPort.getOutputFrameBuffer());
-//		renderManager.setForcedMaterial(null);
-//		renderManager.setForcedTechnique(null);
-//		renderManager.setCamera(viewPort.getCamera(), false);
-//
-//	}
-//
-//	protected void renderShadowMap(int shadowMapIndex, GeometryList occluders, GeometryList receivers) {
-//		shadowMapOccluders = getOccludersToRender(shadowMapIndex, occluders, receivers, shadowMapOccluders);
-//		Camera shadowCam = getShadowCam(shadowMapIndex);
-//		//shadowCam.setFrustumNear(0.1f);
-//		//saving light view projection matrix for this split
-//		lightViewProjectionsMatrices[shadowMapIndex].set(shadowCam.getViewProjectionMatrix());
-//		renderManager.setCamera(shadowCam, false);
-//
-//		renderManager.getRenderer().setFrameBuffer(shadowFB[shadowMapIndex]);
-//		//renderManager.getRenderer().setBackgroundColor(ColorRGBA.BlackNoAlpha);
-//		renderManager.getRenderer().setBackgroundColor(ColorRGBA.Red);
-//		renderManager.getRenderer().clearBuffers(true, true, false);
-//
-//		// render shadow casters to shadow map
-//		viewPort.getQueue().renderShadowQueue(shadowMapOccluders, renderManager, shadowCam, true);
-//	}
 }
 
-class RDirectionalLightShadowRenderer extends DirectionalLightShadowRenderer {
+class RDirectionalLightShadowRenderer extends DirectionalLightShadowRenderer implements ShadowMapGenerator{
 	public Texture shadowMap0;
 	private String[] shadowMapStringCache;
 	private String[] lightViewStringCache;
 
-	public RDirectionalLightShadowRenderer(AssetManager assetManager, int shadowMapSize, int nbSplits, ViewPort vp, RenderManager rm) {
+	public RDirectionalLightShadowRenderer(AssetManager assetManager, int shadowMapSize, int nbSplits) {
 		super(assetManager, shadowMapSize, nbSplits);
-		initialize(rm, vp);
-		setLight(new DirectionalLight());
+		setFlushQueues(false);
 		shadowMapStringCache = new String[nbShadowMaps];
 		lightViewStringCache = new String[nbShadowMaps];
 
@@ -452,5 +432,117 @@ class RDirectionalLightShadowRenderer extends DirectionalLightShadowRenderer {
 	public void displayShadowMaps() {
 		displayShadowMap(renderManager.getRenderer());
 	}
+}
+class LigthPeerTmpl4Ambient extends LightPeerTmpl<AmbientLight> {
+	final Geometry geom;
+	final ShadowMapGenerator shadowMapGen = null;
+	final boolean isGlobal = true;
 
+	LigthPeerTmpl4Ambient(Pass4LBuffer lbuffer) {
+		geom = new Geometry(this.getClass().getName(), new Quad(1f, 1f));
+		geom.setCullHint(Spatial.CullHint.Never);
+		LightPeerTmpl.setupGeom(geom, lbuffer);
+	}
+
+	public void configure(AmbientLight light) {
+		geom.setName("peer." + light.getName());
+		Material mat = geom.getMaterial();
+		mat.setColor("Color", light.getColor());
+	}
+}
+
+class LigthPeerTmpl4Directional extends LightPeerTmpl<DirectionalLight> {
+	final Geometry geom;
+	final RDirectionalLightShadowRenderer shadowMapGen;
+	final boolean isGlobal = true;
+
+	LigthPeerTmpl4Directional(Pass4LBuffer lbuffer, boolean useShadow) {
+		geom = new Geometry(this.getClass().getName(), new Quad(1f, 1f));
+		geom.setCullHint(Spatial.CullHint.Never);
+		Material mat = LightPeerTmpl.setupGeom(geom, lbuffer);
+
+		if (useShadow) {
+			shadowMapGen = new RDirectionalLightShadowRenderer(lbuffer.assetManager, 2048, 3);
+			shadowMapGen.initialize(lbuffer.rm, lbuffer.vp);
+			shadowMapGen.setShadowZExtend(1000);
+			shadowMapGen.initMaterial(mat);
+			mat.setFloat("PCFEdge", 1);
+		} else {
+			shadowMapGen = null;
+		}
+	}
+
+	public void configure(DirectionalLight light) {
+		geom.setName("peer." + light.getName());
+		Material mat = geom.getMaterial();
+		mat.setColor("Color", light.getColor());
+		mat.setVector3("LightDir", light.getDirection());
+		if (shadowMapGen != null) {
+			shadowMapGen.setLight(light);
+		}
+	}
+}
+
+class LigthPeerTmpl4Spot extends LightPeerTmpl<SpotLight> {
+	final Geometry geom;
+	final RSpotLightShadowRenderer shadowMapGen;
+	final boolean isGlobal = false;
+
+	private final Quaternion quat0 = new Quaternion();
+	private final Quaternion quat1 = new Quaternion();
+
+	LigthPeerTmpl4Spot(Pass4LBuffer lbuffer, boolean useShadow) {
+		geom = new Geometry(this.getClass().getName(), Helpers4Mesh.newCone(16, 1.0f, 0.5f));
+		Material mat = LightPeerTmpl.setupGeom(geom, lbuffer);
+		quat0.lookAt(new Vector3f(0,-1,0), Vector3f.UNIT_Y);
+		quat0.normalizeLocal();
+
+		if (useShadow) {
+			shadowMapGen = new RSpotLightShadowRenderer(lbuffer.assetManager, 2048);
+			shadowMapGen.initialize(lbuffer.rm, lbuffer.vp);
+			//shadowMapGen.setShadowZExtend(1000);
+			shadowMapGen.initMaterial(mat);
+			mat.setFloat("PCFEdge", 1);
+		} else {
+			shadowMapGen = null;
+		}
+	}
+
+	public void configure(SpotLight light) {
+		geom.setName("peer." + light.getName());
+		geom.setLocalTranslation(light.getPosition()); // TODO find the world position (not relative to attach)
+		quat1.lookAt(light.getDirection(), Vector3f.UNIT_Y);
+		quat1.normalizeLocal();
+		quat1.multLocal(quat0);
+		geom.setLocalRotation(quat1);
+		Material mat = geom.getMaterial();
+		mat.setColor("Color", light.getColor());
+		mat.setFloat("LightFallOffDist", Math.abs(light.getSpotRange()));
+		//mat.setVector3("LightDir", light.getDirection());
+		float radius = FastMath.sin(light.getSpotOuterAngle()) * light.getSpotRange();
+		geom.setLocalScale(radius, light.getSpotRange(), radius);
+		if (shadowMapGen != null) {
+			shadowMapGen.setLight(light);
+		}
+	}
+}
+
+class LigthPeerTmpl4Point extends LightPeerTmpl<PointLight> {
+	final Geometry geom;
+	final ShadowMapGenerator shadowMapGen = null;
+	final boolean isGlobal = false;
+
+	LigthPeerTmpl4Point(Pass4LBuffer lbuffer, boolean useShadow) {
+		geom = new Geometry(this.getClass().getName(), new Sphere(16, 16, 0.5f));
+		LightPeerTmpl.setupGeom(geom, lbuffer);
+	}
+
+	public void configure(PointLight light) {
+		geom.setName("peer." + light.getName());
+		geom.setLocalTranslation(light.getPosition()); // TODO find the world position (not relative to attach)
+		Material mat = geom.getMaterial();
+		mat.setColor("Color", light.getColor());
+		mat.setFloat("LightFallOffDist", Math.abs(light.getRadius()*0.25f));
+		geom.setLocalScale(light.getRadius());
+	}
 }

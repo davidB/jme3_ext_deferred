@@ -15,6 +15,7 @@ MaterialDef debug_gbuffer {
 			DepthWrite Off
 			DepthTest Off
 			FaceCull Off
+			ColorWrite On
 		}
 	}
 

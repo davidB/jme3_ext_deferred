@@ -1,18 +1,15 @@
 package sandbox;
 
-import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import jme3_ext_deferred.AppState4ViewDeferredTexture;
 import jme3_ext_deferred.MatIdManager;
 import jme3_ext_deferred.SceneProcessor4Deferred;
-import rx_ext.Observable4AddRemove;
 
 import com.jme3.app.SimpleApplication;
 import com.jme3.post.FilterPostProcessor;
 import com.jme3.renderer.lwjgl.LwjglDisplayCustom;
-import com.jme3.scene.Geometry;
 import com.jme3.system.AppSettings;
 
 public class Main {
@@ -57,22 +54,20 @@ public class Main {
 			app.getInputManager().setCursorVisible(true);
 			return null;
 		});
-		// blocking until ready
-		Future<SceneProcessor4Deferred> fsp4gbuf = app.enqueue(() -> {
+
+		app.enqueue(() -> {
 			SceneProcessor4Deferred out = new SceneProcessor4Deferred(app.getAssetManager(), matIdManager);
 			app.getViewPort().addProcessor(out);
 			app.getStateManager().attach(new AppState4ViewDeferredTexture(out, AppState4ViewDeferredTexture.ViewKey.values()));
 			return out;
 		});
 
-		Observable4AddRemove<Geometry> olights = fsp4gbuf.get().lights.ar;
-		//Observable4AddRemove<Geometry> olights = new Observable4AddRemove<>();
 		app.enqueue(() -> {
-			app.getStateManager().attach(new AppState4Sample01(matIdManager, olights));
+			app.getStateManager().attach(new AppState4Sample03(matIdManager));
 			return null;
 		});
 		app.enqueue(() -> {
-			app.getStateManager().attach(new AppState4Sample02_BrokenCube(matIdManager, olights));
+			app.getStateManager().attach(new AppState4Sample04_BrokenCube(matIdManager));
 			return null;
 		});
 //		app.enqueue(() -> {

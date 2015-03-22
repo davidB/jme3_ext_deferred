@@ -4,11 +4,9 @@ import java.util.LinkedList;
 import java.util.Queue;
 import java.util.Random;
 
-import jme3_ext_deferred.Helpers4Lights;
 import jme3_ext_deferred.MatIdManager;
 import jme3_ext_deferred.MaterialConverter;
 import lombok.RequiredArgsConstructor;
-import rx_ext.Observable4AddRemove;
 
 import com.jme3.app.Application;
 import com.jme3.app.SimpleApplication;
@@ -28,6 +26,7 @@ import com.jme3.input.MouseInput;
 import com.jme3.input.controls.ActionListener;
 import com.jme3.input.controls.KeyTrigger;
 import com.jme3.input.controls.MouseButtonTrigger;
+import com.jme3.light.PointLight;
 import com.jme3.material.Material;
 import com.jme3.material.RenderState;
 import com.jme3.math.ColorRGBA;
@@ -44,21 +43,21 @@ import com.jme3.scene.Node;
 import com.jme3.scene.Spatial;
 import com.jme3.scene.control.AbstractControl;
 import com.jme3.scene.control.BillboardControl;
+import com.jme3.scene.control.LightControl;
+import com.jme3.scene.shape.Box;
 import com.jme3.scene.shape.Quad;
 
 /**
  * @from dmonkey (by kwando)
  */
 @RequiredArgsConstructor
-public class AppState4Sample02_BrokenCube extends AbstractAppState {
+public class AppState4Sample04_BrokenCube extends AbstractAppState {
 
 	private BatchNode cubesNode;
 	private float BACKGROUND_INTENSITY = 1.5f;
 	public float LIGHT_SIZE = 1.5f;
 
 	final public MatIdManager matIdManager;
-	final public Observable4AddRemove<Geometry> lights;
-
 
 	Node rootNode;
 	AssetManager assetManager;
@@ -104,10 +103,13 @@ public class AppState4Sample02_BrokenCube extends AbstractAppState {
 		}
 
 
-//		Material mat = assetManager.loadMaterial("DMonkey/TestMaterial.j3m");
 //		TextureTools.setAnistropic(mat, "DiffuseTex", 8);
-		final Spatial model = assetManager.loadModel("Models/broken_cube.j3o");
-//		model.setMaterial(mat);
+		final Spatial model = new Geometry("bcube", new Box(0.5f, 0.5f, 0.5f));
+		Material mat = new Material(assetManager, "Common/MatDefs/Light/Lighting.j3md");
+		mat.setColor("Diffuse", ColorRGBA.Pink);
+		model.setMaterial(mat);
+
+		//final Spatial model = assetManager.loadModel("Models/broken_cube.j3o");
 		Random random = new Random(7);
 		cubesNode = new BatchNode();
 		for (int i = 0; i < 50; i++) {
@@ -160,44 +162,31 @@ public class AppState4Sample02_BrokenCube extends AbstractAppState {
 	}
 
 	private void addPointLight(float radius, ColorRGBA color, Vector3f pos) {
-		Geometry pointLight = Helpers4Lights.newPointLight("envlight", radius, color, assetManager);
-		pointLight.setLocalTranslation(pos);
-		rootNode.attachChild(pointLight);
-		lights.add.onNext(pointLight);
+		PointLight pl = new PointLight();
+		pl.setRadius(radius);
+		pl.setColor(color);
+		pl.setPosition(pos);
+		rootNode.addLight(pl);
 	}
 
 
 	@Override
 	public void update(float tpf) {
 		super.update(tpf);
-		lastFire += tpf;
 
 		if (isFiring) {
-			for (int i = 0; i < ballsPerFrame; i++) {
-				addCanonBall();
-			}
-			lastFire = 0;
+			addCanonBall();
 		}
 	}
 
 	private Queue<Spatial> freeBalls = new LinkedList<Spatial>();
-	private float lastFire = 0;
-	private float ballsPerSec = 300;
-	private int maxBalls = 500;
-	private int activeBalls = 0;
-	private int ballsPerFrame = 10;
-	private float maxLife = 6;
 	private boolean isFiring = false;
 	private CollisionShape shape = new SphereCollisionShape(0.075f);
 
 	private void addCanonBall() {
 		//Camera cam = app.getCamera();
 		Camera cam = app.getViewPort().getCamera();
-		if (lastFire < 1f / ballsPerSec || activeBalls >= maxBalls) {
-			return;
-		}
 
-		activeBalls++;
 		Spatial ball;
 		if (!freeBalls.isEmpty()) {
 			ball = freeBalls.poll();
@@ -207,7 +196,7 @@ public class AppState4Sample02_BrokenCube extends AbstractAppState {
 			Node n = new Node("projectile");
 
 			Geometry geom = new Geometry("particle", new Quad(size, size));
-			geom.setLocalTranslation(-0.5f * size, 0.5f * -size, 0.0f);
+			geom.setLocalTranslation(-0.5f * size, -0.5f * size, 0.0f);
 			Material lightMaterial = new Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md");
 			lightMaterial.setColor("Color", color);
 			lightMaterial.setTexture("LightMap", assetManager.loadTexture("Textures/particletexture.jpg"));
@@ -215,73 +204,34 @@ public class AppState4Sample02_BrokenCube extends AbstractAppState {
 			lightMaterial.getAdditionalRenderState().setDepthWrite(false);
 			geom.setMaterial(lightMaterial);
 			geom.setQueueBucket(Bucket.Transparent);
+
 			BillboardControl billboarder = new BillboardControl();
+//			geom.addControl(billboarder);
 			//billboarder.setAlignment(BillboardControl.Alignment.Camera);
 //			geom.addControl(billboarder);
-//			n.attachChild(geom);
 			Node anchor0 = new Node();
 			anchor0.addControl(billboarder);
 			anchor0.attachChild(geom);
 			n.attachChild(anchor0);
 
-			//pointLight.setColor(ColorRGBA.randomColor().multLocal(0.1f));
-			Geometry pointLight = Helpers4Lights.newPointLight("light", LIGHT_SIZE, color, assetManager);
-			pointLight.center();
-			n.attachChild(pointLight);
-			//dsp.addLight(pointLight, true);
-			lights.add.onNext(pointLight);
-			n.center();
+			float weight = 0.1f;
+			RigidBodyControl physic = new RigidBodyControl(shape, weight);
+			stateManager.getState(BulletAppState.class).getPhysicsSpace().add(physic);
+			n.addControl(physic);
+
+			PointLight pl = new PointLight();
+			pl.setColor(color);
+			pl.setRadius(LIGHT_SIZE);
+			n.addControl(new LightControl(pl));
+
+			BallLightControl blc = new BallLightControl(rootNode, cam, freeBalls);
+			n.addControl(blc);
+			blc.setEnabled(false);
+			//n.center();
 			ball = n;
 		}
-		ball.addControl(new AbstractControl() {
-			private float time = 0;
-
-			@Override
-			protected void controlUpdate(float tpf) {
-				time += tpf;
-				if (time > maxLife) {
-					Spatial spat = spatial;
-					freeBalls.add(spat);
-					spat.removeFromParent();
-					spat.removeControl(this);
-					RigidBodyControl control = spat.getControl(RigidBodyControl.class);
-					if (control != null) {
-						stateManager.getState(BulletAppState.class).getPhysicsSpace().remove(control);
-						//control.setEnabled(false);
-						spat.removeControl(control);
-					}
-					activeBalls--;
-
-//					LightControl lc = spat.getControl(LightControl.class);
-//					if (lc != null) {
-//						lc.getLight().setColor(ColorRGBA.Black);
-//					}
-					Geometry l = (Geometry)((Node)spat).getChild("light");
-					if (l != null) {
-						//l.getMaterial().setColor("Color", ColorRGBA.Black);
-						Helpers4Lights.setEnabled(l, false);
-					}
-				}
-			}
-
-			@Override
-			protected void controlRender(RenderManager rm, ViewPort vp) {
-			}
-		});
-		float weight = 0.1f;
-		RigidBodyControl control = new RigidBodyControl(shape, weight);
-		ball.addControl(control);
-		stateManager.getState(BulletAppState.class).getPhysicsSpace().add(control);
-		control.setPhysicsLocation(cam.getLocation().add(cam.getDirection().mult(2)));
-		control.applyImpulse(cam.getDirection().normalize().mult(2), Vector3f.ZERO);
-		control.setFriction(1f);
-		control.setRestitution(0.56f);
-		control.setAngularDamping(.67f);
-//		geom.getControl(LightControl.class).getLight().setColor(rgba);
-//		geom.getMaterial().setColor("Color", rgba);
-		Helpers4Lights.setEnabled((Geometry)((Node)ball).getChild("light"), true);
-
-		rootNode.attachChild(ball);
+		BallLightControl blc = ball.getControl(BallLightControl.class);
+		blc.setEnabled(true);
 	}
 
 	private void setupControls(InputManager inputManager) {
@@ -330,5 +280,70 @@ public class AppState4Sample02_BrokenCube extends AbstractAppState {
 //				}
 //			}
 //		}, "BATCH_CUBES");
+	}
+
+	@RequiredArgsConstructor
+	static class BallLightControl extends AbstractControl {
+		private float time = 0;
+		public final Node rootNode;
+		public final Camera cam;
+		public final Queue<Spatial> freeBalls;
+		public float maxLife = 6;
+
+		@Override
+		protected void controlUpdate(float tpf) {
+			time += tpf;
+			if (time > maxLife) {
+				setEnabled(false);
+			}
+		}
+
+		@Override
+		public void setEnabled(boolean v) {
+			if (isEnabled() == v) return;
+			super.setEnabled(v);
+			if (isEnabled()) {
+				onEnable();
+			} else {
+				onDisable();
+			}
+		}
+
+		private void onEnable() {
+			RigidBodyControl physic = spatial.getControl(RigidBodyControl.class);
+			if (physic != null) {
+				physic.setEnabled(true);
+				physic.setPhysicsLocation(cam.getLocation().add(cam.getDirection().mult(2)));
+				physic.applyImpulse(cam.getDirection().normalize().mult(2), Vector3f.ZERO);
+				physic.setFriction(1f);
+				physic.setRestitution(0.56f);
+				physic.setAngularDamping(.67f);
+			}
+			LightControl lightc = spatial.getControl(LightControl.class);
+			if (lightc != null) {
+				lightc.setEnabled(true);
+				rootNode.addLight(lightc.getLight());
+			}
+			rootNode.attachChild(spatial);
+			time = 0;
+		}
+
+		private void onDisable() {
+			freeBalls.add(spatial);
+			spatial.removeFromParent();
+			RigidBodyControl physic = spatial.getControl(RigidBodyControl.class);
+			if (physic != null) {
+				physic.setEnabled(false);
+			}
+			LightControl lightc = spatial.getControl(LightControl.class);
+			if (lightc != null) {
+				lightc.setEnabled(false);
+				rootNode.removeLight(lightc.getLight());
+			}
+		}
+
+		@Override
+		protected void controlRender(RenderManager rm, ViewPort vp) {
+		}
 	}
 }
