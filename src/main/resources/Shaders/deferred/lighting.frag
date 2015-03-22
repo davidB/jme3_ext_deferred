@@ -41,7 +41,7 @@ vec3 getWSPosition(vec2 posSS) {
 // * http://gamedev.stackexchange.com/questions/64149/what-light-attenuation-function-does-udk-use
 float attenuation(float dist, float falloffDist){
   //float dist = length(dir);
-  //float radiance = 1.0 - ((dist * dist) / (falloffDist * falloffDist));
+  float radiance = 1.0 - ((dist * dist) / (falloffDist * falloffDist));
   //float radiance = 1.0 - (dist  / falloffDist);
   //radiance *= 1 / (dist * dist);
   // I = E × (D2 / (D2 + Q × r2)) from http://wiki.blender.org/index.php/Doc:FR/2.6/Manual/Lighting/Lights/Light_Attenuation
@@ -56,8 +56,8 @@ float attenuation(float dist, float falloffDist){
   //return n;
   //return clamp(radiance, 0.0, 1.0);
   //float radiance = 1.0/(1.0+pow(dist/falloffDist, 2.0));
-  //float radiance = 1.0/(1.0+pow(dist/falloffDist, 2.0));
-  float radiance = 1.0/(pow(1.0+ dist*4/falloffDist, 2.0));
+  //float radiance = 1.0/(pow(dist/falloffDist, 4.0));
+  //float radiance = 1.0/(pow(1.0+ dist/falloffDist, 2.0));
   //return clamp(radiance*falloffDist, 0.0, 1.0);
   return clamp(radiance, 0.0, 1.0);
 }
@@ -72,7 +72,6 @@ float lambert(vec3 surfaceNormal, vec3 lightDir){
   return max(0.0, dot(surfaceNormal, lightDir));
 }
 
-#import "Common/ShaderLib/Shadows15.glsllib"
 
 uniform mat4 g_ViewMatrix;
 
@@ -92,7 +91,8 @@ const mat4 biasMat = mat4(0.5, 0.0, 0.0, 0.0,
                           0.0, 0.5, 0.0, 0.0,
                           0.0, 0.0, 0.5, 0.0,
                           0.5, 0.5, 0.5, 1.0);
-
+#ifdef USE_SHADOW
+#import "Common/ShaderLib/Shadows15.glsllib"
 float shadowOf(vec4 worldPos, float shadowPosition){
     float shadow = 1.0;
 
@@ -133,6 +133,7 @@ float shadowOf(vec4 worldPos, float shadowPosition){
     //shadow = shadow * m_ShadowIntensity + (1.0 - m_ShadowIntensity);
     return shadow;
 }
+#endif
 
 void main(){
 	vec2 posSS = gl_FragCoord.xy;
@@ -178,12 +179,10 @@ void main(){
 	//outDiffuse = vec3(shadowOf(vec4(posWS,1.0), depth));
 	//outDiffuse = vec3(1.0,0.0,0.0);
 #endif
-
+	//outDiffuse = vec3(1.0,0.0,0.0);
 	out_FragColor.rgb = outDiffuse;
 	out_FragColor.a = outSpecular;
-#ifdef USE_SHADOW
-#ifdef PSSM
+//#ifdef USE_SHADOW
 //out_FragColor.rgb = vec3(0.0,1.0,0.0);
-#endif
-#endif
+//#endif
 }

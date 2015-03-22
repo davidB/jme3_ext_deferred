@@ -28,7 +28,8 @@ void main(){
 	vec3 ldiffuse = intensity * lights.rgb; // + ambient ?
 	float lspec = step(0.03, length(ldiffuse)) * lights.a;
 
-//out_FragColor.rgb = vec3(0.0,1.0,0.0);
+//	out_FragColor.rgb = vec3(0.0,1.0,0.0);
+//	out_FragColor.rgb = vec3(intensity);
 	out_FragColor.rgb = albedo * ldiffuse;// + albedo * lspec;
 	out_FragColor.a = 1.0;
 	gl_FragDepth = readRawDepth(m_DepthBuffer, posSS / g_Resolution);
