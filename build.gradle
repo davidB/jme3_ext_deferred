@@ -1,3 +1,14 @@
+buildscript {
+	repositories {
+		mavenLocal()
+		jcenter()
+	}
+	dependencies {
+		classpath 'com.netflix.nebula:gradle-extra-configurations-plugin:1.12.+'
+	}
+}
+
+apply plugin: 'provided-base'
 apply plugin: 'java'
 apply plugin: 'eclipse'
 
@@ -5,24 +16,13 @@ sourceCompatibility = '1.8'
 targetCompatibility = '1.8'
 [compileJava, compileTestJava]*.options*.encoding = 'UTF-8'
 
-// NetBeans will automatically add "run" and "debug" tasks relying on the
-// "mainClass" property. You may however define the property prior executing
-// tasks by passing a "-PmainClass=<QUALIFIED_CLASS_NAME>" argument.
-//
-// Note however, that you may define your own "run" and "debug" task if you
-// prefer. In this case NetBeans will not add these tasks but you may rely on
-// your own implementation.
-ext.mainClass = 'vdrones.Main'
-if (hasProperty('mainClass')) {
-	ext.mainClass = mainClass
-}
-version = '0.1.2'
+version = '0.1.3'
 group = 'net.alchim31.jme3'
 
 repositories {
-	mavenCentral()
+	jcenter()
 	maven { url "http://updates.jmonkeyengine.org/maven/"}
-	maven { url "http://dl.bintray.com/davidb/jme3stuff" }
+	maven { url "http://dl.bintray.com/jmonkeyengine/contrib" }
 }
 
 
@@ -36,13 +36,12 @@ configurations {
 
 
 dependencies {
-	//provided 'org.projectlombok:lombok:1.14.2'
-	compile 'org.projectlombok:lombok:1.14.2'
-	compile "com.jme3:jme3-core:${v_jme}"
-	compile "com.jme3:jme3-effects:${v_jme}"
+	provided 'org.projectlombok:lombok:1.14.2'
 	compile "org.slf4j:slf4j-api:${v_slf4j}"
 	compile 'com.netflix.rxjava:rxjava-core:0.19.2'
-	compile "com.jme3:jme3-lwjgl:${v_jme}"
+	provided "com.jme3:jme3-core:${v_jme}"
+	//provided "com.jme3:jme3-effects:${v_jme}"
+	provided "com.jme3:jme3-lwjgl:${v_jme}"
 	testRuntime "com.jme3:jme3-desktop:${v_jme}"
 	testRuntime "org.slf4j:slf4j-jdk14:${v_slf4j}"
 	testCompile 'junit:junit:4.11'
