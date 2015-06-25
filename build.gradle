@@ -20,14 +20,22 @@ version = '0.1.3'
 group = 'net.alchim31.jme3'
 
 repositories {
+	mavenLocal()
+	mavenCentral()
 	jcenter()
 	maven { url "http://updates.jmonkeyengine.org/maven/"}
 	maven { url "http://dl.bintray.com/jmonkeyengine/contrib" }
+	maven { url "https://jitpack.io" }
 }
 
 
-def v_jme = '3.0.10'
+//def v_jme = '3.0.10'
 //def v_jme = '3.1.0-snapshot-github'
+def jme_version = '72e1213'
+def jme_group = 'com.github.davidB.jmonkeyengine'
+
+//def jme_version = 'b8fe36e'
+//def jme_group = 'com.github.jMonkeyEngine.jmonkeyengine'
 def v_slf4j = '1.7.7'
 
 configurations {
@@ -36,19 +44,28 @@ configurations {
 
 
 dependencies {
+	//compile 'com.netflix.rxjava:rxjava-core:0.20.7'
+	compile 'io.reactivex:rxjava:1.0.8'
 	provided 'org.projectlombok:lombok:1.14.2'
 	compile "org.slf4j:slf4j-api:${v_slf4j}"
-	provided "com.jme3:jme3-core:${v_jme}"
+	compile "${jme_group}:jme3-core:${jme_version}"
+	compile "${jme_group}:jme3-lwjgl:${jme_version}"
+	testRuntime "${jme_group}:jme3-desktop:${jme_version}"
+
+//	provided "com.jme3:jme3-core:${v_jme}"
+//	provided "com.jme3:jme3-lwjgl:${v_jme}"
 	//provided "com.jme3:jme3-effects:${v_jme}"
-	provided "com.jme3:jme3-lwjgl:${v_jme}"
-	testRuntime "com.jme3:jme3-desktop:${v_jme}"
+	//compile "org.lwjgl.lwjgl:lwjgl:2.9.3"
+//	testRuntime "com.jme3:jme3-desktop:${v_jme}"
 	testRuntime "org.slf4j:slf4j-jdk14:${v_slf4j}"
 	testCompile 'junit:junit:4.11'
 	testCompile 'org.mockito:mockito-core:1.8.5'
 	testCompile "net.alchim31.assets:crytek_sponza2:0.1.0"
 	testCompile "net.alchim31.assets:teapot:0.2.0"
 	testCompile "net.alchim31.assets:broken_cube:0.1.0"
-	testCompile "com.jme3:jme3-jbullet:${v_jme}"
+	testCompile "com.jme3:jme3-jbullet:3.0.10"
+	//testCompile "${jme_group}:jme3-jbullet:${jme_version}"
+	//testCompile "${jme_group}:jme3-bullet:${jme_version}"
 	fmpp 'net.sourceforge.fmpp:fmpp:0.9.14'
 }
 
@@ -174,5 +191,11 @@ bintray {
 			//	passphrase = 'optional, the passphrase for GPG signing'
 			//}
 		}
+	}
+}
+eclipse {
+	classpath {
+		downloadSources = true
+		downloadJavadoc = true
 	}
 }

@@ -181,7 +181,7 @@ float occlusion_sao(in vec2 uv, sampler2D normalBuffer, sampler2D noiseBuffer, v
 #else
 	vec3 normalCS = reconstructCSFaceNormal(originCS);
 #endif
-	vec3 sampleNoise = texture2D(noiseBuffer, uv * noiseScale).xyz;
+	vec3 sampleNoise = texture(noiseBuffer, uv * noiseScale).xyz;
 	float randomPatternRotationAngle = 2.0 * PI *sampleNoise.x;
 
 	float occlusion = 0.0;

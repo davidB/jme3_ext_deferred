@@ -1,4 +1,4 @@
-in vec2 texCoord;
+in vec2 vTexCoord;
 out vec4 out_FragColor;
 
 #ifdef DISCARD_ALPHA
@@ -14,11 +14,11 @@ out vec4 out_FragColor;
 void main(){
    #ifdef DISCARD_ALPHA
        #ifdef COLOR_MAP
-            if (texture2D(m_ColorMap, texCoord).a <= m_AlphaDiscardThreshold){
+            if (texture(m_ColorMap, vTexCoord).a <= m_AlphaDiscardThreshold){
                 discard;
             }
        #else
-            if (texture2D(m_DiffuseMap, texCoord).a <= m_AlphaDiscardThreshold){
+            if (texture(m_DiffuseMap, vTexCoord).a <= m_AlphaDiscardThreshold){
                 discard;
             }
        #endif

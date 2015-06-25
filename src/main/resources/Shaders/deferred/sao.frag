@@ -17,8 +17,8 @@ uniform mat4 g_ProjectionMatrix;
 
 in vec2 texCoord;
 
-#extension GL_EXT_gpu_shader4 : require
-#extension GL_ARB_gpu_shader5 : enable
+//#extension GL_EXT_gpu_shader4 : require
+//#extension GL_ARB_gpu_shader5 : enable
 
 #define rsqrt inversesqrt
 
@@ -139,11 +139,11 @@ const float FAR_PLANE_Z = -250.0;
 #if __VERSION__ == 120
 #   define texelFetch   texelFetch2D
 #   define textureSize  textureSize2D
-#   else
-    out vec3            gl_FragColor;
+#else
+    out vec3            out_FragColor;
 #endif
-#define visibility      gl_FragColor.r
-#define bilateralKey    gl_FragColor.g
+#define visibility      out_FragColor.r
+#define bilateralKey    out_FragColor.g
 
 /////////////////////////////////////////////////////////
 

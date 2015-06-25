@@ -9,12 +9,12 @@ import jme3_ext_deferred.SceneProcessor4Deferred;
 
 import com.jme3.app.SimpleApplication;
 import com.jme3.post.FilterPostProcessor;
-import com.jme3.renderer.lwjgl.LwjglDisplayCustom;
+//import com.jme3.renderer.lwjgl.LwjglDisplayCustom;
 import com.jme3.system.AppSettings;
 
 public class Main {
 	public static void main(String[] args) throws Exception {
-		Logger.getLogger("").setLevel(Level.WARNING);
+		//Logger.getLogger("").setLevel(Level.WARNING);
 
 		AppSettings settings = new AppSettings(true);
 		settings.setResolution(1280, 720);
@@ -23,7 +23,8 @@ public class Main {
 		settings.setDepthBits(24);
 		//settings.setStencilBits(8);
 		//settings.setRenderer("LWJGL-OpenGL4");//AppSettings.LWJGL_OPENGL3);
-		settings.setCustomRenderer(LwjglDisplayCustom.class);
+		settings.setRenderer(AppSettings.LWJGL_OPENGL3);
+		//settings.setCustomRenderer(LwjglDisplayCustom.class);
 
 		SimpleApplication app = new SimpleApplication(){
 			@Override
@@ -33,6 +34,8 @@ public class Main {
 		};
 		app.setSettings(settings);
 		app.setShowSettings(false);
+		app.setDisplayFps(true);
+		app.setDisplayStatView(true);
 		app.start();
 
 		final MatIdManager matIdManager = new MatIdManager();

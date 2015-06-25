@@ -1,6 +1,6 @@
 #import "ShaderLib/DeferredUtils.glsllib"
 
-#extension GL_EXT_gpu_shader4 : require
+//#extension GL_EXT_gpu_shader4 : require
 
 uniform sampler2D m_NormalBuffer;
 uniform mat4 g_ViewMatrix;
@@ -100,11 +100,11 @@ uniform vec2       m_Axis;
 #if __VERSION__ == 120
 #   define          texelFetch texelFetch2D
 #else
-out vec3            gl_FragColor;
+out vec3            out_FragColor;
 #endif
 
-#define  result         gl_FragColor.VALUE_COMPONENTS
-#define  keyPassThrough gl_FragColor.KEY_COMPONENTS
+#define  result         out_FragColor.VALUE_COMPONENTS
+#define  keyPassThrough out_FragColor.KEY_COMPONENTS
 
 #if NUM_KEY_COMPONENTS == 2
     /** Returns a number on (0, 1) */
@@ -177,7 +177,7 @@ float calculateBilateralWeight(float key, float tapKey, ivec2 tapLoc, vec3 n_C, 
     return depthWeight * normalWeight * planeWeight;
 }
 
-//#define MDB_WEIGHTS 0
+//#define MDB_WEIGHTS
 void main() {
 	ivec2 axis = ivec2(m_Axis); // jme-3.0 doesn't support ivec2 as uniform
 
@@ -227,7 +227,7 @@ void main() {
 
     vec3 C = positionFromKey(key, ssC, m_ProjInfo);
 
-# if MDB_WEIGHTS==0
+#ifdef MDB_WEIGHTS
     for (int r = -R; r <= R; ++r) {
         // We already handled the zero case above.  This loop should be unrolled and the static branch optimized out,
         // so the IF statement has no runtime cost

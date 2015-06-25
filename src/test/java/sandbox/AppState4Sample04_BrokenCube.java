@@ -197,7 +197,7 @@ public class AppState4Sample04_BrokenCube extends AbstractAppState {
 
 			Geometry geom = new Geometry("particle", new Quad(size, size));
 			geom.setLocalTranslation(-0.5f * size, -0.5f * size, 0.0f);
-			Material lightMaterial = new Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md");
+			Material lightMaterial = new Material(assetManager, "Common/MatDefs/Misc/UnshadedNodes.j3md");
 			lightMaterial.setColor("Color", color);
 			lightMaterial.setTexture("LightMap", assetManager.loadTexture("Textures/particletexture.jpg"));
 			lightMaterial.getAdditionalRenderState().setBlendMode(RenderState.BlendMode.Additive);

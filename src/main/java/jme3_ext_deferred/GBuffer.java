@@ -14,14 +14,14 @@ class GBuffer {
 
 	public GBuffer(int w, int h) {
 		depth    = new Texture2D(w, h, Format.Depth24Stencil8);
-		//depth    = new Texture2D(w, h, Format.Depth32);
+		//depth    = new texture(w, h, Format.Depth32);
 		normal   = new Texture2D(w, h, Format.RGBA8);
 		normal.setMinFilter(MinFilter.NearestNoMipMaps);
 		normal.setMagFilter(MagFilter.Nearest);
 		albedo = new Texture2D(w, h, Format.RGBA8);
 		specular  = new Texture2D(w, h, Format.RGBA8);
-		//custom0 = new Texture2D(w, h, Format.RGBA8);
-		//custom1  = new Texture2D(w, h, Format.RGBA8);
+		//custom0 = new texture(w, h, Format.RGBA8);
+		//custom1  = new texture(w, h, Format.RGBA8);
 
 		fb = new FrameBuffer(w, h, 1);
 		fb.setMultiTarget(true);

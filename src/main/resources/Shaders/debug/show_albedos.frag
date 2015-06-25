@@ -6,7 +6,7 @@ out vec4 out_FragColor;
 
 void main(){
     vec2 newTexCoord = texCoord;
-    vec4 v = texture2D(m_AlbedoBuffer,  newTexCoord);
+    vec4 v = texture(m_AlbedoBuffer,  newTexCoord);
     out_FragColor.rgb = v.rgb;
 }
 

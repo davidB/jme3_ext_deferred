@@ -28,6 +28,7 @@ import com.jme3.scene.control.AbstractControl;
 import com.jme3.scene.shape.Box;
 import com.jme3.scene.shape.Sphere;
 import com.jme3.util.SkyFactory;
+import com.jme3.util.SkyFactory.EnvMapType;
 
 @RequiredArgsConstructor
 public class AppState4Sample03 extends AbstractAppState {
@@ -52,7 +53,7 @@ public class AppState4Sample03 extends AbstractAppState {
 		assetManager = app.getAssetManager();
 		Node anchor = new Node("Sample01");
 		makeScene(anchor, 5, 7, 4);
-		anchor.attachChild(SkyFactory.createSky(assetManager, "Textures/Sky/Bright/BrightSky.dds", false));
+		//anchor.attachChild(SkyFactory.createSky(assetManager, "Textures/Sky/Bright/BrightSky.dds", EnvMapType.SphereMap));
 		makeLigths(anchor);
 		((SimpleApplication) app).getRootNode().attachChild(anchor);
 	}

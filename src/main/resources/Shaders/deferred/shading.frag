@@ -20,11 +20,11 @@ void main(){
 	vec3 norWS = readNormal(m_NormalBuffer, texCoord);
 	int matId = int(texelFetch(m_NormalBuffer, ivec2(posSS), 0).a * 256.0);
 	//vec4 diffuse = texelFetch(m_MatBuffer, ivec2(0, matId), 0);
-	vec3 albedo = texture2D(m_AlbedoBuffer, texCoord).rgb;
-	float intensity = texture2D(m_AOBuffer, texCoord).r;
+	vec3 albedo = texture(m_AlbedoBuffer, texCoord).rgb;
+	float intensity = texture(m_AOBuffer, texCoord).r;
 	//vec4 specular = texelFetch(m_MatBuffer, ivec2(1, matId), 0);
 	float shininess = 0.5;
-	vec4 lights = texture2D(m_LBuffer, texCoord);
+	vec4 lights = texture(m_LBuffer, texCoord);
 	vec3 ldiffuse = intensity * lights.rgb; // + ambient ?
 	float lspec = step(0.03, length(ldiffuse)) * lights.a;
 

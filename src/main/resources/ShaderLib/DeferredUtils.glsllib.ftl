@@ -10,7 +10,7 @@ vec3 decodeNormal(in vec3 unorm8x3Normal){
 }
 
 vec3 readNormal(in sampler2D normalBuffer, in vec2 uv) {
-	vec3 intNormal = texture2D(normalBuffer, uv).rgb;
+	vec3 intNormal = texture(normalBuffer, uv).rgb;
 	return normalize(decodeNormal(intNormal));
 }
 
@@ -28,18 +28,19 @@ vec3 reconstructCSFaceNormal(vec3 C) {
 
 // @return [0,1] hyperbolic value stored in depthBuffer
 float readRawDepth(in sampler2D depthBuffer, in vec2 uv) {
-    return texture2D(depthBuffer, uv).r;
+    return texture(depthBuffer, uv).r;
 }
 
 // @see http://www.geeks3d.com/20091216/geexlab-how-to-visualize-the-depth-buffer-in-glsl/
+// [Depth testing](file:///Users/davidb/Library/Application%20Support/Firefox/Profiles/osjconli.default/ScrapBook/data/20150621222102/index.html)
 // @return [0,1] linearized value stored in depthBuffer
 float readDepth(in sampler2D depthBuffer, in vec2 uv, float near, float far) {
-    float z = readRawDepth(depthBuffer, uv);
+    float z = readRawDepth(depthBuffer, uv) * 2.0 - 1.0; //back to NDC
     return (2.0 * near) / (far + near - z * (far - near));
 }
 
 vec3 readDiffuse(in sampler2D diffuseBuffer, in vec2 uv) {
-	return texture2D(diffuseBuffer, uv).rgb;
+	return texture(diffuseBuffer, uv).rgb;
 }
 
 

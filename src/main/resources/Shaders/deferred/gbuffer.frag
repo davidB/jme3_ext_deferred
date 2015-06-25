@@ -22,13 +22,13 @@ void main(){
 	vec2 texCoord = vTexCoord;
 
 	#ifdef ALPHAMAP
-		float alpha = texture2D(m_AlphaMap, texCoord).r;
+		float alpha = texture(m_AlphaMap, texCoord).r;
 		if(alpha < m_AlphaDiscardThreshold){
 			discard;
 		}
 	#endif
 	#if defined(NORMALMAP) && !defined(VERTEX_LIGHTING)
-		vec4 normalHeight = texture2D(m_NormalMap, texCoord);
+		vec4 normalHeight = texture(m_NormalMap, texCoord);
 		//Note the -2.0 and -1.0. We invert the green channel of the normal map,
 		//as it's complient with normal maps generated with blender.
 		//see http://hub.jmonkeyengine.org/forum/topic/parallax-mapping-fundamental-bug/#post-256898
@@ -47,14 +47,14 @@ void main(){
     out_FragData[0] = vec4(encodeNormal(normal), float(m_MatId) / 256.0);
 
     #ifdef COLORMAP
-      vec4 albedo = texture2D(m_ColorMap, texCoord);
+      vec4 albedo = texture(m_ColorMap, texCoord);
     #else
       vec4 albedo = m_Color;
     #endif
     out_FragData[1] = albedo;
 
     #ifdef SPECULARMAP
-      vec4 specularColor = texture2D(m_SpecularMap, texCoord);
+      vec4 specularColor = texture(m_SpecularMap, texCoord);
     #else
       vec4 specularColor = m_Specular;
     #endif
