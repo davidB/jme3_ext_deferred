@@ -77,7 +77,11 @@ public class MaterialConverter extends SceneGraphVisitorAdapter {
 			copyTexture(m, "NormalMap", m0, "NormalMap");
 			copyTexture(m, "AlphaMap", m0, "AlphaMap");
 			copyRenderState(m, m0, false);
-			g.setMaterial(m);
+			if (g.isBatched()) {
+				g.getParent().setMaterial(m);
+			} else {
+				g.setMaterial(m);
+			}
 		} else if (defaultMaterial != null){
 			g.setMaterial(defaultMaterial);
 		} else {
