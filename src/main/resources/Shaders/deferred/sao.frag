@@ -192,11 +192,11 @@ vec3 getPosition(ivec2 ssP, sampler2D cszBuffer) {
 vec3 getOffsetPosition(ivec2 ssC, vec2 unitOffset, float ssR, sampler2D cszBuffer, float invCszBufferScale) {
     // Derivation:
     //  mipLevel = floor(log(ssR / MAX_OFFSET));
-#   ifdef GL_EXT_gpu_shader5
-        int mipLevel = clamp(findMSB(int(ssR)) - LOG_MAX_OFFSET, 0, MAX_MIP_LEVEL);
-#   else
+// #   ifdef GL_EXT_gpu_shader5
+//         int mipLevel = clamp(findMSB(int(ssR)) - LOG_MAX_OFFSET, 0, MAX_MIP_LEVEL);
+// #   else
         int mipLevel = clamp(int(floor(log2(ssR))) - LOG_MAX_OFFSET, 0, MAX_MIP_LEVEL);
-#   endif
+// #   endif
 
     ivec2 ssP = ivec2(ssR * unitOffset) + ssC;
 
@@ -218,11 +218,11 @@ vec3 getOffsetPosition(ivec2 ssC, vec2 unitOffset, float ssR, sampler2D cszBuffe
 
 /** Read the camera-space position of the points at screen-space pixel ssP + unitOffset * ssR in both channels of the packed csz buffer.  Assumes length(unitOffset) == 1. */
 void getOffsetPositions(ivec2 ssC, vec2 unitOffset, float ssR, sampler2D cszBuffer, out vec3 P0, out vec3 P1) {
-#   ifdef GL_EXT_gpu_shader5
-        int mipLevel = clamp(findMSB(int(ssR)) - LOG_MAX_OFFSET, 0, MAX_MIP_LEVEL);
-#   else
+// #   ifdef GL_EXT_gpu_shader5
+//         int mipLevel = clamp(findMSB(int(ssR)) - LOG_MAX_OFFSET, 0, MAX_MIP_LEVEL);
+// #   else
         int mipLevel = clamp(int(floor(log2(ssR))) - LOG_MAX_OFFSET, 0, MAX_MIP_LEVEL);
-#   endif
+// #   endif
 
     ivec2 ssP = ivec2(ssR * unitOffset) + ssC;
 
