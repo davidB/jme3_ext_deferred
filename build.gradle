@@ -28,6 +28,10 @@ repositories {
 	maven { url "https://jitpack.io" }
 }
 
+task exec(type:JavaExec) {
+   main = System.getProperty("exec.mainClass") ?: "sandbox.Main"
+   classpath = sourceSets.test.runtimeClasspath
+}
 
 //def v_jme = '3.0.10'
 //def v_jme = '3.1.0-snapshot-github'
