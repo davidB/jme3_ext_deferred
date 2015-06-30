@@ -84,7 +84,7 @@ class MaterialConverter extends SceneGraphVisitorAdapter {
 			copyTexture(m, "NormalMap", m0, "NormalMap")
 			copyTexture(m, "AlphaMap", m0, "AlphaMap")
 			copyRenderState(m, m0, false)
-			if (g.isBatched()) {
+			if (g.isGrouped()) {
 				g.getParent().setMaterial(m)
 			} else {
 				g.setMaterial(m)
@@ -98,7 +98,7 @@ class MaterialConverter extends SceneGraphVisitorAdapter {
 
 	def MaterialCustom toMaterialCustom(Material m0) {
 		if (m0 instanceof MaterialCustom) {
-			return m0 as MaterialCustom
+			return m0
 		}
 		var MaterialCustom b = new MaterialCustom(m0.getMaterialDef())
 		for (MatParam p : m0.getParams()) {

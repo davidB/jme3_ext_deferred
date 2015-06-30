@@ -25,8 +25,6 @@ import com.jme3.scene.Spatial
 import com.jme3.scene.control.AbstractControl
 import com.jme3.scene.shape.Box
 import com.jme3.scene.shape.Sphere
-import com.jme3.util.SkyFactory
-import com.jme3.util.SkyFactory.EnvMapType
 import org.eclipse.xtend.lib.annotations.FinalFieldsConstructor
 
 @FinalFieldsConstructor

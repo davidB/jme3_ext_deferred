@@ -5,13 +5,11 @@ import com.jme3.light.PointLight
 import com.jme3.material.Material
 import com.jme3.math.ColorRGBA
 import com.jme3.math.Vector3f
-import com.jme3.post.FilterPostProcessor
 import com.jme3.renderer.queue.RenderQueue
 import com.jme3.scene.Geometry
 import com.jme3.scene.shape.Box
 import com.jme3.scene.shape.Sphere
 import com.jme3.shadow.EdgeFilteringMode
-import com.jme3.shadow.PointLightShadowFilter
 import com.jme3.shadow.PointLightShadowRenderer
 
 class NoShadowsExample extends SimpleApplication {
@@ -23,7 +21,8 @@ class NoShadowsExample extends SimpleApplication {
 		// Setting up cam and its controls
 		flyCam.setEnabled(false)
 		flyCam.setMoveSpeed(30)
-		cam.setFrame(new Vector3f(0f, 1f, 6f), new Vector3f(-1f, 0f, 0f), new Vector3f(0f, 1f, 0f),	new Vector3f(0f, 0f, -1f))
+		cam.setFrame(new Vector3f(0f, 1f, 6f), new Vector3f(-1f, 0f, 0f), new Vector3f(0f, 1f, 0f),
+			new Vector3f(0f, 0f, -1f))
 		// LightGray material for floor and sphere
 		val material = new Material(assetManager, "Common/MatDefs/Light/Lighting.j3md")
 		material.setColor("Ambient", ColorRGBA.LightGray)

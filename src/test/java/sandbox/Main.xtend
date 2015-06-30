@@ -1,7 +1,5 @@
 package sandbox
 
-import java.util.logging.Level
-import java.util.logging.Logger
 import jme3_ext_deferred.AppState4ViewDeferredTexture
 import jme3_ext_deferred.MatIdManager
 import jme3_ext_deferred.SceneProcessor4Deferred
@@ -20,7 +18,7 @@ class Main {
 		settings.setDepthBits(24) // settings.setStencilBits(8);
 		// settings.setRenderer("LWJGL-OpenGL4");//AppSettings.LWJGL_OPENGL3);
 		settings.setRenderer(AppSettings.LWJGL_OPENGL3) // settings.setCustomRenderer(LwjglDisplayCustom.class);
-		val app = new SimpleApplication(){
+		val app = new SimpleApplication() {
 			override simpleInitApp() {
 			}
 		}
@@ -33,7 +31,7 @@ class Main {
 		// Setup Camera
 		app.enqueue([
 			app.getFlyByCamera().setMoveSpeed(10)
-			//app.getFlyByCamera().setEnabled(false);
+			// app.getFlyByCamera().setEnabled(false);
 			app.getInputManager().setCursorVisible(true)
 //			app.getCamera().setFrustumFar(1000.0f);
 //			ChaseCamera chaseCam = new ChaseCamera(app.getCamera(), app.getRootNode(), app.getInputManager());
@@ -42,7 +40,7 @@ class Main {
 //			//chaseCam.setDragToRotate(false);
 //			chaseCam.setMinVerticalRotation((float)Math.PI / -2f + 0.001f);
 //			chaseCam.setInvertVerticalAxis(true);
-			return null			
+			return null
 		]) // app.getFlyByCamera().setEnabled(false);
 		// app.getCamera().setFrustumFar(1000.0f);
 		// ChaseCamera chaseCam = new ChaseCamera(app.getCamera(), app.getRootNode(), app.getInputManager());
@@ -53,13 +51,14 @@ class Main {
 		// chaseCam.setInvertVerticalAxis(true);
 		app.enqueue([
 			app.getInputManager().setCursorVisible(true)
-			return null			
+			return null
 		])
 		app.enqueue([
 			val out = new SceneProcessor4Deferred(app.getAssetManager(), matIdManager)
 			app.getViewPort().addProcessor(out)
-			app.getStateManager().attach(new AppState4ViewDeferredTexture(out, AppState4ViewDeferredTexture.ViewKey.values()))
-			return out			
+			app.getStateManager().attach(
+				new AppState4ViewDeferredTexture(out, AppState4ViewDeferredTexture.ViewKey.values()))
+			return out
 		])
 		app.enqueue([
 			app.getStateManager().attach(new AppState4Sample03(matIdManager))
@@ -75,12 +74,12 @@ class Main {
 		// });
 		app.enqueue([
 			val fpp = new FilterPostProcessor(app.getAssetManager());
-			//BloomFilter bf = new BloomFilter(BloomFilter.GlowMode.Scene);
-			//fpp.addFilter(bf);
-			//fpp.addFilter(new FXAAFilter());
-			//fpp.addFilter(new FXAAFilter());
+			// BloomFilter bf = new BloomFilter(BloomFilter.GlowMode.Scene);
+			// fpp.addFilter(bf);
+			// fpp.addFilter(new FXAAFilter());
+			// fpp.addFilter(new FXAAFilter());
 			app.getViewPort().addProcessor(fpp);
-			return null;			
+			return null;
 		]) // BloomFilter bf = new BloomFilter(BloomFilter.GlowMode.Scene);
 		// fpp.addFilter(bf);
 		// fpp.addFilter(new FXAAFilter());

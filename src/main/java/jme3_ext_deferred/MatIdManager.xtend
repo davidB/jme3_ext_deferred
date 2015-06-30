@@ -6,9 +6,9 @@ import com.jme3.texture.Image
 import com.jme3.texture.Image.Format
 import com.jme3.texture.Texture.MagFilter
 import com.jme3.texture.Texture.MinFilter
-import com.jme3.texture.Texture.WrapMode
 import com.jme3.texture.Texture2D
 import com.jme3.util.BufferUtils
+import com.jme3.texture.image.ColorSpace
 
 class MatIdManager {
 	package Image tableImage
@@ -21,9 +21,9 @@ class MatIdManager {
 	private new(int entriesNb, int entriesSize) {
 		this.entriesSize = entriesSize
 		tableData = BufferUtils::createByteBuffer(entriesNb * entriesSize * 4) // TODO 3.1 : use new Image(this.nativeFormat.get(), this.pWidth, this.pHeight, this.jmeData, com.jme3.texture.image.ColorSpace.sRGB);
-		tableImage = new Image(Format::RGBA8, entriesSize, entriesNb, tableData)
+		tableImage = new Image(Format::RGBA8, entriesSize, entriesNb, tableData, null, ColorSpace.Linear)
 		tableTex = new Texture2D(tableImage)
-		tableTex.setWrap(WrapMode::Clamp)
+		//tableTex.setWrap(WrapMode::Clamp)
 		tableTex.setMinFilter(MinFilter::NearestNoMipMaps)
 		tableTex.setMagFilter(MagFilter::Nearest)
 		defId = findMatId(ColorRGBA::BlackNoAlpha, ColorRGBA::BlackNoAlpha)

@@ -54,14 +54,14 @@ class YadefTest extends SimpleApplication {
 
 	SpotLight flashLight
 
-	def private void addFPSFLashLight() {
-		flashLight = new SpotLight()
-		flashLight.setSpotInnerAngle(6 * FastMath.DEG_TO_RAD)
-		flashLight.setSpotOuterAngle(10 * FastMath.DEG_TO_RAD)
-		flashLight.setColor(ColorRGBA.White)
-		flashLight.setSpotRange(300f)
-		rootNode.addLight(flashLight)
-	}
+//	def private void addFPSFLashLight() {
+//		flashLight = new SpotLight()
+//		flashLight.setSpotInnerAngle(6 * FastMath.DEG_TO_RAD)
+//		flashLight.setSpotOuterAngle(10 * FastMath.DEG_TO_RAD)
+//		flashLight.setColor(ColorRGBA.White)
+//		flashLight.setSpotRange(300f)
+//		rootNode.addLight(flashLight)
+//	}
 
 	def private void moveFlashLight() {
 		if (flashLight !== null) {
