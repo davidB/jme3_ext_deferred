@@ -2,6 +2,7 @@ build
 target
 lib
 tmp
+xtend-gen
 *.class
 *.so
 *.dll
