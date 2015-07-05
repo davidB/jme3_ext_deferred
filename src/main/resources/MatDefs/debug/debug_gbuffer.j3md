@@ -25,6 +25,7 @@ MaterialDef debug_gbuffer {
 	}
 
 	Technique {
+		NoRender
 	}
 
 	Technique fullgreen {

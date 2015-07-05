@@ -11,6 +11,7 @@ MaterialDef gbuffer {
 		Texture2D SpecularMap
 	}
 	Technique {
+		NoRender
 	}
 	Technique GBuf {
 
