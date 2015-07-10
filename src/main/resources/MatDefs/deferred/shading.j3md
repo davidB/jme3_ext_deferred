@@ -1,12 +1,12 @@
 MaterialDef lbuffer {
 
 	MaterialParameters {
-		Texture2D NormalBuffer
-		Texture2D DepthBuffer
-		Texture2D AOBuffer
-		Texture2D MatBuffer
-		Texture2D AlbedoBuffer
-		Texture2D LBuffer
+		Texture2D NormalBuffer -LINEAR
+		Texture2D DepthBuffer -LINEAR
+		Texture2D AOBuffer -LINEAR
+		Texture2D MatBuffer -LINEAR
+		Texture2D AlbedoBuffer -LINEAR
+		Texture2D LBuffer -LINEAR
 
 		Boolean FullView
 	}

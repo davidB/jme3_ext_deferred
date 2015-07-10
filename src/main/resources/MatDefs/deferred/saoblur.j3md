@@ -1,8 +1,8 @@
 MaterialDef saoblur {
 	MaterialParameters {
 		Boolean FullView
-		Texture2D Texture
-		Texture2D NormalBuffer
+		Texture2D Texture -LINEAR
+		Texture2D NormalBuffer -LINEAR
 		Vector2 Axis
 		Vector4 ProjInfo
 	}

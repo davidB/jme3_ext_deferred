@@ -6,10 +6,10 @@ MaterialDef lbuffer {
 		Vector3 LightDir
 		Float LightFallOffDist;
 
-		Texture2D NormalBuffer
-		Texture2D DepthBuffer
-		Texture2D MatBuffer
-		Texture2D SpecularBuffer
+		Texture2D NormalBuffer -LINEAR
+		Texture2D DepthBuffer -LINEAR
+		Texture2D MatBuffer -LINEAR
+		Texture2D SpecularBuffer -LINEAR
 		Vector3 ClipInfo
 		Vector4 ProjInfo
 
@@ -18,13 +18,13 @@ MaterialDef lbuffer {
         Int FilterMode
         Boolean HardwareShadows
 
-        Texture2D ShadowMap0
-        Texture2D ShadowMap1
-        Texture2D ShadowMap2
-        Texture2D ShadowMap3
+        Texture2D ShadowMap0 -LINEAR
+        Texture2D ShadowMap1 -LINEAR
+        Texture2D ShadowMap2 -LINEAR
+        Texture2D ShadowMap3 -LINEAR
         //pointLights
-        Texture2D ShadowMap4
-        Texture2D ShadowMap5
+        Texture2D ShadowMap4 -LINEAR
+        Texture2D ShadowMap5 -LINEAR
 
         Float ShadowIntensity
         Vector4 Splits

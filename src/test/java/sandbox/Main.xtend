@@ -17,6 +17,7 @@ class Main {
 		settings.setFullscreen(false)
 		settings.setDepthBits(24) // settings.setStencilBits(8);
 		// settings.setRenderer("LWJGL-OpenGL4");//AppSettings.LWJGL_OPENGL3);
+		settings.gammaCorrection = true
 		settings.setRenderer(AppSettings.LWJGL_OPENGL3) // settings.setCustomRenderer(LwjglDisplayCustom.class);
 		val app = new SimpleApplication() {
 			override simpleInitApp() {
@@ -73,17 +74,18 @@ class Main {
 		// return null;
 		// });
 		app.enqueue([
-			val fpp = new FilterPostProcessor(app.getAssetManager());
+			val fpp = new FilterPostProcessor(app.getAssetManager())
 			// BloomFilter bf = new BloomFilter(BloomFilter.GlowMode.Scene);
 			// fpp.addFilter(bf);
 			// fpp.addFilter(new FXAAFilter());
 			// fpp.addFilter(new FXAAFilter());
-			app.getViewPort().addProcessor(fpp);
-			return null;
-		]) // BloomFilter bf = new BloomFilter(BloomFilter.GlowMode.Scene);
-		// fpp.addFilter(bf);
-		// fpp.addFilter(new FXAAFilter());
-		// fpp.addFilter(new FXAAFilter());
+			// fpp.addFilter(new GammaCorrectionFilter())
+			app.getViewPort().addProcessor(fpp)
+			
+			app.renderer.setMainFrameBufferSrgb(true)
+			app.renderer.setLinearizeSrgbImages(true)
+			return null
+		])
 	}
 
 }

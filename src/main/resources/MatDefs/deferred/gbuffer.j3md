@@ -3,12 +3,12 @@ MaterialDef gbuffer {
 	MaterialParameters {
 		Int MatId
 		Float AlphaDiscardThreshold
-		Texture2D AlphaMap
-		Texture2D NormalMap
+		Texture2D AlphaMap -LINEAR
+		Texture2D NormalMap -LINEAR
 		Color Color
 		Texture2D ColorMap
 		Color Specular
-		Texture2D SpecularMap
+		Texture2D SpecularMap -LINEAR
 	}
 	Technique {
 		NoRender

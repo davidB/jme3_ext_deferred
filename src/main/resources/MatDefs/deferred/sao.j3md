@@ -2,8 +2,8 @@ MaterialDef sao {
 
 	MaterialParameters {
 		Boolean FullView
-		Texture2D NormalBuffer
-		Texture2D DepthBuffer
+		Texture2D NormalBuffer -LINEAR
+		Texture2D DepthBuffer -LINEAR
 		Vector3 SampleRadius
 		Float Intensity
 		Float Bias
