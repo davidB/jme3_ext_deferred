@@ -55,7 +55,6 @@ dependencies {
 
 //	provided "com.jme3:jme3-core:${v_jme}"
 //	provided "com.jme3:jme3-lwjgl:${v_jme}"
-	//provided "com.jme3:jme3-effects:${v_jme}"
 	//compile "org.lwjgl.lwjgl:lwjgl:2.9.3"
 //	testRuntime "com.jme3:jme3-desktop:${v_jme}"
 	testRuntime "org.slf4j:slf4j-jdk14:${v_slf4j}"
@@ -65,7 +64,8 @@ dependencies {
 	testCompile "net.alchim31.assets:teapot:0.2.0"
 	testCompile "net.alchim31.assets:broken_cube:0.1.0"
 	testCompile "com.jme3:jme3-jbullet:3.0.10"
-	//testCompile "${jme_group}:jme3-jbullet:${jme_version}"
+	testCompile "${jme_group}:jme3-effects:${jme_version}"
+	//testCompile "${jme_group}:jme3-jbullet:"
 	//testCompile "${jme_group}:jme3-bullet:${jme_version}"
 	fmpp 'net.sourceforge.fmpp:fmpp:0.9.14'
 }

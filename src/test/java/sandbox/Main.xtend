@@ -5,7 +5,7 @@ import jme3_ext_deferred.MatIdManager
 import jme3_ext_deferred.SceneProcessor4Deferred
 import com.jme3.app.SimpleApplication
 import com.jme3.post.FilterPostProcessor
-//import com.jme3.renderer.lwjgl.LwjglDisplayCustom;
+import com.jme3.post.filters.FXAAFilter
 import com.jme3.system.AppSettings
 
 class Main {
@@ -77,8 +77,8 @@ class Main {
 			val fpp = new FilterPostProcessor(app.getAssetManager())
 			// BloomFilter bf = new BloomFilter(BloomFilter.GlowMode.Scene);
 			// fpp.addFilter(bf);
-			// fpp.addFilter(new FXAAFilter());
-			// fpp.addFilter(new FXAAFilter());
+			//fpp.addFilter(new FXAAFilter())
+			//fpp.addFilter(new FXAAFilter())
 			// fpp.addFilter(new GammaCorrectionFilter())
 			app.getViewPort().addProcessor(fpp)
 			
