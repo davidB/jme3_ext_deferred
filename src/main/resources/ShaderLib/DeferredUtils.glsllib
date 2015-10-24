@@ -48,11 +48,6 @@ float readRawDepth(in sampler2D depthBuffer, in vec2 uv) {
 	return texture(depthBuffer, uv).r;
 }
 
-// [Depth testing](file:///Users/davidb/Library/Application%20Support/Firefox/Profiles/osjconli.default/ScrapBook/data/20150621222102/index.html)
-float readDepth(in sampler2D depthBuffer, in vec2 uv, float near, float far) {
-    return linearizeDepth(readRawDepth(depthBuffer, uv));
-}
-
 // @see http://www.geeks3d.com/20091216/geexlab-how-to-visualize-the-depth-buffer-in-glsl/
 // @param rawDepth the value read from depth buffer
 // @param near distance from camera to near plan (CS)
@@ -61,6 +56,11 @@ float readDepth(in sampler2D depthBuffer, in vec2 uv, float near, float far) {
 float linearizeDepth(float rawDepth, float near, float far) {
     float z = rawDepth;
     return (2.0 * near) / (far + near - z * (far - near));
+}
+
+// [Depth testing](file:///Users/davidb/Library/Application%20Support/Firefox/Profiles/osjconli.default/ScrapBook/data/20150621222102/index.html)
+float readDepth(in sampler2D depthBuffer, in vec2 uv, float near, float far) {
+    return linearizeDepth(readRawDepth(depthBuffer, uv), near, far);
 }
 
 vec3 readDiffuse(in sampler2D diffuseBuffer, in vec2 uv) {

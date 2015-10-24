@@ -30,7 +30,8 @@ task exec(type:JavaExec) {
    classpath = sourceSets.test.runtimeClasspath
 }
 
-def jme_version = '3.1.0-snapshot-github'
+//def jme_version = '3.1.0-snapshot-github'
+def jme_version = '3.1.0-SNAPSHOT'
 def jme_group = 'com.jme3'
 
 //def jme_version = '72e1213'
