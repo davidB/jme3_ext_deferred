@@ -1,0 +1,22 @@
+MaterialDef gbufferdown {
+
+	MaterialParameters {
+		Boolean FullView
+		Texture2D NormalBuffer -LINEAR
+		Texture2D DepthBuffer -LINEAR
+	}
+
+	Technique {
+		VertexShader GLSL150 : Shaders/deferred/quad.vert
+		FragmentShader GLSL150 : Shaders/deferred/gbufferdown.frag
+
+		WorldParameters {
+			WorldViewProjectionMatrix
+			WorldMatrix
+		}
+
+		Defines {
+			FULLVIEW : FullView
+		}
+	}
+}

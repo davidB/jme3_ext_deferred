@@ -30,5 +30,4 @@ package class GBuffer {
 		fb.addColorTexture(specular) // fb.addColorTexture(custom0);
 		// fb.addColorTexture(custom1);
 	}
-
 }

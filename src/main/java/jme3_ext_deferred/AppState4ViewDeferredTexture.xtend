@@ -59,9 +59,9 @@ class AppState4ViewDeferredTexture extends AbstractAppState {
 	def package void materialsUpdate(SceneProcessor4Deferred sp) {
 		for (Material m : mats) {
 			// Set<String> params = m.getMaterialDef().getMaterialParams().stream().map((mp) -> mp.getName()).collect(Collectors.toSet());
-			m.setTexture("NormalBuffer", sp.pass4gbuffer.gbuffer.normal)
+			m.setTexture("NormalBuffer", sp.pass4ao.finalTex) //sp.pass4gbuffer.gbuffer.normal)
 			m.setTexture("DepthBuffer", sp.pass4gbuffer.gbuffer.depth)
-			m.setTexture("AOBuffer", sp.pass4ao.aobuffer.tex)
+			m.setTexture("AOBuffer", sp.pass4ao.finalTex)
 			m.setTexture("MatBuffer", sp.matIdManager.tableTex)
 			m.setTexture("AlbedoBuffer", sp.pass4gbuffer.gbuffer.albedo)
 			m.setTexture("SpecularBuffer", sp.pass4gbuffer.gbuffer.specular)
@@ -106,15 +106,10 @@ class AppState4ViewDeferredTexture extends AbstractAppState {
 		super.cleanup()
 		sub.unsubscribe()
 		for (var int i = 0; i < display.length; i++) {
-			if({
-				val _rdIndx_display = i
-				display.get(_rdIndx_display)
-			} !== null) {
-				val _rdIndx_display = i
-				display.get(_rdIndx_display)
-			}.removeFromParent()
+			if(display.get(i) !== null) {
+				display.get(i).removeFromParent()
+			}
 		}
-
 	}
 
 	package Matrix4f m_ViewMatrixInverse = new Matrix4f()

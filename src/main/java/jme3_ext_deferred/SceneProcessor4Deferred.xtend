@@ -30,7 +30,7 @@ import org.eclipse.xtend.lib.annotations.FinalFieldsConstructor
 @FinalFieldsConstructor
 class SceneProcessor4Deferred implements SceneProcessor {
 	package Pass4GBuffer pass4gbuffer
-	package Pass4AO pass4ao
+	package Pass4AO_mssao pass4ao
 	package Pass4Tex pass4tex
 	package Pass4LBuffer pass4lbuffer
 	package Pass4Shade pass4shade
@@ -54,10 +54,11 @@ class SceneProcessor4Deferred implements SceneProcessor {
 	override void reshape(ViewPort vp, int w, int h) {
 		cleanup()
 		pass4gbuffer = new Pass4GBuffer(w, h, vp, rm)
-		pass4ao = new Pass4AO(w, h, vp, rm, assetManager, pass4gbuffer.gbuffer, finalQuad, false)
+		//pass4ao = new Pass4AO(w, h, vp, rm, assetManager, pass4gbuffer.gbuffer, finalQuad, false)
+		pass4ao = new Pass4AO_mssao(w, h, vp, rm, assetManager, pass4gbuffer.gbuffer, 5)
 		pass4lbuffer = new Pass4LBuffer(w, h, vp, rm, assetManager, pass4gbuffer.gbuffer, matIdManager.tableTex) // pass4tex = new Pass4Tex(finalQuad, vp, rm, assetManager, pass4ao.finalTex);
 		pass4shade = new Pass4Shade(finalQuad, vp, rm, assetManager, pass4gbuffer.gbuffer, matIdManager.tableTex, pass4ao.finalTex, pass4lbuffer.lbuffer.tex)
-		pass4tex = new Pass4Tex(finalQuad, vp, rm, assetManager, pass4lbuffer.lbuffer.tex)
+		pass4tex = new Pass4Tex(finalQuad, vp, rm, assetManager, pass4ao.finalTex)
 		onChange0.onNext(this)
 	}
 
@@ -75,8 +76,9 @@ class SceneProcessor4Deferred implements SceneProcessor {
 		val techOrig = rm.getForcedTechnique()
 		pass4gbuffer.render()
 		pass4ao.render()
-		pass4lbuffer.render(rq) // pass4tex.render();
+		pass4lbuffer.render(rq)
 		pass4shade.render()
+		pass4tex.render()
 		rm.setForcedTechnique(techOrig)
 	}
 

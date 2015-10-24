@@ -3,6 +3,10 @@ MaterialDef tex {
 	MaterialParameters {
 		Boolean FullView
 		Texture2D Texture
+		Boolean ROnly
+        Boolean GOnly
+        Boolean BOnly
+        Boolean AOnly
 	}
 
 	Technique {
@@ -16,6 +20,10 @@ MaterialDef tex {
 
 		Defines {
 			FULLVIEW : FullView
+			R_ONLY: ROnly
+            G_ONLY: GOnly
+            B_ONLY: BOnly
+            A_ONLY: AOnly
 		}
 	}
 }

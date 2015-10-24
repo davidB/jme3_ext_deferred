@@ -1,0 +1,39 @@
+MaterialDef mssao {
+
+	MaterialParameters {
+		Boolean FullView
+		Texture2D NormalBuffer -LINEAR
+		Texture2D DepthBuffer -LINEAR
+		Vector3 ClipInfo
+		Vector4 ProjInfo
+		Float ProjScale
+		Float dMax
+		Float rMax
+		Float r
+		Texture2D loResAOTex -LINEAR
+		Texture2D loResNormTex -LINEAR
+		Texture2D loResDepthTex -LINEAR
+        Boolean Middle
+        Boolean Last
+	}
+
+	Technique {
+		VertexShader GLSL150:   Shaders/deferred/quad.vert
+		FragmentShader GLSL150: Shaders/deferred/mssao.frag
+
+		WorldParameters {
+			Resolution
+			ViewMatrix
+			ProjectionMatrix
+			FrustumNearFar
+			Time
+			ViewProjectionMatrixInverse
+		}
+
+		Defines {
+			FULLVIEW : FullView
+			MIDDLE : Middle
+			LAST: Last
+		}
+	}
+}

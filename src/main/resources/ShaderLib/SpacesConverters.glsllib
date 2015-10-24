@@ -1,5 +1,8 @@
 #import "ShaderLib/UnitVector.glsllib"
 
+//------------------------------------------------------------------------------
+//---- Normals
+//------------------------------------------------------------------------------
 
 vec3 encodeNormal(in vec3 normal){
 	return snorm12x2_to_unorm8x3(float32x3_to_oct(normal));
@@ -15,6 +18,22 @@ vec3 readNormal(in sampler2D normalBuffer, in vec2 uv) {
 	return normalize(decodeNormal(intNormal));
 }
 
+// Reconstructs eye-space non-unit normal from eye-space position
+// @src G3D
+vec3 ES_reconstructNonUnitFaceNormal(vec3 posES) {
+	return cross(dFdy(posES), dFdx(posES));
+}
+
+// Reconstructs eye-space unit normal from eye-space position
+// @src G3D
+vec3 ES_reconstructFaceNormal(vec3 posES) {
+	return normalize(cross(dFdy(posES), dFdx(posES)));
+}
+
+//------------------------------------------------------------------------------
+//---- Texture Space
+//------------------------------------------------------------------------------
+
 vec2 toUV(in sampler2D buffer, in ivec2 xy) {
     return (vec2(xy) + vec2(0.5)) / textureSize(buffer, 0);
 }
@@ -27,21 +46,14 @@ float toNDC(in float v) {
     return v * 2.0 - 1.0;
 }
 
+//------------------------------------------------------------------------------
+//---- Depth / Position
+//------------------------------------------------------------------------------
+
 //vec2 near(in vec2 uv, in vec2 resolutionInv, in vec2 step) {
 //	return uv + resolutionInv * step;
 //}
 
-// Reconstructs screen-space non-unit normal from screen-space position
-// @src G3D
-vec3 reconstructNonUnitCSFaceNormal(vec3 C) {
-	return cross(dFdy(C), dFdx(C));
-}
-
-// Reconstructs screen-space unit normal from screen-space position
-// @src G3D
-vec3 reconstructCSFaceNormal(vec3 C) {
-	return normalize(cross(dFdy(C), dFdx(C)));
-}
 
 // @return [0,1] hyperbolic value stored in depthBuffer
 float readRawDepth(in sampler2D depthBuffer, in vec2 uv) {
@@ -69,16 +81,22 @@ vec3 readDiffuse(in sampler2D diffuseBuffer, in vec2 uv) {
 
 
 // Clipping plane constants for use by reconstructZ
+// @param d
 // @param clipInfo = (far == -inf()) ? Vector3(near, -1.0f, 1.0f) : Vector3(near * far,  near - far,  far);
 // @return [-near, -far]
 // @src G3D
-float reconstructCSZ(float d, vec3 clipInfo) {
-    return clipInfo[0] / (clipInfo[1] * d + clipInfo[2]);
+float ES_reconstructZ(float d, vec3 clipInfo) {
+  return clipInfo[0] / (clipInfo[1] * d + clipInfo[2]);
 }
 
-float reconstructCSZ(float d, float n, float f) {
+// Clipping plane constants for use by reconstructZ
+// @param d depth 
+// @param n near in ES unit
+// @param f far in ES unit
+// @return [-near, -far]
+float ES_reconstructZ(float d, float n, float f) {
 	vec3 clipInfo = vec3(n * f, n - f, f);
-    return reconstructCSZ(d, clipInfo);
+  return reconstructCSZ(d, clipInfo);
     //d = (2.0 * n) / (f + n - d * (f - n));
     //return -1 * (near + (d * far - near));
     //float zndc = d * 2.0 - 1.0;
@@ -100,9 +118,11 @@ float reconstructCSZ(float d, float n, float f) {
 //
 //    where P is the projection matrix that maps camera space points
 //    to [-1, 1] x [-1, 1].  That is, Camera::getProjectUnit().
+// @param xySS
+// @param zES
 // @src G3D
-vec3 reconstructCSPosition(vec2 S, float z, vec4 projInfo) {
-    return vec3((S.xy * projInfo.xy + projInfo.zw) * z, z);
+vec3 ES_reconstructPosition(vec2 xySS, float zES, vec4 projInfo) {
+    return vec3((xySS * projInfo.xy + projInfo.zw) * z, z);
 }
 
 // Helper for reconstructing camera-space P.xyz from screen-space S = (x, y) in
@@ -117,4 +137,8 @@ vec3 reconstructCSPositionFromDepth(vec2 S, float depth, vec4 projInfo, vec3 cli
 // @src G3D
 vec3 reconstructWSPositionFromDepth(vec2 S, float depth, vec4 projInfo, vec3 clipInfo, mat4 cameraToWorld) {
     return (cameraToWorld * vec4(reconstructCSPositionFromDepth(S, depth, projInfo, clipInfo), 1.0)).xyz;
+}
+
+vec3 WS_fromES(vec3 posES, mat4 cameraToWorld) {
+    return (cameraToWorld * vec4(posES, 1.0)).xyz;
 }
