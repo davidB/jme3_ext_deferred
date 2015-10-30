@@ -1,12 +1,11 @@
 package sandbox
 
+import com.jme3.app.SimpleApplication
+import com.jme3.post.FilterPostProcessor
+import com.jme3.system.AppSettings
 import jme3_ext_deferred.AppState4ViewDeferredTexture
 import jme3_ext_deferred.MatIdManager
 import jme3_ext_deferred.SceneProcessor4Deferred
-import com.jme3.app.SimpleApplication
-import com.jme3.post.FilterPostProcessor
-import com.jme3.post.filters.FXAAFilter
-import com.jme3.system.AppSettings
 
 class Main {
 	def static void main(String[] args) throws Exception {
@@ -18,7 +17,8 @@ class Main {
 		settings.setDepthBits(24) // settings.setStencilBits(8);
 		// settings.setRenderer("LWJGL-OpenGL4");//AppSettings.LWJGL_OPENGL3);
 		settings.gammaCorrection = true
-		settings.setRenderer(AppSettings.LWJGL_OPENGL3) // settings.setCustomRenderer(LwjglDisplayCustom.class);
+		settings.setRenderer(AppSettings.LWJGL_OPENGL3)
+		// settings.setCustomRenderer(LwjglDisplayCustom.class);
 		val app = new SimpleApplication() {
 			override simpleInitApp() {
 			}
@@ -65,10 +65,10 @@ class Main {
 			app.getStateManager().attach(new AppState4Sample03(matIdManager))
 			return null
 		])
-		app.enqueue([
-			app.getStateManager().attach(new AppState4Sample04_BrokenCube(matIdManager))
-			return null
-		])
+//		app.enqueue([
+//			app.getStateManager().attach(new AppState4Sample04_BrokenCube(matIdManager))
+//			return null
+//		])
 		// app.enqueue(() -> {
 		// app.getStateManager().attach(new AppState4RegularHDR());
 		// return null;

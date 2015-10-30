@@ -64,10 +64,11 @@ dependencies {
 	testCompile "net.alchim31.assets:crytek_sponza2:0.1.0"
 	testCompile "net.alchim31.assets:teapot:0.2.0"
 	testCompile "net.alchim31.assets:broken_cube:0.1.0"
-	testCompile "com.jme3:jme3-jbullet:3.0.10"
+	testCompile "com.jme3:jme3-jbullet:${jme_version}"
 	testCompile "${jme_group}:jme3-effects:${jme_version}"
 	//testCompile "${jme_group}:jme3-jbullet:"
 	//testCompile "${jme_group}:jme3-bullet:${jme_version}"
+	//testCompile "${jme_group}:jme3-bullet-natives:${jme_version}"
 	fmpp 'net.sourceforge.fmpp:fmpp:0.9.14'
 }
 
