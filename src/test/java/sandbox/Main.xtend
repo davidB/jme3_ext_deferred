@@ -16,6 +16,7 @@ class Main {
 		settings.setFullscreen(false)
 		settings.setDepthBits(24)
 		settings.gammaCorrection = true
+		settings.setRenderer(AppSettings.LWJGL_OPENGL3) // settings.setCustomRenderer(LwjglDisplayCustom.class);
 		//settings.swapBuffers = false
 		//settings.setRenderer(AppSettings.LWJGL_OPENGL3)
 		settings.setRenderer(AppSettings.JOGL_OPENGL_FORWARD_COMPATIBLE)
