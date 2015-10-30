@@ -15,10 +15,9 @@ class Main {
 		settings.setVSync(false)
 		settings.setFullscreen(false)
 		settings.setDepthBits(24) // settings.setStencilBits(8);
-		// settings.setRenderer("LWJGL-OpenGL4");//AppSettings.LWJGL_OPENGL3);
 		settings.gammaCorrection = true
-		settings.setRenderer(AppSettings.LWJGL_OPENGL3)
-		// settings.setCustomRenderer(LwjglDisplayCustom.class);
+		settings.setRenderer("JOGL")
+		settings.setAudioRenderer("JOAL")
 		val app = new SimpleApplication() {
 			override simpleInitApp() {
 			}
