@@ -40,7 +40,7 @@ def jme_group = 'com.jme3'
 //def jme_version = 'b8fe36e'
 //def jme_group = 'com.github.jMonkeyEngine.jmonkeyengine'
 def v_slf4j = '1.7.7'
-def v_jogl = '2.3.1'
+def jogl_version = '2.3.2'
 
 configurations {
 	fmpp
@@ -52,17 +52,13 @@ dependencies {
 	compile 'io.reactivex:rxjava:1.0.8'
 	compile "org.slf4j:slf4j-api:${v_slf4j}"
 	compile "${jme_group}:jme3-core:${jme_version}"
-	compile "${jme_group}:jme3-jogl:${jme_version}"
-	compile "org.jogamp.jogl:jogl-all-noawt:${v_jogl}"
-	//compile "org.jogamp.jogl:jogl-all-main:${v_jogl}"
-	//compile "org.jogamp.jogl:jogl-main:${v_jogl}"
-	//compile "org.jogamp.gluegen:gluegen-rt:${v_jogl}"
-	testRuntime "${jme_group}:jme3-desktop:${jme_version}"
-
-//	provided "com.jme3:jme3-core:${v_jme}"
-//	provided "com.jme3:jme3-lwjgl:${v_jme}"
-	//compile "org.lwjgl.lwjgl:lwjgl:2.9.3"
-//	testRuntime "com.jme3:jme3-desktop:${v_jme}"
+	runtime "${jme_group}:jme3-desktop:${jme_version}"
+	runtime "${jme_group}:jme3-jogl:${jme_version}"
+    // force
+    runtime "org.jogamp.gluegen:gluegen-rt-main:${jogl_version}"
+    runtime "org.jogamp.jogl:jogl-all-main:${jogl_version}"
+    runtime "org.jogamp.joal:joal-main:${jogl_version}"
+    
 	testRuntime "org.slf4j:slf4j-jdk14:${v_slf4j}"
 	testCompile 'junit:junit:4.11'
 	testCompile 'org.mockito:mockito-core:1.8.5'
