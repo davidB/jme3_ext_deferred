@@ -14,10 +14,11 @@ class Main {
 		settings.setResolution(1280, 720)
 		settings.setVSync(false)
 		settings.setFullscreen(false)
-		settings.setDepthBits(24) // settings.setStencilBits(8);
+		settings.setDepthBits(24)
 		settings.gammaCorrection = true
-		settings.setRenderer("JOGL")
-		settings.setAudioRenderer("JOAL")
+		//settings.setRenderer(AppSettings.LWJGL_OPENGL3)
+    	settings.setRenderer(AppSettings.JOGL_OPENGL_FORWARD_COMPATIBLE)
+    	settings.setAudioRenderer(AppSettings.JOAL)
 		val app = new SimpleApplication() {
 			override simpleInitApp() {
 			}
@@ -32,7 +33,7 @@ class Main {
 		app.enqueue([
 			app.getFlyByCamera().setMoveSpeed(10)
 			// app.getFlyByCamera().setEnabled(false);
-			app.getInputManager().setCursorVisible(true)
+//			app.getInputManager().setCursorVisible(false)
 //			app.getCamera().setFrustumFar(1000.0f);
 //			ChaseCamera chaseCam = new ChaseCamera(app.getCamera(), app.getRootNode(), app.getInputManager());
 //			chaseCam.setDefaultDistance(6.0f);
@@ -49,10 +50,10 @@ class Main {
 		// //chaseCam.setDragToRotate(false);
 		// chaseCam.setMinVerticalRotation((float)Math.PI / -2f + 0.001f);
 		// chaseCam.setInvertVerticalAxis(true);
-		app.enqueue([
-			app.getInputManager().setCursorVisible(true)
-			return null
-		])
+//		app.enqueue([
+//			app.getInputManager().setCursorVisible(true)
+//			return null
+//		])
 		app.enqueue([
 			val out = new SceneProcessor4Deferred(app.getAssetManager(), matIdManager)
 			app.getViewPort().addProcessor(out)
@@ -80,7 +81,7 @@ class Main {
 			//fpp.addFilter(new FXAAFilter())
 			// fpp.addFilter(new GammaCorrectionFilter())
 			app.getViewPort().addProcessor(fpp)
-			
+
 			app.renderer.setMainFrameBufferSrgb(true)
 			app.renderer.setLinearizeSrgbImages(true)
 			return null

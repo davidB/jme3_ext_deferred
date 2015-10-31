@@ -1,5 +1,5 @@
 plugins {
-  id "org.xtend.xtend" version "0.4.7"
+  id "org.xtend.xtend" version "0.4.12"
   id "nebula.provided-base" version "2.2.2"
   id "com.jfrog.bintray" version "1.2"
 }
@@ -54,11 +54,8 @@ dependencies {
 	compile "${jme_group}:jme3-core:${jme_version}"
 	runtime "${jme_group}:jme3-desktop:${jme_version}"
 	runtime "${jme_group}:jme3-jogl:${jme_version}"
-    // force
-    runtime "org.jogamp.gluegen:gluegen-rt-main:${jogl_version}"
-    runtime "org.jogamp.jogl:jogl-all-main:${jogl_version}"
-    runtime "org.jogamp.joal:joal-main:${jogl_version}"
-    
+	runtime "${jme_group}:jme3-lwjgl:${jme_version}"
+
 	testRuntime "org.slf4j:slf4j-jdk14:${v_slf4j}"
 	testCompile 'junit:junit:4.11'
 	testCompile 'org.mockito:mockito-core:1.8.5'
