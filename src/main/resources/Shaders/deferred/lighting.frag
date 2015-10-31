@@ -40,36 +40,36 @@ vec3 getWSPosition(vec2 posSS) {
 // * http://gamedev.stackexchange.com/questions/56897/glsl-light-attenuation-color-and-intensity-formula
 // * http://gamedev.stackexchange.com/questions/64149/what-light-attenuation-function-does-udk-use
 float attenuation(float dist, float falloffDist){
-  //float dist = length(dir);
-  float radiance = 1.0 - ((dist * dist) / (falloffDist * falloffDist));
-  //float radiance = 1.0 - (dist  / falloffDist);
-  //radiance *= 1 / (dist * dist);
-  // I = E × (D2 / (D2 + Q × r2)) from http://wiki.blender.org/index.php/Doc:FR/2.6/Manual/Lighting/Lights/Light_Attenuation
-  //float D2 = (falloffDist * 0.25) * (falloffDist * 0.25);
-  //float Q = 1.0;
-  //float radiance = D2 / (D2 + r2);
-  // from http://blog.selfshadow.com/publications/s2013-shading-course/karis/s2013_pbs_epic_notes_v2.pdf p12
-  //float d2 = dist * dist;
-  //float dr = pow(dist / falloffDist, 4) ;
-  //float n = clamp(1-dr, 0.0, 1.0);
-  //return (n*n) / (d2 + 1);
-  //return n;
-  //return clamp(radiance, 0.0, 1.0);
-  //float radiance = 1.0/(1.0+pow(dist/falloffDist, 2.0));
-  //float radiance = 1.0/(pow(dist/falloffDist, 4.0));
-  //float radiance = 1.0/(pow(1.0+ dist/falloffDist, 2.0));
-  //return clamp(radiance*falloffDist, 0.0, 1.0);
-  return clamp(radiance, 0.0, 1.0);
+	//float dist = length(dir);
+	float radiance = 1.0 - ((dist * dist) / (falloffDist * falloffDist));
+	//float radiance = 1.0 - (dist  / falloffDist);
+	//radiance *= 1 / (dist * dist);
+	// I = E × (D2 / (D2 + Q × r2)) from http://wiki.blender.org/index.php/Doc:FR/2.6/Manual/Lighting/Lights/Light_Attenuation
+	//float D2 = (falloffDist * 0.25) * (falloffDist * 0.25);
+	//float Q = 1.0;
+	//float radiance = D2 / (D2 + r2);
+	// from http://blog.selfshadow.com/publications/s2013-shading-course/karis/s2013_pbs_epic_notes_v2.pdf p12
+	//float d2 = dist * dist;
+	//float dr = pow(dist / falloffDist, 4) ;
+	//float n = clamp(1-dr, 0.0, 1.0);
+	//return (n*n) / (d2 + 1);
+	//return n;
+	//return clamp(radiance, 0.0, 1.0);
+	//float radiance = 1.0/(1.0+pow(dist/falloffDist, 2.0));
+	//float radiance = 1.0/(pow(dist/falloffDist, 4.0));
+	//float radiance = 1.0/(pow(1.0+ dist/falloffDist, 2.0));
+	//return clamp(radiance*falloffDist, 0.0, 1.0);
+	return clamp(radiance, 0.0, 1.0);
 }
 
 float influence(vec3 normal, float coneAngle){
-  float minConeAngle = ((360.0-coneAngle-10.0)/360.0)*PI;
-  float maxConeAngle = ((360.0-coneAngle)/360.0)*PI;
-  return smoothstep(minConeAngle, maxConeAngle, acos(normal.z));
+	float minConeAngle = ((360.0-coneAngle-10.0)/360.0)*PI;
+	float maxConeAngle = ((360.0-coneAngle)/360.0)*PI;
+	return smoothstep(minConeAngle, maxConeAngle, acos(normal.z));
 }
 
 float lambert(vec3 surfaceNormal, vec3 lightDir){
-  return max(0.0, dot(surfaceNormal, lightDir));
+	return max(0.0, dot(surfaceNormal, lightDir));
 }
 
 
@@ -88,50 +88,50 @@ uniform mat4 m_LightViewProjectionMatrix5;
 #endif
 
 const mat4 biasMat = mat4(0.5, 0.0, 0.0, 0.0,
-                          0.0, 0.5, 0.0, 0.0,
-                          0.0, 0.0, 0.5, 0.0,
-                          0.5, 0.5, 0.5, 1.0);
+													0.0, 0.5, 0.0, 0.0,
+													0.0, 0.0, 0.5, 0.0,
+													0.5, 0.5, 0.5, 1.0);
 #ifdef USE_SHADOW
 #import "Common/ShaderLib/Shadows15.glsllib"
 float shadowOf(vec4 worldPos, float shadowPosition){
-    float shadow = 1.0;
+		float shadow = 1.0;
 
-    // populate the light view matrices array and convert vertex to light viewProj space
-    vec4 projCoord0 = biasMat * m_LightViewProjectionMatrix0 * worldPos;
-    vec4 projCoord1 = biasMat * m_LightViewProjectionMatrix1 * worldPos;
-    vec4 projCoord2 = biasMat * m_LightViewProjectionMatrix2 * worldPos;
-    vec4 projCoord3 = biasMat * m_LightViewProjectionMatrix3 * worldPos;
-    #ifdef POINTLIGHT
-        vec4 projCoord4 = biasMat * m_LightViewProjectionMatrix4 * worldPos;
-        vec4 projCoord5 = biasMat * m_LightViewProjectionMatrix5 * worldPos;
-    #else
+		// populate the light view matrices array and convert vertex to light viewProj space
+		vec4 projCoord0 = biasMat * m_LightViewProjectionMatrix0 * worldPos;
+		vec4 projCoord1 = biasMat * m_LightViewProjectionMatrix1 * worldPos;
+		vec4 projCoord2 = biasMat * m_LightViewProjectionMatrix2 * worldPos;
+		vec4 projCoord3 = biasMat * m_LightViewProjectionMatrix3 * worldPos;
+		#ifdef POINTLIGHT
+				vec4 projCoord4 = biasMat * m_LightViewProjectionMatrix4 * worldPos;
+				vec4 projCoord5 = biasMat * m_LightViewProjectionMatrix5 * worldPos;
+		#else
 
-        vec4 vLightPos = g_ViewMatrix * vec4(m_LightPos,1.0);
-        vec4 vPos = g_ViewMatrix * worldPos;
-        vec3 lightVec = vLightPos.xyz - vPos.xyz;
-    #endif
+				vec4 vLightPos = g_ViewMatrix * vec4(m_LightPos,1.0);
+				vec4 vPos = g_ViewMatrix * worldPos;
+				vec3 lightVec = vLightPos.xyz - vPos.xyz;
+		#endif
 
-    #ifdef POINTLIGHT
-            shadow = getPointLightShadows(worldPos, m_LightPos,
-                           m_ShadowMap0,m_ShadowMap1,m_ShadowMap2,m_ShadowMap3,m_ShadowMap4,m_ShadowMap5,
-                           projCoord0, projCoord1, projCoord2, projCoord3, projCoord4, projCoord5);
-    #else
-       #ifdef PSSM
-            shadow = getDirectionalLightShadows(m_Splits, shadowPosition,
-                           m_ShadowMap0,m_ShadowMap1,m_ShadowMap2,m_ShadowMap3,
-                           projCoord0, projCoord1, projCoord2, projCoord3);
-       #else
-            //spotlight
-            shadow = getSpotLightShadows(m_ShadowMap0,projCoord0);
-       #endif
-    #endif
+		#ifdef POINTLIGHT
+						shadow = getPointLightShadows(worldPos, m_LightPos,
+													 m_ShadowMap0,m_ShadowMap1,m_ShadowMap2,m_ShadowMap3,m_ShadowMap4,m_ShadowMap5,
+													 projCoord0, projCoord1, projCoord2, projCoord3, projCoord4, projCoord5);
+		#else
+			 #ifdef PSSM
+						shadow = getDirectionalLightShadows(m_Splits, shadowPosition,
+													 m_ShadowMap0,m_ShadowMap1,m_ShadowMap2,m_ShadowMap3,
+													 projCoord0, projCoord1, projCoord2, projCoord3);
+			 #else
+						//spotlight
+						shadow = getSpotLightShadows(m_ShadowMap0,projCoord0);
+			 #endif
+		#endif
 
-    #ifdef FADE
-      shadow = max(0.0,mix(shadow,1.0,(shadowPosition - m_FadeInfo.x) * m_FadeInfo.y));
-    #endif
+		#ifdef FADE
+			shadow = max(0.0,mix(shadow,1.0,(shadowPosition - m_FadeInfo.x) * m_FadeInfo.y));
+		#endif
 
-    //shadow = shadow * m_ShadowIntensity + (1.0 - m_ShadowIntensity);
-    return shadow;
+		//shadow = shadow * m_ShadowIntensity + (1.0 - m_ShadowIntensity);
+		return shadow;
 }
 #endif
 
@@ -186,3 +186,4 @@ void main(){
 //out_FragColor.rgb = vec3(0.0,1.0,0.0);
 //#endif
 }
+
