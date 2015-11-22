@@ -19,7 +19,7 @@ import com.jme3.texture.Texture2D
 import com.jme3.scene.Spatial
 import com.jme3.scene.shape.Quad
 
-/** 
+/**
  * Ambient Occlusion
  * @see https://github.com/jMonkeyEngine/jmonkeyengine/blob/master/jme3-core/src/main/java/com/jme3/shader/UniformBinding.java
  * @see http://fr.slideshare.net/ozlael/mssao-presentation
@@ -52,9 +52,9 @@ class Pass4AO_mssao {
 		this.gbuffers = initGbuffers(width, height, nbRes)
 		this.aobuffers = initAObuffers(width, height, nbRes)
 		this.aobuffer = new TBuffer(width, height, Format.Luminance16F)
-		//this.finalTex = gbuffers.get(0).depth //aobuffer.tex
+		this.finalTex = gbuffers.get(0).depth //aobuffer.tex
 		//this.finalTex = aobuffers.get(aobuffers.length - 1).tex
-		this.finalTex = aobuffers.get(1).tex
+		//this.finalTex = aobuffers.get(1).tex
 		this.aoMatFirst = new Material(assetManager, "MatDefs/deferred/mssao.j3md")
         this.aoMatMiddle = new Material(assetManager, "MatDefs/deferred/mssao.j3md")
         this.aoMatLast = new Material(assetManager, "MatDefs/deferred/mssao.j3md")
@@ -88,7 +88,7 @@ class Pass4AO_mssao {
 		val h = aobuffer.fb.getHeight()
 		val m_ProjInfo = Helpers::projInfo(cam, w, h)
 		val m_ProjScale = Helpers::projScale(cam, w, h)
-		
+
 		#[aoMatFirst, aoMatMiddle, aoMatLast].forEach[m|
     		m.getAdditionalRenderState().setDepthTest(false)
     		m.getAdditionalRenderState().setDepthWrite(false)
@@ -120,7 +120,7 @@ class Pass4AO_mssao {
 		for(var int i = 0; i < gbuffers.length; i++) {
 			val buf = gbuffers.get(i)
 			render(gbuffersMat, buf.fb)
-			// setup for render 
+			// setup for render
 			if (i < gbuffers.length - 1) {
 				gbuffersMat.setTexture("DepthBuffer", buf.depth)
 				gbuffersMat.setTexture("NormalBuffer", buf.normal)
@@ -135,13 +135,13 @@ class Pass4AO_mssao {
 		val size = buf.fb.width
 		val fov = 65.238f //90f
 	    //val fov = vp.camera...
-		val r = size * dMax / (2.0f * Math.abs(Math.tan(fov * Math.PI / 180.0f / 2.0f)));	
+		val r = size * dMax / (2.0f * Math.abs(Math.tan(fov * Math.PI / 180.0f / 2.0f)));
 		m.setFloat("r", r.floatValue)
 		m.setTexture("DepthBuffer", buf.depth)
 		m.setTexture("NormalBuffer", buf.normal)
 		render(m, aobuffers.get(i).fb)
 	}
-	
+
 	def renderMiddlesAO() {
         val m = aoMatMiddle
         val fov = 90f
@@ -153,14 +153,14 @@ class Pass4AO_mssao {
             m.setTexture("loResAOTex", loaobuf.tex)
             val gbuf = gbuffers.get(i)
             val size = gbuf.fb.width
-            val r = size * dMax / (2.0f * Math.abs(Math.tan(fov * Math.PI / 180.0f / 2.0f)));   
+            val r = size * dMax / (2.0f * Math.abs(Math.tan(fov * Math.PI / 180.0f / 2.0f)));
             m.setFloat("r", r.floatValue)
             m.setTexture("DepthBuffer", gbuf.depth)
             m.setTexture("NormalBuffer", gbuf.normal)
             render(m, aobuffers.get(i).fb)
         }
 	}
-	
+
 	def renderLastAO() {
         val m = aoMatLast
         val fov = 90f
@@ -172,13 +172,13 @@ class Pass4AO_mssao {
         m.setTexture("loResAOTex", loaobuf.tex)
         val gbuf = gbuffer
         val size = gbuf.fb.width
-        val r = size * dMax / (2.0f * Math.abs(Math.tan(fov * Math.PI / 180.0f / 2.0f)));   
+        val r = size * dMax / (2.0f * Math.abs(Math.tan(fov * Math.PI / 180.0f / 2.0f)));
         m.setFloat("r", r.floatValue)
         m.setTexture("DepthBuffer", gbuf.depth)
         m.setTexture("NormalBuffer", gbuf.normal)
         render(m, aobuffer.fb)
 	}
-	
+
 	def package void render(Material mat, FrameBuffer fb) {
 		rm.getRenderer().setFrameBuffer(fb)
 		rm.getRenderer().setBackgroundColor(ColorRGBA::BlackNoAlpha)

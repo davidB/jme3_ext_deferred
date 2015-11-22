@@ -60,11 +60,6 @@ float readRawDepth(in sampler2D depthBuffer, in vec2 uv) {
 	return texture(depthBuffer, uv).r;
 }
 
-// [Depth testing](file:///Users/davidb/Library/Application%20Support/Firefox/Profiles/osjconli.default/ScrapBook/data/20150621222102/index.html)
-float readDepth(in sampler2D depthBuffer, in vec2 uv, float near, float far) {
-    return linearizeDepth(readRawDepth(depthBuffer, uv));
-}
-
 // @see http://www.geeks3d.com/20091216/geexlab-how-to-visualize-the-depth-buffer-in-glsl/
 // @param rawDepth the value read from depth buffer
 // @param near distance from camera to near plan (CS)
@@ -73,6 +68,11 @@ float readDepth(in sampler2D depthBuffer, in vec2 uv, float near, float far) {
 float linearizeDepth(float rawDepth, float near, float far) {
     float z = rawDepth;
     return (2.0 * near) / (far + near - z * (far - near));
+}
+
+// [Depth testing](file:///Users/davidb/Library/Application%20Support/Firefox/Profiles/osjconli.default/ScrapBook/data/20150621222102/index.html)
+float readDepth(in sampler2D depthBuffer, in vec2 uv, float near, float far) {
+    return linearizeDepth(readRawDepth(depthBuffer, uv), near, far);
 }
 
 vec3 readDiffuse(in sampler2D diffuseBuffer, in vec2 uv) {
@@ -90,13 +90,13 @@ float ES_reconstructZ(float d, vec3 clipInfo) {
 }
 
 // Clipping plane constants for use by reconstructZ
-// @param d depth 
+// @param d depth
 // @param n near in ES unit
 // @param f far in ES unit
 // @return [-near, -far]
 float ES_reconstructZ(float d, float n, float f) {
-	vec3 clipInfo = vec3(n * f, n - f, f);
-  return reconstructCSZ(d, clipInfo);
+  vec3 clipInfo = vec3(n * f, n - f, f);
+  return ES_reconstructZ(d, clipInfo);
     //d = (2.0 * n) / (f + n - d * (f - n));
     //return -1 * (near + (d * far - near));
     //float zndc = d * 2.0 - 1.0;
@@ -122,23 +122,24 @@ float ES_reconstructZ(float d, float n, float f) {
 // @param zES
 // @src G3D
 vec3 ES_reconstructPosition(vec2 xySS, float zES, vec4 projInfo) {
-    return vec3((xySS * projInfo.xy + projInfo.zw) * z, z);
+    return vec3((xySS * projInfo.xy + projInfo.zw) * zES, zES);
 }
 
 // Helper for reconstructing camera-space P.xyz from screen-space S = (x, y) in
 // pixels and hyperbolic depth.
 // @src G3D
-vec3 reconstructCSPositionFromDepth(vec2 S, float depth, vec4 projInfo, vec3 clipInfo) {
-    return reconstructCSPosition(S, reconstructCSZ(depth, clipInfo), projInfo);
-}
-
-// Helper for the common idiom of getting world-space position P.xyz from screen-space S = (x, y) in
-// pixels and hyperbolic depth.
-// @src G3D
-vec3 reconstructWSPositionFromDepth(vec2 S, float depth, vec4 projInfo, vec3 clipInfo, mat4 cameraToWorld) {
-    return (cameraToWorld * vec4(reconstructCSPositionFromDepth(S, depth, projInfo, clipInfo), 1.0)).xyz;
+vec3 ES_reconstructPositionFromDepth(vec2 S, float depth, vec4 projInfo, vec3 clipInfo) {
+    return ES_reconstructPosition(S, ES_reconstructZ(depth, clipInfo), projInfo);
 }
 
 vec3 WS_fromES(vec3 posES, mat4 cameraToWorld) {
     return (cameraToWorld * vec4(posES, 1.0)).xyz;
 }
+
+// Helper for the common idiom of getting world-space position P.xyz from screen-space S = (x, y) in
+// pixels and hyperbolic depth.
+// @src G3D
+vec3 WS_reconstructPositionFromDepth(vec2 xySS, float depth, vec4 projInfo, vec3 clipInfo, mat4 cameraToWorld) {
+    return WS_fromES(ES_reconstructPositionFromDepth(xySS, depth, projInfo, clipInfo), cameraToWorld);
+}
+

@@ -30,7 +30,7 @@ class MaterialConverter extends SceneGraphVisitorAdapter {
 
 	}
 
-	def static void copyTexture(Material dest, String destName, Material src, String srcName) {
+	def void copyTexture(Material dest, String destName, Material src, String srcName) {
 		var Texture v = read(src, srcName)
 		if (v !== null) {
 			dest.setTexture(destName, v)

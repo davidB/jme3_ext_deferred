@@ -13,7 +13,7 @@ import com.jme3.scene.shape.Quad
 import com.jme3.texture.FrameBuffer
 import org.eclipse.xtend.lib.annotations.FinalFieldsConstructor
 
-/** 
+/**
  * @see http://www.cescg.org/CESCG-2012/papers/Ferko-Real-time_Lighting_Effects_using_Deferred_Shading.pdf
  * @see http://ogldev.atspace.co.uk/www/tutorial36/tutorial36.html
  * @see https://github.com/kwando/dmonkey/blob/master/src/me/merciless/dmonkey/DeferredSceneProcessor.java
@@ -30,8 +30,8 @@ import org.eclipse.xtend.lib.annotations.FinalFieldsConstructor
 @FinalFieldsConstructor
 class SceneProcessor4Deferred implements SceneProcessor {
 	package Pass4GBuffer pass4gbuffer
-	//package Pass4AO_mssao pass4ao
-	package Pass4AO pass4ao
+	package Pass4AO_mssao pass4ao
+	//package Pass4AO pass4ao
 	package Pass4Tex pass4tex
 	package Pass4LBuffer pass4lbuffer
 	package Pass4Shade pass4shade
@@ -55,8 +55,8 @@ class SceneProcessor4Deferred implements SceneProcessor {
 	override void reshape(ViewPort vp, int w, int h) {
 		cleanup()
 		pass4gbuffer = new Pass4GBuffer(w, h, vp, rm)
-		pass4ao = new Pass4AO(w, h, vp, rm, assetManager, pass4gbuffer.gbuffer, finalQuad, false)
-		//pass4ao = new Pass4AO_mssao(w, h, vp, rm, assetManager, pass4gbuffer.gbuffer, 5)
+		//pass4ao = new Pass4AO(w, h, vp, rm, assetManager, pass4gbuffer.gbuffer, finalQuad, false)
+		pass4ao = new Pass4AO_mssao(w, h, vp, rm, assetManager, pass4gbuffer.gbuffer, 5)
 		pass4lbuffer = new Pass4LBuffer(w, h, vp, rm, assetManager, pass4gbuffer.gbuffer, matIdManager.tableTex) // pass4tex = new Pass4Tex(finalQuad, vp, rm, assetManager, pass4ao.finalTex);
 		pass4shade = new Pass4Shade(finalQuad, vp, rm, assetManager, pass4gbuffer.gbuffer, matIdManager.tableTex, pass4ao.finalTex, pass4lbuffer.lbuffer.tex)
 		pass4tex = new Pass4Tex(finalQuad, vp, rm, assetManager, pass4ao.finalTex)
@@ -79,7 +79,7 @@ class SceneProcessor4Deferred implements SceneProcessor {
 		pass4ao.render()
 		pass4lbuffer.render(rq)
 		pass4shade.render()
-		//pass4tex.render()
+		pass4tex.render()
 		rm.setForcedTechnique(techOrig)
 	}
 

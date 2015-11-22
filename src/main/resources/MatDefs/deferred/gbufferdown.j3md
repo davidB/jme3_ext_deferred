@@ -4,6 +4,8 @@ MaterialDef gbufferdown {
 		Boolean FullView
 		Texture2D NormalBuffer -LINEAR
 		Texture2D DepthBuffer -LINEAR
+		Vector3 ClipInfo
+		Vector4 ProjInfo
 	}
 
 	Technique {

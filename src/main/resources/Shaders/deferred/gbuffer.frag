@@ -47,6 +47,7 @@ void main(){
     out_FragData[0] = vec4(encodeNormal(normal), float(m_MatId) / 256.0);
 
     #ifdef COLORMAP
+      //vec4 albedo = vec4(texCoord, 0.0, 1.0);
       vec4 albedo = texture(m_ColorMap, texCoord);
     #else
       vec4 albedo = m_Color;
