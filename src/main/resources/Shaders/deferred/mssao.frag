@@ -78,10 +78,10 @@ vec3 Upsample(ivec2 posSS, vec3 n, vec3 p) {
   //loResCoord[2] = ivec2(floor((posSS + vec2(-1.0, -1.0)) / 2.0) + vec2(0.5, 0.5));
   //loResCoord[3] = ivec2(floor((posSS + vec2( 1.0, -1.0)) / 2.0) + vec2(0.5, 0.5));
   ivec2 pos0 = posSS / 2;
-  loResCoord[0] = pos0 + ivec2(0,  1);    
+  loResCoord[0] = pos0 + ivec2(-1,  1);    
   loResCoord[1] = pos0 + ivec2( 1,  1);
-  loResCoord[2] = pos0 + ivec2(0, 0);
-  loResCoord[3] = pos0 + ivec2( 1, 0);    
+  loResCoord[2] = pos0 + ivec2(-1, -1);
+  loResCoord[3] = pos0 + ivec2( 1, -1);    
   vec3 loResAO[4];
   vec3 loResNorm[4];
   float loResZ[4];
@@ -168,6 +168,7 @@ vec4 mssao(ivec2 posSS, vec2 res){
   sampleCount = aoNear.y;
 #ifdef MIDDLE
   vec3 aoFar = Upsample(posSS, n, p);
+  //aoFar = vec3(0.0);
   return vec4(max(aoFar.x, occlusion / sampleCount), aoFar.y + occlusion, aoFar.z + sampleCount, 1.0);
 #else
   return vec4(occlusion / sampleCount, occlusion, sampleCount, 1.0);
