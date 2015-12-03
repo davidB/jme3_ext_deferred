@@ -29,6 +29,9 @@ import com.jme3.shader.VarType
  */
 //TODO optim use one array of FrameBuffer, and switch targetIndex
 class Pass4AO_mssao {
+    static val texId_ao = 0
+    static val texId_blur = 1
+
 	final GBuffer gbuffer
 	final Geometry finalQuad
 	final ViewPort vp
@@ -36,10 +39,12 @@ class Pass4AO_mssao {
 	public final Texture finalTex
 	final GBufferMini[] gbuffers
 	final TBuffer[] aobuffers
-	final TBuffer aobuffer
+    final TBuffer[] blurbuffers
+   	final TBuffer aobuffer0
 	final Material aoMatFirst
     final Material aoMatMiddle
     final Material aoMatLast
+    final Material blurMat
 	final Material gbuffersMatDN
     final Material gbuffersMatG
     final float dMax = 2.5f // AO radius of influence
@@ -52,13 +57,16 @@ class Pass4AO_mssao {
         this.gbuffersMatG = new Material(assetManager, "MatDefs/deferred/gbufferdown.j3md")
 		this.gbuffers = initGbuffers(width, height, nbRes)
 		this.aobuffers = initAObuffers(width, height, nbRes)
-		this.aobuffer = new TBuffer(width, height, Format.Luminance16F)
+		this.aobuffer0 = new TBuffer(width, height, Format.Luminance16F)
+		this.blurbuffers = initAObuffers(width, height, nbRes)
 		//this.finalTex = gbuffers.get(gbuffers.length - 1).normal
-		this.finalTex = aobuffers.get(1).tex
-        //this.finalTex = aobuffer.tex
+		//this.finalTex = aobuffers.get(2).getTex(texId_ao)
+        //this.finalTex = blurbuffers.get(2).getTex(0)
+        this.finalTex = aobuffer0.tex
 		this.aoMatFirst = new Material(assetManager, "MatDefs/deferred/mssao.j3md")
         this.aoMatMiddle = new Material(assetManager, "MatDefs/deferred/mssao.j3md")
         this.aoMatLast = new Material(assetManager, "MatDefs/deferred/mssao.j3md")
+        this.blurMat = new Material(assetManager, "MatDefs/deferred/mssao_blur.j3md")
 		this.finalQuad = new Geometry("finalQuad", new Quad(1, 1))
 		finalQuad.setCullHint(Spatial::CullHint::Never) // finalQuad.setQueueBucket(Bucket.Opaque);
 		finalQuad.setMaterial(null)
@@ -80,7 +88,7 @@ class Pass4AO_mssao {
 		val TBuffer[] buffers = newArrayOfSize(nbRes - 1)
 		for(var int i = 0; i < buffers.length; i++) {
 			val ratioInv = 2 << i
-			buffers.set(i, new TBuffer(width / ratioInv, height / ratioInv, Format.RGBA16F))//, Format.Luminance16F))
+			buffers.set(i, new TBuffer(width / ratioInv, height / ratioInv, false, Format.RGB16F, Format.RGB16F))//, Format.Luminance16F))
 		}
 		buffers
 	}
@@ -115,6 +123,8 @@ class Pass4AO_mssao {
         
         aoMatLast.setBoolean("Last", true)
         aoMatLast.setParam("poissonDisk", VarType.FloatArray, poissonDisk)
+        
+        blurMat.setBoolean("FullView", true)
 	}
 
 	// TODO use 2 framebuffer/texture (eg by reusing the first one for the third render
@@ -150,6 +160,18 @@ class Pass4AO_mssao {
 		}
 	}
 
+    def blur(int i){
+        val m = blurMat
+        val aobuffer = aobuffers.get(i)
+        val buf = gbuffers.get(i)
+        m.setTexture("MiniGBuffer", buf.normal)
+        resh.set(buf.fb.width, buf.fb.height)
+        m.setVector2("ResHigh", resh)
+        m.setTexture("AOTex", aobuffer.getTex(texId_ao))
+        //aobuffer.fb.targetIndex = texId_blur
+        render(m, blurbuffers.get(i).fb)
+    }
+    
 	def renderFirstAO() {
 	    val m = aoMatFirst
 		val i = aobuffers.length - 1
@@ -161,7 +183,9 @@ class Pass4AO_mssao {
 		m.setTexture("MiniGBuffer", buf.normal)
 		resh.set(buf.fb.width, buf.fb.height)
         m.setVector2("ResHigh", resh)
+        aobuffers.get(i).fb.targetIndex = texId_ao
 		render(m, aobuffers.get(i).fb)
+		blur(i)
 	}
 
 	def renderMiddlesAO() {
@@ -170,7 +194,9 @@ class Pass4AO_mssao {
             val logbuf = gbuffers.get(i+1)
             m.setTexture("loResMiniGBuffer", logbuf.normal)
             val loaobuf = aobuffers.get(i+1)
-            m.setTexture("loResAOTex", loaobuf.tex)
+            //val loaobuf = blurbuffers.get(i+1)
+            //m.setTexture("loResAOTex", loaobuf.getTex(texId_ao))
+            m.setTexture("loResAOTex", blurbuffers.get(i+1).getTex(0))
             val gbuf = gbuffers.get(i)
             val size = gbuf.fb.width
             val r = size * dMax / (2.0f * Math.abs(vp.camera.frustumTop / vp.camera.frustumNear))
@@ -178,7 +204,9 @@ class Pass4AO_mssao {
             m.setTexture("MiniGBuffer", gbuf.normal)
             resh.set(gbuf.fb.width, gbuf.fb.height)
             m.setVector2("ResHigh", resh)
+            aobuffers.get(i).fb.targetIndex = texId_ao
             render(m, aobuffers.get(i).fb)
+            blur(i)
         }
 	}
 
@@ -188,7 +216,8 @@ class Pass4AO_mssao {
         val logbuf = gbuffers.get(i)
         m.setTexture("loResMiniGBuffer", logbuf.normal)
         val loaobuf = aobuffers.get(i)
-        m.setTexture("loResAOTex", loaobuf.tex)
+        //m.setTexture("loResAOTex", loaobuf.getTex(texId_ao))
+        m.setTexture("loResAOTex", blurbuffers.get(i).getTex(0))
         val gbuf = gbuffer
         val size = gbuf.fb.width
         val r = size * dMax / (2.0f * Math.abs(vp.camera.frustumTop / vp.camera.frustumNear))
@@ -198,7 +227,7 @@ class Pass4AO_mssao {
         m.setTexture("NormalBuffer", gbuf.normal)
         resh.set(gbuf.fb.width, gbuf.fb.height)
         m.setVector2("ResHigh", resh)
-        render(m, aobuffer.fb)
+        render(m, aobuffer0.fb)
 	}
 
 	def package void render(Material mat, FrameBuffer fb) {
