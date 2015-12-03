@@ -4,8 +4,8 @@ MaterialDef gbufferdown {
 		Boolean FullView
 		Texture2D NormalBuffer -LINEAR
 		Texture2D DepthBuffer -LINEAR
-		Vector3 ClipInfo
-		Vector4 ProjInfo
+        Texture2D MiniGBuffer -LINEAR
+		Vector2 ResHigh
 	}
 
 	Technique {
@@ -15,10 +15,16 @@ MaterialDef gbufferdown {
 		WorldParameters {
 			WorldViewProjectionMatrix
 			WorldMatrix
+			ViewMatrix
+			FrustumNearFar
+            ViewPort
+            ProjectionMatrix
+            ProjectionMatrixInverse
 		}
 
 		Defines {
 			FULLVIEW : FullView
+			IN_MINIGBUFFER: MiniGBuffer
 		}
 	}
 }

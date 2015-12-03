@@ -2,19 +2,18 @@ MaterialDef mssao {
 
 	MaterialParameters {
 		Boolean FullView
-		Texture2D NormalBuffer -LINEAR
-		Texture2D DepthBuffer -LINEAR
-		Vector3 ClipInfo
-		Vector4 ProjInfo
-		Float ProjScale
+        Texture2D NormalBuffer -LINEAR
+        Texture2D DepthBuffer -LINEAR
+        Texture2D MiniGBuffer -LINEAR
 		Float dMax
 		Float rMax
 		Float r
 		Texture2D loResAOTex -LINEAR
-		Texture2D loResNormTex -LINEAR
-		Texture2D loResDepthTex -LINEAR
+		Texture2D loResMiniGBuffer -LINEAR
         Boolean Middle
         Boolean Last
+        FloatArray poissonDisk
+        Vector2 ResHigh
 	}
 
 	Technique {
@@ -25,15 +24,19 @@ MaterialDef mssao {
 			Resolution
 			ViewMatrix
 			ProjectionMatrix
-			FrustumNearFar
+            FrustumNearFar
+            ViewPort
 			Time
 			ViewProjectionMatrixInverse
+			ProjectionMatrixInverse
+			WorldViewMatrixInverse
 		}
 
 		Defines {
 			FULLVIEW : FullView
 			MIDDLE : Middle
 			LAST: Last
+			IN_MINIGBUFFER: MiniGBuffer
 		}
 	}
 }

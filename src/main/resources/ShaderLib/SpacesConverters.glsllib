@@ -35,15 +35,27 @@ vec3 ES_reconstructFaceNormal(vec3 posES) {
 //------------------------------------------------------------------------------
 
 vec2 toUV(in sampler2D buffer, in ivec2 xy) {
-    return (vec2(xy) + vec2(0.5)) / textureSize(buffer, 0);
+	return (vec2(xy) + vec2(0.5)) / textureSize(buffer, 0);
 }
 
 ivec2 toTS(in sampler2D buffer, in vec2 uv) {
-    return ivec2(uv * textureSize(buffer, 0));
+	return ivec2(uv * textureSize(buffer, 0));
 }
 
+// @param v a value in [0,1]
+// @return the value in [-1,1]
 float toNDC(in float v) {
-    return v * 2.0 - 1.0;
+	return v * 2.0 - 1.0;
+}
+
+// @param
+vec3 fragCoordToNDC(vec4 fragCoord, float widthInverse, float heightInverse) {
+	float x = gl_FragCoord.x * widthInverse;
+	float y = gl_FragCoord.y * heightInverse;
+	float z = gl_FragCoord.z; // Already in range [0,1]
+
+	// Converting from range [0,1] to NDC [-1,1]
+	return vec3(toNDC(x), toNDC(y), toNDC(z));
 }
 
 //------------------------------------------------------------------------------
@@ -54,26 +66,26 @@ float toNDC(in float v) {
 //	return uv + resolutionInv * step;
 //}
 
-
+// z in non linear range [0,1]
 // @return [0,1] hyperbolic value stored in depthBuffer
 float readRawDepth(in sampler2D depthBuffer, in vec2 uv) {
 	return texture(depthBuffer, uv).r;
 }
 
 // @see http://www.geeks3d.com/20091216/geexlab-how-to-visualize-the-depth-buffer-in-glsl/
-// @param rawDepth the value read from depth buffer
-// @param near distance from camera to near plan (CS)
-// @param far distance from camera to far plan (CS)
+// @param rawDepth depth in non linear range [0,1]
+// @param near distance from camera to near plan (ES)
+// @param far distance from camera to far plan (ES)
 // @return [0,1] linearized value of rawDepth
 float linearizeDepth(float rawDepth, float near, float far) {
-    float z = rawDepth;
-    return (2.0 * near) / (far + near - z * (far - near));
+	float z = rawDepth;
+	return (2.0 * near) / (far + near - z * (far - near));
 }
 
 // [Depth testing](file:///Users/davidb/Library/Application%20Support/Firefox/Profiles/osjconli.default/ScrapBook/data/20150621222102/index.html)
-float readDepth(in sampler2D depthBuffer, in vec2 uv, float near, float far) {
-    return linearizeDepth(readRawDepth(depthBuffer, uv), near, far);
-}
+//float readDepth(in sampler2D depthBuffer, in vec2 uv, float near, float far) {
+//	return linearizeDepth(readRawDepth(depthBuffer, uv), near, far);
+//}
 
 vec3 readDiffuse(in sampler2D diffuseBuffer, in vec2 uv) {
 	return texture(diffuseBuffer, uv).rgb;
@@ -81,29 +93,42 @@ vec3 readDiffuse(in sampler2D diffuseBuffer, in vec2 uv) {
 
 
 // Clipping plane constants for use by reconstructZ
-// @param d
+// @param rawDepth depth in non linear range [0,1]
 // @param clipInfo = (far == -inf()) ? Vector3(near, -1.0f, 1.0f) : Vector3(near * far,  near - far,  far);
 // @return [-near, -far]
 // @src G3D
-float ES_reconstructZ(float d, vec3 clipInfo) {
-  return clipInfo[0] / (clipInfo[1] * d + clipInfo[2]);
-}
+//float ES_reconstructZ(float rawDepth, vec3 clipInfo) {
+//	return clipInfo[0] / (clipInfo[1] * rawDepth + clipInfo[2]);
+//}
 
-// Clipping plane constants for use by reconstructZ
-// @param d depth
+
+// @param rawDepth depth in non linear range [0,1]
 // @param n near in ES unit
 // @param f far in ES unit
 // @return [-near, -far]
-float ES_reconstructZ(float d, float n, float f) {
-  vec3 clipInfo = vec3(n * f, n - f, f);
-  return ES_reconstructZ(d, clipInfo);
-    //d = (2.0 * n) / (f + n - d * (f - n));
-    //return -1 * (near + (d * far - near));
-    //float zndc = d * 2.0 - 1.0;
-	// conversion into eye space
-	//return 2*f*n / (zndc*(f-n)-(f+n));
+// @src [Pixel position reconstruction | txutxi.com](http://www.txutxi.com/?p=83)
+float ES_reconstructZ(float rawDepth, float n, float f) {
+	//vec3 clipInfo = vec3(n * f, n - f, f);
+	//return ES_reconstructZ(d, clipInfo);
+	// conversion into NDC [-1,1]
+    float zndc = toNDC(rawDepth);
+
+    // conversion into eye space
+    return 2*f*n / (zndc*(f-n)-(f+n));
 }
 
+// @param zES z in linear range [-near, -far]
+// @param n near in ES unit
+// @param f far in ES unit
+// @return [0, 1]
+// @src [Pixel position reconstruction | txutxi.com](http://www.txutxi.com/?p=83)
+float ES_reconstructDepth(float zES, float n, float f) {
+
+    // conversion into eye space
+    float zNDC = ((2*f*n / zES) + (f+n)) / (f-n);
+    // conversion from NDC [-1,1]
+    return (zNDC + 1) * 0.5;
+}
 // Reconstruct camera-space P.xyz from screen-space S = (x, y) in
 // pixels and camera-space z < 0.  Assumes that the upper-left pixel center
 // is at (0.5, 0.5) [but that need not be the location at which the sample tap
@@ -121,25 +146,90 @@ float ES_reconstructZ(float d, float n, float f) {
 // @param xySS
 // @param zES
 // @src G3D
-vec3 ES_reconstructPosition(vec2 xySS, float zES, vec4 projInfo) {
-    return vec3((xySS * projInfo.xy + projInfo.zw) * zES, zES);
+//vec3 ES_reconstructPosition(vec2 xySS, float zES, vec4 projInfo) {
+//		return vec3((xySS * projInfo.xy + projInfo.zw) * zES, zES);
+//}
+
+// @param zES z in ES [-near, -far], can be compute by ES_reconstructZ
+// @param xNDC x in Screen
+// @param r right
+// @param l left
+// @param t top
+// @param b bottom
+// @src [Pixel position reconstruction | txutxi.com](http://www.txutxi.com/?p=83)
+//vec3 ES_reconstructPosition(float zES, float xNDC, float yNDC, float near, float r, float l, float t, float b){
+//  float xES = -zES*(xNDC * (r-l)+(r+l) )/(2.0*near);
+//  float yES = -zES*(yNDC * (t-b)+(t+b) )/(2.0*near);
+vec3 ES_reconstructPosition(float zES, float xNDC, float yNDC, float near, float width, float l, float t, float height){
+  float xES = -zES*(xNDC * width/2 + l );
+  float yES = -zES*(yNDC * height/2 + t );
+  return vec3(xES, yES, zES);
 }
 
-// Helper for reconstructing camera-space P.xyz from screen-space S = (x, y) in
-// pixels and hyperbolic depth.
-// @src G3D
-vec3 ES_reconstructPositionFromDepth(vec2 S, float depth, vec4 projInfo, vec3 clipInfo) {
-    return ES_reconstructPosition(S, ES_reconstructZ(depth, clipInfo), projInfo);
+// a higher level reconstructPosition that can take jMonkeyEngine default uniform as parameters
+// @param sampler2D where depth are stored (as .r)
+// @param uv coord in the sampler ([0,1], [0,1])
+// @param 
+vec3 ES_reconstructPosition(in sampler2D depthBuffer, vec2 uv, vec2 frustumNearFar, vec4 viewPort) {
+    float rawDepth = readRawDepth(depthBuffer, uv);
+    float zES = ES_reconstructZ(rawDepth, frustumNearFar.x, frustumNearFar.y);
+    return ES_reconstructPosition(zES, toNDC(uv.x), toNDC(uv.y), frustumNearFar.x, viewPort.z, viewPort.x, viewPort.y, viewPort.w);
 }
 
-vec3 WS_fromES(vec3 posES, mat4 cameraToWorld) {
-    return (cameraToWorld * vec4(posES, 1.0)).xyz;
+vec3 ES_reconstructPosition(float rawDepth, ivec2 posSS, vec2 res, vec2 frustumNearFar, vec4 viewPort) {
+    float zES = ES_reconstructZ(rawDepth, frustumNearFar.x, frustumNearFar.y);
+    return ES_reconstructPosition(zES, toNDC(float(posSS.x)/res.x), toNDC(float(posSS.y)/res.y), frustumNearFar.x, viewPort.z, viewPort.x, viewPort.y, viewPort.w);
 }
 
+vec3 PS_fromES(vec3 posES, mat4 projectionMatrix) {
+		return (projectionMatrix * vec4(posES, 1.0)).xyz;
+}
+
+vec3 ES_fromPS(vec3 posPS, mat4 projectionMatrixInverse) {
+		vec4 p = (projectionMatrixInverse * vec4(posPS, 1.0));
+		return p.xyz;///p.w;
+}
+
+// https://mynameismjp.wordpress.com/2009/03/10/reconstructing-position-from-depth/
+vec3 ES_reconstructPosition(float rawDepth, ivec2 posSS, vec2 res, mat4 projectionMatrixInverse) {
+    // Get x/w and y/w from the viewport position
+    float xNDC = toNDC(posSS.x/res.x);
+    //float y = (1 - posSS.y/res.y) * 2 - 1;
+    float yNDC = toNDC(posSS.y/res.y);
+    vec3 posPS = vec3(xNDC, yNDC, rawDepth);
+    return ES_fromPS(posPS, projectionMatrixInverse);
+}
+
+vec3 ES_fromWS(vec3 posWS, mat4 viewMatrix) {
+		return (viewMatrix * vec4(posWS, 1.0)).xyz;
+}
+
+vec3 WS_fromES(vec3 posES, mat4 viewMatrixInverse) {
+		return (viewMatrixInverse * vec4(posES, 1.0)).xyz;
+}
+
+vec3 WS_fromOS(vec3 posOS, mat4 worldMatrix) {
+		return (worldMatrix * vec4(posOS, 1.0)).xyz;
+}
+
+vec3 OS_fromWS(vec3 posWS, mat4 worldMatrixInverse) {
+		return (worldMatrixInverse * vec4(posWS, 1.0)).xyz;
+}
+
+//see http://stackoverflow.com/questions/10264949/glsl-gl-fragcoord-z-calculation-and-setting-gl-fragdepth
+float fragDepth(vec3 posES, mat4 projectionMatrix, vec2 frustumNearFar) {
+    float far = frustumNearFar.y;//1.0; // gl_DepthRange.far != far of Projection
+    float near = frustumNearFar.x; //0.0; //gl_DepthRange.near != near of Projection
+//    vec4 posPS = projectionMatrix * vec4(posES, 1.0);
+//    float depthNDC = posPS.z / posPS.w;
+//    return (((far-near) * depthNDC) + near + far) / 2.0;
+    
+    return ES_reconstructDepth(posES.z, near, far); 
+}
 // Helper for the common idiom of getting world-space position P.xyz from screen-space S = (x, y) in
 // pixels and hyperbolic depth.
 // @src G3D
-vec3 WS_reconstructPositionFromDepth(vec2 xySS, float depth, vec4 projInfo, vec3 clipInfo, mat4 cameraToWorld) {
-    return WS_fromES(ES_reconstructPositionFromDepth(xySS, depth, projInfo, clipInfo), cameraToWorld);
-}
+//vec3 WS_reconstructPositionFromDepth(vec2 xySS, float depth, vec4 projInfo, vec3 clipInfo, mat4 viewMatrixInverse) {
+//    return WS_fromES(ES_reconstructPositionFromDepth(xySS, depth, projInfo, clipInfo), viewMatrixInverse);
+//}
 
