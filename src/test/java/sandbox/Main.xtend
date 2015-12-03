@@ -17,9 +17,9 @@ class Main {
 		settings.setDepthBits(24)
 		settings.gammaCorrection = true
 		//settings.swapBuffers = false
-		//settings.setRenderer(AppSettings.LWJGL_OPENGL3)
-		settings.setRenderer(AppSettings.JOGL_OPENGL_FORWARD_COMPATIBLE)
-		settings.setAudioRenderer(AppSettings.JOAL)
+		settings.setRenderer(AppSettings.LWJGL_OPENGL3)
+		//settings.setRenderer(AppSettings.JOGL_OPENGL_FORWARD_COMPATIBLE)
+		//settings.setAudioRenderer(AppSettings.JOAL)
 		val app = new SimpleApplication() {
 			override simpleInitApp() {
 			}
