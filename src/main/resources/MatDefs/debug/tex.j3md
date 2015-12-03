@@ -7,6 +7,8 @@ MaterialDef tex {
         Boolean GOnly
         Boolean BOnly
         Boolean AOnly
+        Boolean RGBOnly
+        Boolean UVOnly
 	}
 
 	Technique {
@@ -24,6 +26,8 @@ MaterialDef tex {
             G_ONLY: GOnly
             B_ONLY: BOnly
             A_ONLY: AOnly
+            RGB_ONLY: RGBOnly
+            UV_ONLY: UVOnly
 		}
 	}
 }
