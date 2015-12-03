@@ -59,7 +59,7 @@ class AppState4ViewDeferredTexture extends AbstractAppState {
 	def package void materialsUpdate(SceneProcessor4Deferred sp) {
 		for (Material m : mats) {
 			// Set<String> params = m.getMaterialDef().getMaterialParams().stream().map((mp) -> mp.getName()).collect(Collectors.toSet());
-			m.setTexture("NormalBuffer", sp.pass4ao.finalTex) //sp.pass4gbuffer.gbuffer.normal)
+			m.setTexture("NormalBuffer", sp.pass4gbuffer.gbuffer.normal)
 			m.setTexture("DepthBuffer", sp.pass4gbuffer.gbuffer.depth)
 			m.setTexture("AOBuffer", sp.pass4ao.finalTex)
 			m.setTexture("MatBuffer", sp.matIdManager.tableTex)
