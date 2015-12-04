@@ -49,6 +49,8 @@ class Pass4AO_mssao {
     final Material gbuffersMatG
     final float dMax = 2.5f // AO radius of influence
     
+    val useBlur = false
+    
 	new(int width, int height, ViewPort vp, RenderManager rm, AssetManager assetManager, GBuffer gbuffer, int nbRes) {
 		this.gbuffer = gbuffer
 		this.vp = vp
@@ -58,7 +60,7 @@ class Pass4AO_mssao {
 		this.gbuffers = initGbuffers(width, height, nbRes)
 		this.aobuffers = initAObuffers(width, height, nbRes)
 		this.aobuffer0 = new TBuffer(width, height, Format.Luminance16F)
-		this.blurbuffers = initAObuffers(width, height, nbRes)
+		this.blurbuffers = if (useBlur) initAObuffers(width, height, nbRes) else null
 		//this.finalTex = gbuffers.get(gbuffers.length - 1).normal
 		//this.finalTex = aobuffers.get(2).getTex(texId_ao)
         //this.finalTex = blurbuffers.get(2).getTex(0)
@@ -161,6 +163,7 @@ class Pass4AO_mssao {
 	}
 
     def blur(int i){
+        if (!useBlur) return
         val m = blurMat
         val aobuffer = aobuffers.get(i)
         val buf = gbuffers.get(i)
@@ -193,10 +196,7 @@ class Pass4AO_mssao {
         for(var int i = aobuffers.length - 2; i > -1; i--) {
             val logbuf = gbuffers.get(i+1)
             m.setTexture("loResMiniGBuffer", logbuf.normal)
-            val loaobuf = aobuffers.get(i+1)
-            //val loaobuf = blurbuffers.get(i+1)
-            //m.setTexture("loResAOTex", loaobuf.getTex(texId_ao))
-            m.setTexture("loResAOTex", blurbuffers.get(i+1).getTex(0))
+            m.setTexture("loResAOTex", aoTexInput(i+1))
             val gbuf = gbuffers.get(i)
             val size = gbuf.fb.width
             val r = size * dMax / (2.0f * Math.abs(vp.camera.frustumTop / vp.camera.frustumNear))
@@ -210,14 +210,19 @@ class Pass4AO_mssao {
         }
 	}
 
+    def aoTexInput(int i) {
+        if (useBlur) {
+            blurbuffers.get(i).getTex(0)
+        } else {
+            aobuffers.get(i).getTex(texId_ao)
+        }
+    }
 	def renderLastAO() {
         val m = aoMatLast
         val i = 0
         val logbuf = gbuffers.get(i)
         m.setTexture("loResMiniGBuffer", logbuf.normal)
-        val loaobuf = aobuffers.get(i)
-        //m.setTexture("loResAOTex", loaobuf.getTex(texId_ao))
-        m.setTexture("loResAOTex", blurbuffers.get(i).getTex(0))
+        m.setTexture("loResAOTex", aoTexInput(i))
         val gbuf = gbuffer
         val size = gbuf.fb.width
         val r = size * dMax / (2.0f * Math.abs(vp.camera.frustumTop / vp.camera.frustumNear))
