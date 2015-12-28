@@ -1,7 +1,7 @@
 #import "ShaderLib/SpacesConverters.glsllib"
 uniform mat4 g_ViewProjectionMatrixInverse;
 uniform mat4 g_ProjectionMatrixInverse;
-uniform mat4 g_ViewMatrix;
+uniform mat3 m_RotationViewMatrix;
 #ifdef IN_MINIGBUFFER
 uniform sampler2D m_MiniGBuffer;
 #else
@@ -46,21 +46,21 @@ void main(){
   vec3 pos[4];
   
 #ifdef IN_MINIGBUFFER
-  data[0] = texelFetch(m_MiniGBuffer, xyHigh + ivec2(0,  0), lod);
-  data[1] = texelFetch(m_MiniGBuffer, xyHigh + ivec2(1,  0), lod);
+  data[0] = texelFetch(m_MiniGBuffer, xyHigh + ivec2(-1,  -1), lod);
+  data[1] = texelFetch(m_MiniGBuffer, xyHigh + ivec2(1,  -1), lod);
   data[2] = texelFetch(m_MiniGBuffer, xyHigh + ivec2(1,  1), lod);
-  data[3] = texelFetch(m_MiniGBuffer, xyHigh + ivec2(0,  1), lod);
+  data[3] = texelFetch(m_MiniGBuffer, xyHigh + ivec2(-1,  1), lod);
 #else
-  data[0] = texelFetch(m_DepthBuffer, xyHigh + ivec2(0,  0), lod).rrrr;
-  data[1] = texelFetch(m_DepthBuffer, xyHigh + ivec2(1,  0), lod).rrrr;
+  data[0] = texelFetch(m_DepthBuffer, xyHigh + ivec2(-1,  -1), lod).rrrr;
+  data[1] = texelFetch(m_DepthBuffer, xyHigh + ivec2(1,  -1), lod).rrrr;
   data[2] = texelFetch(m_DepthBuffer, xyHigh + ivec2(1,  1), lod).rrrr;
-  data[3] = texelFetch(m_DepthBuffer, xyHigh + ivec2(0,  1), lod).rrrr;
+  data[3] = texelFetch(m_DepthBuffer, xyHigh + ivec2(-1,  1), lod).rrrr;
   
   vec3 norm[4];
-  norm[0] = texelFetch(m_NormalBuffer, xyHigh + ivec2(0,  0), lod).xyz;
-  norm[1] = texelFetch(m_NormalBuffer, xyHigh + ivec2(1,  0), lod).xyz;
+  norm[0] = texelFetch(m_NormalBuffer, xyHigh + ivec2(-1, -1), lod).xyz;
+  norm[1] = texelFetch(m_NormalBuffer, xyHigh + ivec2(1,  -1), lod).xyz;
   norm[2] = texelFetch(m_NormalBuffer, xyHigh + ivec2(1,  1), lod).xyz;
-  norm[3] = texelFetch(m_NormalBuffer, xyHigh + ivec2(0,  1), lod).xyz;
+  norm[3] = texelFetch(m_NormalBuffer, xyHigh + ivec2(-1,  1), lod).xyz;
 #endif
 
   pos[0] = getPosition(data[0].a, xyHigh + ivec2(0,  0), resHigh);
@@ -116,10 +116,10 @@ void main(){
     //depthOut = (depth[median.x] + depth[median.y]) / 2.0;
     posOut = (pos[median.x] + pos[median.y]) / 2.0;
 #ifdef IN_MINIGBUFFER
-    normalOut = (data[median.x].xyz + data[median.y].xyz) / 2.0;
+    normalOut = normalize((data[median.x].xyz + data[median.y].xyz) / 2.0);
 #else
     normalOut = (decodeNormal(norm[median.x]) + decodeNormal(norm[median.y])) / 2.0;
-    //normalOut = normalize(mat3(g_ViewMatrix) * normalOut);
+    normalOut = normalize(m_RotationViewMatrix * normalOut);
 #endif
   } else {
     posOut = pos[median.x];
@@ -127,7 +127,7 @@ void main(){
     normalOut = data[median.x].xyz;
 #else
     normalOut = decodeNormal(norm[median.x]);
-    //normalOut = normalize(mat3(g_ViewMatrix) * normalOut);
+    normalOut = normalize(m_RotationViewMatrix * normalOut);
 #endif
   }
   //normalOut *= sign(normalOut.z); // front face == positive z in ES

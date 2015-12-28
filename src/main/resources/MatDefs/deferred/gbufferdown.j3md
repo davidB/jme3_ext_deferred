@@ -6,6 +6,7 @@ MaterialDef gbufferdown {
 		Texture2D DepthBuffer -LINEAR
         Texture2D MiniGBuffer -LINEAR
 		Vector2 ResHigh
+		Matrix3 RotationViewMatrix
 	}
 
 	Technique {
@@ -20,6 +21,7 @@ MaterialDef gbufferdown {
             ViewPort
             ProjectionMatrix
             ProjectionMatrixInverse
+            NormalMatrix
 		}
 
 		Defines {

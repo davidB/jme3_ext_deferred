@@ -19,6 +19,8 @@ import com.jme3.texture.Texture2D
 import com.jme3.scene.Spatial
 import com.jme3.scene.shape.Quad
 import com.jme3.shader.VarType
+import com.jme3.math.Matrix4f
+import com.jme3.math.Matrix3f
 
 /**
  * Ambient Occlusion
@@ -132,12 +134,26 @@ class Pass4AO_mssao {
 	// TODO use 2 framebuffer/texture (eg by reusing the first one for the third render
 	def void render() {
 		var FrameBuffer fbOrig = vp.getOutputFrameBuffer()
+		updateRotationMatrix(vp.camera.viewMatrix)
 		renderDownscaleGbuffers()
 		renderFirstAO()
 		renderMiddlesAO()
 		renderLastAO()
 		vp.setOutputFrameBuffer(fbOrig)
 		rm.getRenderer().setFrameBuffer(fbOrig)
+	}
+	
+    val rotationViewMatrix3f = new Matrix3f()
+    
+	def void updateRotationMatrix(Matrix4f viewMatrix){
+       viewMatrix.toRotationMatrix(rotationViewMatrix3f)
+       println("rotationViewMatrix : " + rotationViewMatrix3f)
+       //rotationViewMatrix3f.invertLocal()
+       //rotationViewMatrix3f.transposeLocal()
+       //rotationViewMatrix3f.loadIdentity()
+       #[gbuffersMatDN, gbuffersMatG, aoMatFirst, aoMatMiddle, aoMatLast].forEach[m|
+            m.setParam("RotationViewMatrix", VarType.Matrix3, rotationViewMatrix3f)
+       ]
 	}
 
     private val resh = new Vector2f(0, 0)

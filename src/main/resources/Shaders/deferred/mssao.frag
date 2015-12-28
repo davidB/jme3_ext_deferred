@@ -2,7 +2,7 @@
 
 uniform vec2 g_FrustumNearFar;
 uniform vec2 g_Resolution;
-uniform mat4 g_ViewMatrix;
+uniform mat3 m_RotationViewMatrix;
 uniform float g_Time;
 uniform mat4 g_ProjectionMatrix;
 uniform mat4 g_ProjectionMatrixInverse;
@@ -53,9 +53,9 @@ Point getPoint(ivec2 posSS, vec2 res) {
     p.depth = texelFetch(m_DepthBuffer, posSS, lod).r;
     p.pos = ES_reconstructPosition(p.depth, posSS, res, g_FrustumNearFar, g_ViewPort);  
     p.normal = decodeNormal(texelFetch(m_NormalBuffer, posSS, lod).xyz);
-    //p.normal = normalize(mat3(g_ViewMatrix) * p.normal);
+    p.normal = normalize(m_RotationViewMatrix * p.normal);
 #endif
-  //  p.normal *= sign(p.normal.z); // front face == positive z in ES
+    //p.normal *= sign(p.normal.z); // front face == positive z in ES
     return p;
 }
 
@@ -66,7 +66,7 @@ vec2 computeOcclusion(vec3 p, vec3 n, ivec2 posSS, in float occlusion, in float 
   vec3 diff = normalize(sample.pos.xyz - p.xyz);  
   float cosTheta = max(dot(n, diff), 0.0);  
   return vec2(
-    occlusion + t * cosTheta,// * sign(abs(sample.pos.z)), 
+    occlusion + t * cosTheta * sign(abs(sample.pos.z)), 
     sampleCount + 1.0
   );
 }

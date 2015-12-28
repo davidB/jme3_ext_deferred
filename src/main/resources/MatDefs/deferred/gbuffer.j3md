@@ -20,7 +20,8 @@ MaterialDef gbuffer {
 
 		WorldParameters {
 			WorldViewProjectionMatrix
-			WorldMatrix
+			NormalMatrix
+			WorldMatrixInverseTranspose
 		}
 
 		Defines {
