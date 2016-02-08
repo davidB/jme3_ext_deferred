@@ -21,6 +21,8 @@ import com.jme3.scene.shape.Quad
 import com.jme3.shader.VarType
 import com.jme3.math.Matrix4f
 import com.jme3.math.Matrix3f
+import com.jme3.texture.Texture.WrapAxis
+import com.jme3.texture.Texture.WrapMode
 
 /**
  * Ambient Occlusion
@@ -51,7 +53,7 @@ class Pass4AO_mssao {
     final Material gbuffersMatG
     final float dMax = 2.5f // AO radius of influence
     
-    val useBlur = false
+    val useBlur = true
     
 	new(int width, int height, ViewPort vp, RenderManager rm, AssetManager assetManager, GBuffer gbuffer, int nbRes) {
 		this.gbuffer = gbuffer
@@ -63,8 +65,8 @@ class Pass4AO_mssao {
 		this.aobuffers = initAObuffers(width, height, nbRes)
 		this.aobuffer0 = new TBuffer(width, height, Format.Luminance16F)
 		this.blurbuffers = if (useBlur) initAObuffers(width, height, nbRes) else null
-		//this.finalTex = gbuffers.get(gbuffers.length - 1).normal
-		//this.finalTex = aobuffers.get(2).getTex(texId_ao)
+		//this.finalTex = gbuffers.get(aobuffers.length - 1).normal
+		//this.finalTex = aobuffers.get(aobuffers.length - 1).getTex(0)
         //this.finalTex = blurbuffers.get(2).getTex(0)
         this.finalTex = aobuffer0.tex
 		this.aoMatFirst = new Material(assetManager, "MatDefs/deferred/mssao.j3md")
@@ -83,7 +85,6 @@ class Pass4AO_mssao {
 		for(var int i = 0; i < buffers.length; i++) {
 			val ratioInv = 2 << i
 			buffers.set(i, new GBufferMini(width / ratioInv, height / ratioInv))
-            println("ratio: " + ratioInv + " ... " + (l / ratioInv));
 		}
 		buffers
 	}
@@ -133,6 +134,8 @@ class Pass4AO_mssao {
 
 	// TODO use 2 framebuffer/texture (eg by reusing the first one for the third render
 	def void render() {
+	    //println("projectionMatrix: " + vp.camera.projectionMatrix)
+	    vp.camera.getWorldCoordinates(new Vector2f(), 0f)
 		var FrameBuffer fbOrig = vp.getOutputFrameBuffer()
 		updateRotationMatrix(vp.camera.viewMatrix)
 		renderDownscaleGbuffers()
@@ -147,10 +150,12 @@ class Pass4AO_mssao {
     
 	def void updateRotationMatrix(Matrix4f viewMatrix){
        viewMatrix.toRotationMatrix(rotationViewMatrix3f)
-       println("rotationViewMatrix : " + rotationViewMatrix3f)
-       //rotationViewMatrix3f.invertLocal()
-       //rotationViewMatrix3f.transposeLocal()
+       rotationViewMatrix3f.invertLocal()
+       rotationViewMatrix3f.transposeLocal()
+       
        //rotationViewMatrix3f.loadIdentity()
+       
+       //println("rotationViewMatrix : " + rotationViewMatrix3f)
        #[gbuffersMatDN, gbuffersMatG, aoMatFirst, aoMatMiddle, aoMatLast].forEach[m|
             m.setParam("RotationViewMatrix", VarType.Matrix3, rotationViewMatrix3f)
        ]
@@ -274,9 +279,13 @@ class GBufferMini {
         //depth = new Texture2D(w, h, Format.Depth24) // depth    = new texture(w, h, Format.Depth32);
         //depth.setMinFilter(MinFilter.NearestNoMipMaps)
         //depth.setMagFilter(MagFilter.Nearest)
-		normal = new Texture2D(w, h, 1, Format.RGBA16F)
+		normal = new Texture2D(w, h, 1, Format.RGBA32F)
 		normal.setMinFilter(MinFilter.NearestNoMipMaps)
 		normal.setMagFilter(MagFilter.Nearest)
+		//normal.setWrap(WrapAxis.R, WrapMode.EdgeClamp)
+		normal.setWrap(WrapAxis.S, WrapMode.EdgeClamp)
+		normal.setWrap(WrapAxis.T, WrapMode.EdgeClamp)
+
 		fb = new FrameBuffer(w, h, 1)
 		fb.setMultiTarget(false)
 		//fb.setDepthTexture(depth)

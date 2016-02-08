@@ -1,0 +1,25 @@
+MaterialDef mssao {
+
+	MaterialParameters {
+		Boolean FullView
+        Texture2D MiniGBuffer -LINEAR
+		Texture2D AOTex -LINEAR
+        Vector2 ResHigh
+        Matrix3 RotationViewMatrix
+	}
+
+	Technique {
+		VertexShader GLSL150:   Shaders/deferred/quad.vert
+		FragmentShader GLSL150: Shaders/deferred/mssao_blur.frag
+
+		WorldParameters {
+            FrustumNearFar
+			ProjectionMatrixInverse
+		}
+
+		Defines {
+			FULLVIEW : FullView
+			IN_MINIGBUFFER: MiniGBuffer
+		}
+	}
+}

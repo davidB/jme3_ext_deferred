@@ -20,7 +20,10 @@ class Pass4Tex {
 		this.texMat = new Material(assetManager, "MatDefs/debug/tex.j3md")
 		texMat.setBoolean("FullView", true)
 		texMat.setTexture("Texture", texture)
-		//texMat.setBoolean("ROnly", true)
+        //texMat.setBoolean("GOnly", true)
+		//texMat.setBoolean("AOnly", true)
+        //texMat.setBoolean("ROnly", true)
+        //texMat.setBoolean("RGBOnly", true)
 	}
 
 	def void render() {

@@ -15,6 +15,7 @@ uniform sampler2D m_SpecularMap;
 
 in vec3 vNormalWS;
 in vec2 vTexCoord;
+in vec4 vPosES;
 
 out vec4 out_FragData[ 3 ];
 
@@ -28,6 +29,7 @@ void main(){
 		}
 	#endif
     vec3 normal = normalize(vNormalWS);
+    //vec3 normal = normalize(cross(dFdx(vPosES.xyz), dFdy(vPosES.xyz)));
     out_FragData[0] = vec4(encodeNormal(normal), float(m_MatId) / 256.0);
 
     #ifdef COLORMAP

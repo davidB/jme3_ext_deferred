@@ -22,6 +22,7 @@ MaterialDef gbuffer {
 			WorldViewProjectionMatrix
 			NormalMatrix
 			WorldMatrixInverseTranspose
+			WorldViewMatrix
 		}
 
 		Defines {

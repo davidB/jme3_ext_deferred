@@ -51,7 +51,8 @@ Point getPoint(ivec2 posSS, vec2 res) {
     p.normal = normalize(data.xyz);
 #else
     p.depth = texelFetch(m_DepthBuffer, posSS, lod).r;
-    p.pos = ES_reconstructPosition(p.depth, posSS, res, g_FrustumNearFar, g_ViewPort);  
+    //p.pos = ES_reconstructPosition(p.depth, posSS, res, g_FrustumNearFar, g_ViewPort);  
+    p.pos = ES_reconstructPosition(p.depth, posSS, res, g_ProjectionMatrixInverse);
     p.normal = decodeNormal(texelFetch(m_NormalBuffer, posSS, lod).xyz);
     p.normal = normalize(m_RotationViewMatrix * p.normal);
 #endif
@@ -61,14 +62,23 @@ Point getPoint(ivec2 posSS, vec2 res) {
 
 vec2 computeOcclusion(vec3 p, vec3 n, ivec2 posSS, in float occlusion, in float sampleCount, vec2 res){
   Point sample = getPoint(posSS, res);
-  float d = distance(p.xyz, sample.pos.xyz);  
-  float t = 1.0 -  min(1.0, (d * d) / (m_dMax * m_dMax));
-  vec3 diff = normalize(sample.pos.xyz - p.xyz);  
-  float cosTheta = max(dot(n, diff), 0.0);  
-  return vec2(
-    occlusion + t * cosTheta * sign(abs(sample.pos.z)), 
-    sampleCount + 1.0
-  );
+  vec2 r = vec2(occlusion, sampleCount);
+      vec3 diff = sample.pos.xyz - p.xyz;
+      float d = length(diff);  
+  //if (sample.pos.xyz != p.xyz) {
+  //if (d > 0.00001) {
+      float t = min(1.0, (d * d) / (m_dMax * m_dMax));
+      t = 1.0 - t;
+      float cosTheta = 0.0;
+      diff = normalize(diff);
+      //diff = normalize(vec3(0.0, 0.0, 0.0));
+      cosTheta = max(dot(n, diff), 0.0);  
+      r = vec2(
+        occlusion + t * cosTheta, //* sign(abs(sample.pos.z)), 
+        sampleCount + 1.0
+      );
+  //}
+  return r;
 }
 
 vec3 Upsample(ivec2 posSS, vec3 n, vec3 p) {
@@ -185,8 +195,32 @@ void main() {
 #endif
 res = m_ResHigh;
 	ivec2 posSS = ivec2(texCoord * res);
-	//fragData = vec4(texCoord, 0.0, 1.0);
 	fragData = mssao(posSS, res); 
-	//Point data = getPoint(posSS, res);
-	//fragData = vec4(-data.pos.z/g_FrustumNearFar.y, 0,0,1.0);
+
+  Point data = getPoint(posSS, res);
+  vec3 p = data.pos;
+  vec3 n = data.normal;
+  float cosTheta = 0.0;
+  Point sample = getPoint(posSS, res);
+  if (sample.pos.xyz != p.xyz) {
+  vec3 diff = sample.pos.xyz - p.xyz;
+  float d = length(diff);  
+  float t = min(1.0, (d * d) / (m_dMax * m_dMax));
+  t = 1.0 - t;
+  diff = normalize(diff);
+  //diff = normalize(vec3(0.0, 0.0, 0.0));
+  cosTheta = max(dot(n, diff), 0.0);  
+  }
+  
+    //fragData = vec4(texCoord, 0.0, 1.0);
+    //fragData = vec4(vec3(data.pos.x), 1.0);
+    //fragData = vec4(data.normal * 0.5 + 0.5, 1.0);
+    //fragData = vec4(vec3(data.depth), 1.0);
+    //fragData = vec4(data.pos, 1.0);
+    //fragData = vec4(vec3(cosTheta), 1.0);
+    //fragData = vec4(diff, 1.0);
+
+//nice simple effect
+//    fragData = vec4(vec3(data.normal.z*0.5+0.5), 1.0);
+
 }

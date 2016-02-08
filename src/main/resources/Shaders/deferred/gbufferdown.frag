@@ -16,6 +16,7 @@ uniform mat4 g_ProjectionMatrix;
 in vec2 texCoord;
 
 out vec4 fragData;
+//out vec4 posES;
 
 const int lod = 0;
 
@@ -67,6 +68,7 @@ void main(){
   pos[1] = getPosition(data[1].a, xyHigh + ivec2(1,  0), resHigh);
   pos[2] = getPosition(data[2].a, xyHigh + ivec2(1,  1), resHigh);
   pos[3] = getPosition(data[3].a, xyHigh + ivec2(0,  1), resHigh);
+
   //depth[3] = texture(m_DepthBuffer, near(texCoord, m_Resolution.xy, vec2(-0.5, -0.5))).r;
 
 //norm[0] = texture(m_NormalBuffer, texCoord).xyz;
@@ -74,8 +76,8 @@ void main(){
 
   //float maxZ = max(max(depth[0]., depth[1]), max(depth[2], depth[3]));
   //float minZ = min(min(depth[0], depth[1]), min(depth[2], depth[3]));
-  float maxZ = max(max(pos[0].z, pos[1].z), max(pos[2].z, pos[3].z));
-  float minZ = min(min(pos[0].z, pos[1].z), min(pos[2].z, pos[3].z));
+  float maxZ = max(max(data[0].a, data[1].a), max(data[2].a, data[3].a));
+  float minZ = min(min(data[0].a, data[1].a), min(data[2].a, data[3].a));
 
 
 //  int minIdx, maxIdx;
@@ -92,9 +94,9 @@ void main(){
 
   for (int i = 0; i < 4; ++i)
   {
-    if (pos[i].z == minZ)
+    if (data[i].a == minZ)
       minPos = i;
-    if (pos[i].z == maxZ)
+    if (data[i].a == maxZ)
       maxPos = i;
   }
 
@@ -112,20 +114,26 @@ void main(){
   vec3 posOut;
   vec3 normalOut;
   float d = distance(pos[minPos].xyz, pos[maxPos].xyz);
-  if (d < 1.0) {
-    //depthOut = (depth[median.x] + depth[median.y]) / 2.0;
+  //if (d < 1.0) {
+  if (false) {
+    depthOut = (data[median.x].a + data[median.y].a) / 2.0;
     posOut = (pos[median.x] + pos[median.y]) / 2.0;
 #ifdef IN_MINIGBUFFER
     normalOut = normalize((data[median.x].xyz + data[median.y].xyz) / 2.0);
 #else
+    //vec3 n1 = normalize(cross(dFdx(pos[median.x].xyz), dFdy(pos[median.x].xyz)));
+    //vec3 n2 = normalize(cross(dFdx(pos[median.y].xyz), dFdy(pos[median.y].xyz)));
+    //vec3 normalOut = normalize((n1 + n2) / 2.0);
     normalOut = (decodeNormal(norm[median.x]) + decodeNormal(norm[median.y])) / 2.0;
     normalOut = normalize(m_RotationViewMatrix * normalOut);
 #endif
   } else {
+    depthOut = data[median.x].a;
     posOut = pos[median.x];
 #ifdef IN_MINIGBUFFER
     normalOut = data[median.x].xyz;
 #else
+    //normalOut = normalize(cross(dFdx(posOut.xyz), dFdy(posOut.xyz)));
     normalOut = decodeNormal(norm[median.x]);
     normalOut = normalize(m_RotationViewMatrix * normalOut);
 #endif
@@ -134,8 +142,11 @@ void main(){
   
 
 	//normalOut = norm[0];
-	//float depth = fragDepth(posOut, g_ProjectionMatrix, g_FrustumNearFar);
-	float depth = ES_reconstructDepth(posOut.z, g_FrustumNearFar.x, g_FrustumNearFar.y);
+	float depth = depthOut;
+	//depth = fragDepth(posOut, g_ProjectionMatrix, g_FrustumNearFar);
+	//depth = ES_reconstructDepth(posOut.z, g_FrustumNearFar.x, g_FrustumNearFar.y);
+    //depth = data[median.x].a;
+
 	//float depth = 0.5;
 	//float depth = texture(m_DepthBuffer, texCoord).r;
     //fragData[1] = vec4(encodeNormal(normalize(normalOut)), 1.0);

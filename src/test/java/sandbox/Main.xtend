@@ -6,6 +6,7 @@ import com.jme3.system.AppSettings
 import jme3_ext_deferred.AppState4ViewDeferredTexture
 import jme3_ext_deferred.MatIdManager
 import jme3_ext_deferred.SceneProcessor4Deferred
+import com.jme3.app.BasicProfilerState
 
 class Main {
 	def static void main(String[] args) throws Exception {
@@ -86,6 +87,11 @@ class Main {
 			app.renderer.setMainFrameBufferSrgb(true)
 			app.renderer.setLinearizeSrgbImages(true)
 			return null
+		])
+		
+		app.enqueue([
+		    app.getStateManager().attach(new BasicProfilerState())
+		    app.appProfiler
 		])
 	}
 
