@@ -124,8 +124,8 @@ float ES_reconstructZ(float rawDepth, float n, float f) {
 // @src [Pixel position reconstruction | txutxi.com](http://www.txutxi.com/?p=83)
 float ES_reconstructDepth(float zES, float n, float f) {
 
-    // conversion into eye space
-    float zNDC = ((2*f*n / zES) + (f+n)) / (f-n);
+    // conversion into projection space (PS)
+    float zNDC = ( zES * (n+f) + 2 * f *n)/(n -f);
     // conversion from NDC [-1,1]
     return (zNDC + 1) * 0.5;
 }
@@ -182,21 +182,27 @@ vec3 ES_reconstructPosition(float rawDepth, ivec2 posSS, vec2 res, vec2 frustumN
 }
 
 vec3 PS_fromES(vec3 posES, mat4 projectionMatrix) {
-		return (projectionMatrix * vec4(posES, 1.0)).xyz;
+		vec4 p = (projectionMatrix * vec4(posES, 1.0));
+		return p.xyz / p.w;
 }
 
 vec3 ES_fromPS(vec3 posPS, mat4 projectionMatrixInverse) {
 		vec4 p = (projectionMatrixInverse * vec4(posPS, 1.0));
-		return p.xyz;///p.w;
+		return p.xyz / p.w;
 }
 
 // https://mynameismjp.wordpress.com/2009/03/10/reconstructing-position-from-depth/
-vec3 ES_reconstructPosition(float rawDepth, ivec2 posSS, vec2 res, mat4 projectionMatrixInverse) {
+vec3 PS_reconstructPosition(float rawDepth, ivec2 posSS, vec2 res) {
     // Get x/w and y/w from the viewport position
     float xNDC = toNDC(posSS.x/res.x);
     //float y = (1 - posSS.y/res.y) * 2 - 1;
     float yNDC = toNDC(posSS.y/res.y);
-    vec3 posPS = vec3(xNDC, yNDC, rawDepth);
+    return vec3(xNDC, yNDC, rawDepth * 2.0 - 1.0);
+}
+
+// https://mynameismjp.wordpress.com/2009/03/10/reconstructing-position-from-depth/
+vec3 ES_reconstructPosition(float rawDepth, ivec2 posSS, vec2 res, mat4 projectionMatrixInverse) {
+    vec3 posPS = PS_reconstructPosition(rawDepth, posSS, res);
     return ES_fromPS(posPS, projectionMatrixInverse);
 }
 
