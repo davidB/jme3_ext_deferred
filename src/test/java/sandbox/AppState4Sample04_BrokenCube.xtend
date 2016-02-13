@@ -61,7 +61,9 @@ class AppState4Sample04_BrokenCube extends AbstractAppState {
 
 	override void initialize(AppStateManager stateManager, Application app) {
 		this.app=app assetManager=app.getAssetManager() rootNode=new Node("Sample02") (app as SimpleApplication).getRootNode().attachChild(rootNode) this.stateManager=stateManager var BulletAppState bullet=new BulletAppState() 
-		bullet.setThreadingType(BulletAppState.ThreadingType::PARALLEL) stateManager.attach(bullet) //		bullet.getPhysicsSpace().addCollisionListener(new PhysicsCollisionListener() {
+		bullet.setThreadingType(BulletAppState$ThreadingType::PARALLEL)
+		stateManager.attach(bullet)
+		//		bullet.getPhysicsSpace().addCollisionListener(new PhysicsCollisionListener() {
 		//			private AtomicLong collisionCount = new AtomicLong();
 		//			@Override
 		//			public void collision(PhysicsCollisionEvent event) {
@@ -121,7 +123,7 @@ class AppState4Sample04_BrokenCube extends AbstractAppState {
 		 * */
 		//stateManager.attach(new DebugControl(dsp));
 		//DeferredShadingUtils.scanNode(dsp, rootNode);
-		setupControls(app.getInputManager()) 
+//		setupControls(app.getInputManager()) 
 	}
 	def randomizeLight() {
 		var color = ColorRGBA::randomColor() 
@@ -133,12 +135,15 @@ class AppState4Sample04_BrokenCube extends AbstractAppState {
 		var PointLight pl=new PointLight() 
 		pl.setRadius(radius) pl.setColor(color) pl.setPosition(pos) rootNode.addLight(pl) 
 	}
+/*	
 	override void update(float tpf) {
-		super.update(tpf) if (isFiring) {
+		super.update(tpf)
+		if (isFiring) {
 			addCanonBall() 
 		}
 		
 	}
+	
 	Queue<Spatial> freeBalls=new LinkedList<Spatial>()
 	boolean isFiring=false
 	CollisionShape shape=new SphereCollisionShape(0.075f)
@@ -208,6 +213,8 @@ class AppState4Sample04_BrokenCube extends AbstractAppState {
 		//		}, "BATCH_CUBES");
 		
 	}
+	
+	*/
 }
 
 @FinalFieldsConstructor

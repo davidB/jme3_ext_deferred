@@ -1,3 +1,5 @@
+[![CC-0](http://i.creativecommons.org/p/zero/1.0/88x31.png)](http://creativecommons.org/publicdomain/zero/1.0/)
+
 An experimental deferred rendering pipeline for [jmonkeyengine 3](http://jmonkeyengine.org).
 
 [![](http://img.youtube.com/vi/VcggFR0hMuA/0.jpg)](
