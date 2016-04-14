@@ -1,11 +1,15 @@
 build
 target
-lib
+/lib
+/log
 tmp
 xtend-gen
+*.log
 *.class
+*.off
 *.so
 *.dll
+*.dylib
 *.jar
 /dist/
 .gradle
